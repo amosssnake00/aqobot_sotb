@@ -56,6 +56,7 @@ function Bard:initClassOptions()
     self:addOption('USESELOSAA', 'Use Selos AA', false, nil, 'Toggle use of Selos AA', 'checkbox', nil, 'UseSelosAA', 'bool')
     self:addOption('USEJONTHANS', 'Use Jonthans', false, nil, 'Toggle use Jonthans self-only song', 'checkbox', nil, 'UseJonthans', 'bool')
     self:addOption('USEAMPLIFICATION', 'Use Amplification', false, nil, 'Toggle use of Amplification song', 'checkbox', nil, 'UseAmplification', 'bool')
+    self:addOption('USERESISTS', 'Use Resist Song', false, nil, 'Toggle use of Resists song', 'checkbox', nil, 'UseResists', 'bool')
 end
 
 -- melee haste v98 (Bard Haste) (Composition of Ervaj (lvl 60), Melody of Ervaj (lvl 50))
@@ -128,7 +129,7 @@ Bard.SpellLines = {
     },
     {-- single target mez. Slot 8
         Group='mezst',
-        Spells={'Slumber of Suja', 'Slumber of the Diabo', 'Slumber of Zburator', 'Slumber of Jembel', 'Slumber of Silisia', --[[emu cutoff]] 'Vulka\'s Lullaby', 'Creeping Dreams', 'Lullaby of Morell', 'Sionachie\'s Dreams', 'Crission\'s Pixie Strike', 'Kelin\'s Lucid Lullaby'},
+        Spells={'Slumber of Suja', 'Slumber of the Diabo', 'Slumber of Zburator', 'Slumber of Jembel', 'Slumber of Silisia', --[[emu cutoff]] 'Dreams of Thule', 'Vulka\'s Lullaby', 'Creeping Dreams', 'Lullaby of Morell', 'Sionachie\'s Dreams', 'Crission\'s Pixie Strike', 'Kelin\'s Lucid Lullaby'},
         Options={opt='MEZST', Gem=8}
     },
     {-- aoe mez. Slot 9
@@ -143,7 +144,7 @@ Bard.SpellLines = {
     },
     {-- heal focus + regen. Slot 11
         Group='pulse',
-        Spells={'Pulse of August', 'Pulse of Nikolas', 'Pulse of Vhal`Sera', 'Pulse of Xigarn', 'Pulse of Sionachie', --[[emu cutoff]] 'Cantata of Life', 'Chorus of Life', 'Wind of Marr', 'Chorus of Marr', 'Chorus of Replenishment', 'Cantata of Soothing', 'Hymn of Restoration'},
+        Spells={'Pulse of August', 'Pulse of Nikolas', 'Pulse of Vhal`Sera', 'Pulse of Xigarn', 'Pulse of Sionachie', --[[emu cutoff]] 'Cantata of Replenishment', 'Cantata of Life', 'Chorus of Life', 'Wind of Marr', 'Chorus of Marr', 'Chorus of Replenishment', 'Cantata of Soothing', 'Hymn of Restoration'},
         Options={opt='USEREGENSONG', Gem=function(lvl) return (lvl <= 20 and 7) or (lvl >= 34 and lvl <= 60 and 7) or 11 end}
     },
     {-- DD+melee dmg bonus + small heal. Slot 12
@@ -172,8 +173,8 @@ Bard.SpellLines = {
     -- haste song doesn't stack with enc haste?
     {Group='overhaste', Spells={'Ancient: Call of Power', 'Warsong of the Vah Shir', 'Battlecry of the Vah Shir'}, Options={Gem=function(lvl) return state.emu and 1 or nil end}},
     {Group='bardhaste', Spells={'Verse of Veeshan', 'Psalm of Veeshan', 'Composition of Ervaj'}, Options={Gem=function(lvl) return state.emu and 5 or nil end}},
-    {Group='emuhaste', Spells={'War March of Muram', 'War March of the Mastruq', 'McVaxius\' Rousing Rondo', 'McVaxius\' Berserker Crescendo', 'Vilia\'s Verses of Celerity', 'Anthem de Arms'}},
-    {Group='snare', Spells={'Selo\'s Consonant Chain'}, Options={opt='USESNARE'}},
+    {Group='emuhaste', Spells={'Warsong of Zek','War March of Muram', 'War March of the Mastruq', 'McVaxius\' Rousing Rondo', 'McVaxius\' Berserker Crescendo', 'Vilia\'s Verses of Celerity', 'Anthem de Arms'}},
+    {Group='snare', Spells={'Selo\'s Assonant Strain','Selo\'s Consonant Chain'}, Options={opt='USESNARE'}},
     {Group='debuff', Spells={'Harmony of Sound'}},
     {Group='jonthans', Spells={'Jonthan\'s Inspiration', 'Jonthan\'s Whistling Warsong'}, Options={opt='USEJONTHANS'}},
     {Group='magicweapons', Spells={'Magical Monologue'}, Options={}},
@@ -182,15 +183,16 @@ Bard.SpellLines = {
 
     {Group='aedot', Spells={'Denon\'s Disruptive Discord', 'Chords of Dissonance'}, Options={'USEAOE'}},
     {Group='aeslow', Spells={'Largo\'s Melodic Binding'}, Options={}},
-    {Group='manasong', Spells={'Cassindra\'s Chorus of Clarity', 'Cassindra\'s Chant of Clarity'}, Options={}},
+    {Group='manasong', Spells={'Wind of Marr', 'Cassindra\'s Chorus of Clarity', 'Cassindra\'s Chant of Clarity'}, Options={}},
     {Group='dispel', Spells={'Syvelian\'s Anti-Magic Aria', 'Alenia\'s Disenchanting Melody'}, Options={}},
     {Group='amplification', Spells={'Amplification'}, Options={opt='USEAMPLIFICATION', selfbuff=true, combatbuff=true}},
+    {Group='allresists', Spells={'Elemental Chorus'}, Options={opt='USERESISTS'}},
 }
 
 Bard.compositeNames = {['Ecliptic Psalm']=true,['Composite Psalm']=true,['Dissident Psalm']=true,['Dichotomic Psalm']=true}
 Bard.allDPSSpellGroups = {'aria', 'arcane', 'chantfrost', 'spiteful', 'firenukebuff', 'chantflame', 'suffering', 'insult', 'warmarch', 'sonata', 'firemagicdotbuff', 'chantdisease',
     'crescendo', 'pulse', 'composite', 'dirge', 'insultpushback', 'chantpoison', 'alliance', 'overhaste', 'bardhaste', 'emuhaste', 'snare', 'debuff', 'jonthans', 'magicweapons',
-    'chantmagic', 'aedot', 'aeslow', 'manasong', 'dispel', 'amplification', 'selos'}
+    'chantmagic', 'aedot', 'aeslow', 'manasong', 'dispel', 'amplification', 'selos', 'allresists'}
 
 Bard.Abilities = {
     { -- lazarus specific clicky pickpocket
@@ -304,7 +306,7 @@ Bard.Abilities = {
     {
         Type='AA',
         Name='Third Spire of the Minstrels',
-        Options={emu=true, first=true, emu=true}
+        Options={emu=true, first=true}
     },
     {
         Type='AA',
@@ -445,7 +447,8 @@ function Bard:initSpellRotations()
         table.insert(self.spellRotations.emunoaura, self.spells.pulse)
         table.insert(self.spellRotations.emunoaura, self.spells.overhaste)
         table.insert(self.spellRotations.emunoaura, self.spells.emuhaste)
-        table.insert(self.spellRotations.emunoaura, self.spells.firenukebuff)
+        table.insert(self.spellRotations.emunoaura, self.spells.allresists)
+
     else
         self.spellRotations.melee = {}
         self.spellRotations.caster = {}
@@ -531,11 +534,11 @@ local function isDotReady(spellId, spellName)
     songDuration = mq.TLO.Target.MyBuffDuration(actualSpellName)()
     if not common.isTargetDottedWith(spellId, actualSpellName) then
         -- target does not have the dot, we are ready
-        logger.debug(logger.flags.class.cast, 'song ready %s', spellName)
+        logger.debug(logger.flags.class.cast, 'dot song ready %s', spellName)
         return true
     else
         if not songDuration then
-            logger.debug(logger.flags.class.cast, 'song ready %s', spellName)
+            logger.debug(logger.flags.class.cast, 'dot song ready %s', spellName)
             return true
         end
     end

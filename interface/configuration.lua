@@ -57,6 +57,14 @@ local config = {
         tlo = 'CampRadius',
         tlotype = 'int',
     },
+    CAMPRETURN = {
+        value = 10,
+        tip = 'The distance from camp to trigger a move to camp point',
+        label = 'Camp return Radius',
+        type = 'inputint',
+        tlo = 'CampReturnRadius',
+        tlotype = 'int',
+    },
     ASSIST = {
         value = 'group',
         tip = 'Who to assist. Group MA, Raid MA 1, 2 or 3',
@@ -310,6 +318,14 @@ local config = {
         label = 'Pull Radius',
         type = 'inputint',
         tlo = 'PullRadius',
+        tlotype = 'int',
+    },
+    PULLPATH = {
+        value = 100,
+        tip = 'The maximum Pullpath to mobs inside your pull radius',
+        label = 'Pull Path',
+        type = 'inputint',
+        tlo = 'PullPath',
         tlotype = 'int',
     },
     PULLHIGH = {
@@ -630,9 +646,9 @@ end
 
 local configByCategory = {
     Assist={'MODE','ASSIST','AUTOASSISTAT','ASSISTNAMES','SWITCHWITHMA','STICKCOMMAND','RESISTSTOPCOUNT','NUKEMANAMIN','DOTMANAMIN'},
-    Camp={'CAMPRADIUS','CHASETARGET','CHASEDISTANCE','CHASESTOPDISTANCE','CHASEPAUSED'},
+    Camp={'CAMPRADIUS','CAMPRETURN','CHASETARGET','CHASEDISTANCE','CHASESTOPDISTANCE','CHASEPAUSED'},
     Burn={'BURNALWAYS','BURNALLNAMED','BURNCOUNT','BURNPCT','USEGLYPH','USEINTENSITY'},
-    Pull={'PULLRADIUS','PULLLOW','PULLHIGH','PULLMINLEVEL','PULLMAXLEVEL','PULLARC','GROUPWATCHWHO','GROUPSTAYCLOSE','PULLWITH'},
+    Pull={'PULLRADIUS','PULLPATH','PULLLOW','PULLHIGH','PULLMINLEVEL','PULLMAXLEVEL','PULLARC','GROUPWATCHWHO','GROUPSTAYCLOSE','PULLWITH'},
     Heal={'HEALPCT','PANICHEALPCT','HOTHEALPCT','GROUPHEALPCT','GROUPHEALMIN','XTARGETHEAL','REZGROUP','REZRAID','REZINCOMBAT','PRIORITYTARGET','INTERRUPTFULLHP','INTERRUPTFORHEALS', 'ANNOUNCEHEALS','ANNOUNCEDEATHS'},
     Tank={'MAINTANK','OFFTANK'},
     Rest={'MEDCOMBAT','RECOVERPCT','MEDHPSTART','MEDHPSTOP','MEDMANASTART','MEDMANASTOP','MEDENDSTART','MEDENDSTOP','MANASTONESTART','MANASTONESTARTHP','MANASTONESTOPHP','MANASTONETIME'},

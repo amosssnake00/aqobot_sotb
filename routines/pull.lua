@@ -39,7 +39,8 @@ local function checkMobAngle(pull_spawn)
     if not direction_to_mob then return false end
     -- switching from non-puller mode to puller mode, the camp may not be updated yet
     if not (camp.PullArcLeft and camp.PullArcRight) then return false end
-    logger.debug(logger.flags.routines.pull, 'arcleft: %s, arcright: %s, dirtomob: %s', camp.PullArcLeft, camp.PullArcRight, direction_to_mob)
+    logger.debug(logger.flags.routines.pull, 'arcleft: %s, arcright: %s, dirtomob: %s', camp.PullArcLeft,
+        camp.PullArcRight, direction_to_mob)
     if camp.PullArcLeft >= camp.PullArcRight then
         if direction_to_mob < camp.PullArcLeft and direction_to_mob > camp.PullArcRight then return false end
     else
@@ -56,9 +57,9 @@ local function checkZRadius(pull_spawn)
     local mob_z = pull_spawn.Z()
     if not mob_z then return false end
     if camp.Active then
-        if mob_z > camp.Z+config.get('PULLHIGH') or mob_z < camp.Z-config.get('PULLLOW') then return false end
+        if mob_z > camp.Z + config.get('PULLHIGH') or mob_z < camp.Z - config.get('PULLLOW') then return false end
     else
-        if mob_z > mq.TLO.Me.Z()+config.get('PULLHIGH') or mob_z < mq.TLO.Me.Z()-config.get('PULLLOW') then return false end
+        if mob_z > mq.TLO.Me.Z() + config.get('PULLHIGH') or mob_z < mq.TLO.Me.Z() - config.get('PULLLOW') then return false end
     end
     return true
 end
@@ -75,8 +76,9 @@ end
 
 local function checkPathLength(pull_spawn)
     local path_len = mq.TLO.Navigation.PathLength(string.format('id %s', pull_spawn.ID()))()
-    if path_len < 0 or path_len > config.get('PULLRADIUS') then
-        logger.debug(logger.flags.routines.pull, 'Navigation PathLength %s exceeds PullRadius %s', path_len, config.get('PULLRADIUS'))
+    if path_len < 0 or path_len > config.get('PULLPATH') then
+        logger.debug(logger.flags.routines.pull, 'Navigation PathLength %s exceeds PullPath %s', path_len,
+            config.get('PULLPATH'))
         return -1
     end
     return path_len
@@ -90,24 +92,29 @@ end
 local function validatePull(pull_spawn, path_len, zone_sn)
     local mob_id = pull_spawn.ID()
     if not mob_id or mob_id == 0 or PULL_TARGET_SKIP[mob_id] or pull_spawn.Type() == 'Corpse' or pull_spawn.Surname() ~= '' then
-        logger.debug(logger.flags.routines.pull, 'Invalid mob ID %s (type=%s, skip=%s)', mob_id, pull_spawn.Type(), PULL_TARGET_SKIP[mob_id])
+        logger.debug(logger.flags.routines.pull, 'Invalid mob ID %s (type=%s, skip=%s)', mob_id, pull_spawn.Type(),
+            PULL_TARGET_SKIP[mob_id])
         return false
     end
-    return checkMobAngle(pull_spawn) and checkZRadius(pull_spawn) and checkMobLevel(pull_spawn) and not config.ignoresContains(zone_sn, pull_spawn.CleanName())
+    return checkMobAngle(pull_spawn) and checkZRadius(pull_spawn) and checkMobLevel(pull_spawn) and
+        not config.ignoresContains(zone_sn, pull_spawn.CleanName())
 end
 
 --local medding = false
-local healers = {CLR=true,DRU=true,SHM=true}
+local healers = { CLR = true, DRU = true, SHM = true }
 local holdPullTimer = timer:new(5000)
 local holdPulls = false
 function pull.checkPullConditions()
     if config.get('GROUPSTAYCLOSE') and mq.TLO.Group.Members() then
-        for i=1,mq.TLO.Group.Members() do
+        for i = 1, mq.TLO.Group.Members() do
             local member = mq.TLO.Group.Member(i)
             if member() then
                 if (member.Distance3D() or 300) > 150 then
                     -- group member not nearby, hold pulls until they catch up
-                    if not holdPulls then holdPullTimer:reset() holdPulls = true end
+                    if not holdPulls then
+                        holdPullTimer:reset()
+                        holdPulls = true
+                    end
                     return false
                 end
             end
@@ -133,12 +140,15 @@ function pull.checkPullConditions()
         end
     end
     if mq.TLO.Group.Members() then
-        for i=1,mq.TLO.Group.Members() do
+        for i = 1, mq.TLO.Group.Members() do
             local member = mq.TLO.Group.Member(i)
             if member() then
                 if config.get('GROUPSTAYCLOSE') and (member.Distance3D() or 300) > 150 then
                     -- group member not nearby, hold pulls until they catch up
-                    if not holdPulls then holdPullTimer:reset() holdPulls = true end
+                    if not holdPulls then
+                        holdPullTimer:reset()
+                        holdPulls = true
+                    end
                     return false
                 end
                 local pcthp = member.PctHPs()
@@ -168,7 +178,7 @@ function pull.checkPullConditions()
 end
 
 local pullRadarTimer = timer:new(1000)
-function pull.pullRadarB()
+--[[ function pull.pullRadarB()
     if not pullRadarTimer:expired() then return 0 end
     pullRadarTimer:reset()
     local pull_radius = config.get('PULLRADIUS')
@@ -191,18 +201,23 @@ function pull.pullRadarB()
     mq.getFilteredSpawns(pullPredicate)
     state.pullMobID = pull_id
     return pull_id
-end
+end ]]
 
 --loc ${s_WorkSpawn.X} ${s_WorkSpawn.Y}
-local pull_count = 'npc targetable nopet radius %d'-- zradius 50'
-local pull_spawn = '%d, npc targetable nopet radius %d'-- zradius 50'
-local pull_count_camp = 'npc targetable nopet loc %d %d radius %d'-- zradius 50'
-local pull_spawn_camp = '%d, npc targetable nopet loc %d %d radius %d'-- zradius 50'
+local pull_count = 'npc targetable nopet radius %d'                    -- zradius 50'
+local pull_spawn = '%d, npc targetable nopet radius %d'                -- zradius 50'
+local pull_count_camp = 'npc targetable nopet loc %d %d radius %d'     -- zradius 50'
+local pull_spawn_camp = '%d, npc targetable nopet loc %d %d radius %d' -- zradius 50'
 local pc_near = 'pc radius 30 loc %d %d'
 ---Search for pullable mobs within the configured pull radius.
 ---Sets common.pullMobID to the mob ID of the first matching spawn.
+
 function pull.pullRadar()
-    if not pullRadarTimer:expired() then return 0 end
+    if not pullRadarTimer:expired() then
+        logger.debug(logger.flags.routines.pull,
+            ('pullRadarTimer not expired! Remaining: %s'):format(pullRadarTimer:remaining()))
+        return 0
+    end
     pullRadarTimer:reset()
     local pull_radius_count
     local pull_radius = config.get('PULLRADIUS')
@@ -211,19 +226,23 @@ function pull.pullRadar()
     if not pull_radius then return 0 end
     if camp.Active then
         pull_radius_count = mq.TLO.SpawnCount(pull_count_camp:format(camp.X, camp.Y, max_radius))()
-        logger.debug(logger.flags.routines.pull, ('%s: %s'):format(pull_radius_count or 0, pull_count_camp:format(camp.X, camp.Y, max_radius)))
+        logger.debug(logger.flags.routines.pull,
+            ('%s: %s'):format(pull_radius_count or 0, pull_count_camp:format(camp.X, camp.Y, max_radius)))
     else
         pull_radius_count = mq.TLO.SpawnCount(pull_count:format(max_radius))()
         -- error here
         logger.debug(logger.flags.routines.pull, ('%s: %s'):format(pull_radius_count or 0, pull_count:format(max_radius)))
     end
-    local shortest_path = max_radius
+    local shortest_path = config.get('PULLPATH')
     local pull_id = 0
     if pull_radius_count > 0 then
         local zone_sn = mq.TLO.Zone.ShortName()
-        for i=1,pull_radius_count do
+        for i = 1, pull_radius_count do
             -- try not to iterate through the whole world if there's a pretty large pull radius
-            if i > 100 then break end
+            if i > 100 then
+                logger.debug(logger.flags.routines.pull, ('too many mobs %s > 100!'):format(pull_radius_count))
+                break
+            end
             local mob
             if camp.Active then
                 mob = mq.TLO.NearestSpawn(pull_spawn_camp:format(i, camp.X, camp.Y, max_radius))
@@ -233,19 +252,20 @@ function pull.pullRadar()
             if validatePull(mob, 0, zone_sn) then
                 local path_len = checkPathLength(mob)
                 if path_len > -1 then
-                -- local path_len = mq.TLO.Navigation.PathLength(string.format('id %s', mob.ID()))()
-                -- if  then
+                    -- local path_len = mq.TLO.Navigation.PathLength(string.format('id %s', mob.ID()))()
+                    -- if  then
                     -- TODO: check for people nearby, check level, check z radius if high/low differ
                     --local pc_near_count = mq.TLO.SpawnCount(pc_near:format(mob.X(), mob.Y()))
                     --if pc_near_count == 0 then
                     local dist3d = mob.Distance3D()
-                    if mob.LineOfSight() or (dist3d and path_len < dist3d+50) then
+                    if mob.LineOfSight() or (dist3d and path_len < dist3d + 50) then
                         -- don't bother to check path length if mob already in los.
                         -- if path length is within 50 of distance3d then its probably safe to pull also
                         state.pullMobID = mob.ID()
                         return mob.ID()
                     elseif path_len < shortest_path then
-                        logger.debug(logger.flags.routines.pull, ("Found closer pull, %s < %s"):format(path_len, shortest_path))
+                        logger.debug(logger.flags.routines.pull,
+                            ("Found closer pull, %s < %s"):format(path_len, shortest_path))
                         shortest_path = path_len
                         pull_id = mob.ID()
                     end
@@ -281,7 +301,8 @@ local function pullNavToMob(pull_spawn, announce_pull)
     end
     if helpers.distance(mq.TLO.Me.X(), mq.TLO.Me.Y(), mob_x, mob_y) > 100 then
         logger.debug(logger.flags.routines.pull, 'Moving to pull target (\at%s\ax)', state.pullMobID)
-        movement.navToSpawn('id '..state.pullMobID, 'dist=5')
+        -- TODO: set timeout as parameter
+        movement.navToSpawn('id ' .. state.pullMobID, 'dist=5', 1000)
     end
     return true
 end
@@ -294,7 +315,10 @@ local function pullApproaching(pull_spawn)
     -- return right away if we can't read distance, as pull spawn is probably no longer valid
     if not dist3d then return true end
     -- return true once target is in range and in LOS, or if something appears on xtarget
-    return (config.get('PULLWITH') ~= 'melee' and pull_spawn.LineOfSight() and dist3d < 200) or dist3d < 5 or common.hostileXTargets()
+    -- TODO: set distance as parameter
+
+    return (config.get('PULLWITH') ~= 'melee' and pull_spawn.LineOfSight() and dist3d < 250) or dist3d < 5 or
+        common.hostileXTargets()
 end
 
 ---Aggro the specified target to be pulled. Attempts to use bow and moves closer to melee pull if necessary.
@@ -324,7 +348,8 @@ local function pullEngage(pull_spawn)
     --if (tot_id > 0 and tot_id ~= mq.TLO.Me.ID()) or (targethp and targethp < 100) then --or mq.TLO.Target.PctHPs() < 100 then
     if tot_id > 0 and tot_id ~= mq.TLO.Me.ID() and tot_id ~= mq.TLO.Pet.ID() then
         if targethp and targethp < 99 then
-            logger.info('\arPull target already engaged, skipping \ax(\at%s\ax) %s %s %s', pullMobID, tot_id, mq.TLO.Me.ID(), targethp)
+            logger.info('\arPull target already engaged, skipping \ax(\at%s\ax) %s %s %s', pullMobID, tot_id,
+                mq.TLO.Me.ID(), targethp)
             -- TODO: clear skip targets
             PULL_TARGET_SKIP[pullMobID] = 1
             pull.clearPullVars('pullEngage-hpCheck')
@@ -345,14 +370,15 @@ local function pullEngage(pull_spawn)
         end
         local pullWith = config.get('PULLWITH')
         local pull_item = nil
-        if pullWith == 'spell' and not class.pullSpell then pullWith = 'melee'
+        if pullWith == 'spell' and not class.pullSpell then
+            pullWith = 'melee'
         elseif pullWith == 'item' then
             if #class.pullClickies == 0 then pullWith = 'melee' end
-            for _,clicky in ipairs(class.pullClickies) do
+            for _, clicky in ipairs(class.pullClickies) do
                 local reagentCount = mq.TLO.FindItem(clicky.CastName).Clicky.Spell.ReagentCount(1)()
                 local reagentID = mq.TLO.FindItem(clicky.CastName).Clicky.Spell.ReagentID(1)()
-                if clicky.enabled and mq.TLO.Me.ItemReady(clicky.CastName)() and 
-                        (reagentCount == -1 or mq.TLO.FindItemCount(reagentID)() > 0) then
+                if clicky.enabled and mq.TLO.Me.ItemReady(clicky.CastName)() and
+                    (reagentCount == -1 or mq.TLO.FindItemCount(reagentID)() > 0) then
                     pull_item = clicky
                     break
                 end
@@ -364,7 +390,8 @@ local function pullEngage(pull_spawn)
             if not ranged_item() or (ranged_item.Damage() or 0) == 0 or not ammo_item() or (ammo_item.Damage() or 0) == 0 then
                 pullWith = 'melee'
             end
-        elseif pullWith == 'custom' and not class.pullCustom then pullWith = 'melee'
+        elseif pullWith == 'custom' and not class.pullCustom then
+            pullWith = 'melee'
         end
         if pullWith == 'item' and pull_item then
             movement.stop()
@@ -380,7 +407,11 @@ local function pullEngage(pull_spawn)
             end
             if mode.currentMode:isReturnToCampMode() then
                 movement.stop()
-                mq.delay(1000, function() return mq.TLO.Me.TargetOfTarget.ID() == mq.TLO.Me.ID() or mq.TLO.Me.CombatState() == 'COMBAT' end)
+                mq.delay(1000,
+                    function()
+                        return mq.TLO.Me.TargetOfTarget.ID() == mq.TLO.Me.ID() or
+                        mq.TLO.Me.CombatState() == 'COMBAT'
+                    end)
             end
             state.pullStatus = constants.pullStates.WAIT_FOR_AGGRO
         elseif pullWith == 'spell' then
@@ -413,7 +444,7 @@ local function pullReturn(noMobs)
 end
 
 local function pullMobOnXTarget()
-    for i=1,20 do
+    for i = 1, 20 do
         if mq.TLO.Me.XTarget(i).ID() == state.pullMobID then return true end
     end
     return false
@@ -422,7 +453,7 @@ end
 local function anyoneDead()
     local groupSize = mq.TLO.Group.GroupSize()
     if not groupSize then return false end
-    for i=1,groupSize-1 do
+    for i = 1, groupSize - 1 do
         if mq.TLO.Group.Member(i).Dead() then return true end
     end
     return false
@@ -434,7 +465,7 @@ local pullEngageTimer = timer:new(3000)
 function pull.pullMob()
     local pull_state = state.pullStatus
     -- or (mq.TLO.Group.Injured(config.get('MEDHPSTART'))() or 0) > 0
-    if anyoneDead() or mq.TLO.Me.PctHPs() < config.get('MEDHPSTART') or constants.DMZ[mq.TLO.Zone.ID()] then-- or (state.holdForBuffs and not state.holdForBuffs:expired()) then
+    if anyoneDead() or mq.TLO.Me.PctHPs() < config.get('MEDHPSTART') or constants.DMZ[mq.TLO.Zone.ID()] then -- or (state.holdForBuffs and not state.holdForBuffs:expired()) then
         if pull_state == constants.pullStates.APPROACHING or pull_state == constants.pullStates.ENGAGING then
             pull.clearPullVars('pullMob-deadOrInjured')
             movement.stop()
@@ -444,7 +475,7 @@ function pull.pullMob()
             --return
         end
     end
-    if state.emu and config.get('LOOTMOBS') and mq.TLO.SpawnCount('npccorpse radius '..config.get('CAMPRADIUS')..' zradius 10')() > 0 then
+    if state.emu and config.get('LOOTMOBS') and mq.TLO.SpawnCount('npccorpse radius ' .. config.get('CAMPRADIUS') .. ' zradius 10')() > 0 then
         logger.debug(logger.flags.routines.pull, 'Not pulling due to lootable corpses nearby')
         pull.clearPullVars('pullMob-lootablecorpses')
         return
@@ -475,7 +506,7 @@ function pull.pullMob()
             if holdPulls and holdPullTimer:expired() then
                 local furthest = 0
                 local furthestID = 0
-                for i=1,mq.TLO.Group.Members() do
+                for i = 1, mq.TLO.Group.Members() do
                     local member = mq.TLO.Group.Member(i)
                     if member() and (member.Distance3D() or 0) > furthest then
                         furthest = member.Distance3D()
@@ -492,26 +523,36 @@ function pull.pullMob()
         logger.debug(logger.flags.routines.pull, 'searching for pulls')
         local pullMobID = pull.pullRadar()
         local pull_spawn = mq.TLO.Spawn(pullMobID)
+        logger.debug(logger.flags.routines.pull, ('pull radar returned id %s'):format(pullMobID))
         if pull_spawn.ID() == 0 then
             -- didn't seem to find the mob returned by pullRadar
             pull.clearPullVars('pullMob-mobMissingCheck')
             pullReturn(true)
             return
         end
-        if pull_spawn.Type() ~= 'NPC' then pull.clearPullVars('pullMob-nonNPC') return end
+        if pull_spawn.Type() ~= 'NPC' then
+            pull.clearPullVars('pullMob-nonNPC')
+            return
+        end
         -- valid pull spawn acquired, begin approach
         state.pullStatus = constants.pullStates.APPROACHING
         pullNavToMob(pull_spawn, true)
     elseif pull_state == constants.pullStates.APPROACHING then
         local pull_spawn = mq.TLO.Spawn(state.pullMobID)
-        if pull_spawn.Type() ~= 'NPC' then pull.clearPullVars('pullMob-nonNPC') return end
+        if pull_spawn.Type() ~= 'NPC' then
+            pull.clearPullVars('pullMob-nonNPC')
+            return
+        end
         if pullApproaching(pull_spawn) then
             -- movement stopped, either spawn became invalid, we're in range, or other stuff agro'd
             state.pullStatus = constants.pullStates.ENGAGING
         end
     elseif pull_state == constants.pullStates.ENGAGING then
         local pull_spawn = mq.TLO.Spawn(state.pullMobID)
-        if pull_spawn.Type() ~= 'NPC' then pull.clearPullVars('pullMob-nonNPC') return end
+        if pull_spawn.Type() ~= 'NPC' then
+            pull.clearPullVars('pullMob-nonNPC')
+            return
+        end
         pullEngage(pull_spawn)
         pullEngageTimer:reset()
     elseif pull_state == constants.pullStates.WAIT_FOR_AGGRO then
@@ -534,7 +575,7 @@ function pull.pullMob()
             pull.clearPullVars('pullMob-aggroTimerExpired')
         end
     elseif pull_state == constants.pullStates.RETURNING then
-        if helpers.distance(camp.X, camp.Y, mq.TLO.Me.X(), mq.TLO.Me.Y()) < config.get('CAMPRADIUS')^2 then
+        if helpers.distance(camp.X, camp.Y, mq.TLO.Me.X(), mq.TLO.Me.Y()) < config.get('CAMPRADIUS') ^ 2 then
             state.pullStatus = constants.pullStates.PULLED
         else
             pullReturn(false)

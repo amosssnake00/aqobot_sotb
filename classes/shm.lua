@@ -249,7 +249,7 @@ Shaman.SpellLines = {
     -- self buff, proc heal when hit
     {Group='selfprocheal', Spells={'Watchful Spirit', 'Attentive Spirit', 'Responsive Spirit'}, Options={selfbuff=true}},
     -- Cures
-    {Group='cure', Spells={'Blood of Nadox'}, Options={cure=true, all=true}},
+    {Group='cure', Spells={'Disinfecting Aura','Blood of Nadox'}, Options={cure=true, all=true}},
     {Group='rgc', Spells={'Remove Greater Curse', 'Remove Curse', 'Remove Lesser Curse', 'Remove Minor Curse'}, Options={cure=true, Curse=true}},
 
     -- TODO: cleanup Leftover EMU specific stuff
@@ -265,11 +265,11 @@ Shaman.SpellLines = {
     -- Debuffs
     {-- Malo spell line. AA malo is Malosinete
         Group='malo',
-        Spells={'Malosinera', 'Malosinetra', 'Malosinara', 'Malosinata', 'Malosenete', --[[emu cutoff]] 'Malaisement', 'Malaise'},
+        Spells={'Malosinera', 'Malosinetra', 'Malosinara', 'Malosinata', 'Malosenete', --[[emu cutoff]] 'Malosi', 'Malaisement', 'Malaise'},
         Options={Gem=function(lvl) return lvl <= 60 and 1 or nil end, opt='USEDEBUFF', debuff=true}
     },
-    {Group='slow', Spells={'Turgur\'s Insects', 'Togor\'s Insects', 'Tagar\'s Insects', 'Walking Sleep', 'Drowsy'}, Options={Gem=function(lvl) return lvl <= 60 and 2 or nil end, debuff=true, opt='USESLOW'}},
-    {Group='slowaoe', Spells={'Rimeclaw\'s Drowse', 'Aten Ha Ra\'s Drowse', 'Amontehepna\'s Drowse', 'Erogo\'s Drowse', 'Sraskus\' Drowse'}, Options={debuff=true, opt='USESLOWAOE'}},
+    {Group='slow', Spells={'Cloud of Grummus','Turgur\'s Insects', 'Togor\'s Insects', 'Tagar\'s Insects', 'Walking Sleep', 'Drowsy'}, Options={Gem=function(lvl) return lvl <= 60 and 2 or nil end, debuff=true, opt='USESLOW'}},
+    {Group='slowaoe', Spells={'Rimeclaw\'s Drowse', 'Aten Ha Ra\'s Drowse', 'Amontehepna\'s Drowse', 'Erogo\'s Drowse', 'Sraskus\' Drowse','Tigir\'s Insects'}, Options={debuff=true, opt='USESLOWAOE'}},
 
     -- Extra DoTs just used by combo spells
     {-- disease dot. Not used directly, only by combo spell. (pendemiccombo)
@@ -316,7 +316,7 @@ Shaman.SpellLines = {
     },
     {
         Group='groupfocus',
-        Spells={'Talisman of Wunshi', 'Focus of the Seventh'},
+        Spells={'Talisman of Wunshi', 'Focus of the Seventh', 'Khura\'s Focusing'},
         Options={selfbuff=true, alias='FOCUS'}
     },
 
@@ -334,7 +334,7 @@ Shaman.SpellLines = {
     -- Utility
     {Group='canni', Spells={'Cannibalize IV', 'Cannibalize III', 'Cannibalize II', 'Cannibalize'}, Options={Gem=function(lvl) return lvl <= 60 and 8 or nil end, recover=true, mana=true, threshold=70, combat=false, endurance=false, minhp=50, ooc=false}},
     {Group='pet', Spells={'Commune with the Wild', 'True Spirit', 'Frenzied Spirit', 'Vigilant Spirit', 'Companion Spirit'}, Options={opt='SUMMONPET', postcast=function() if Shaman.spells.pet.CastName == 'Commune with the Wild' and not PET_RACES[mq.TLO.Pet.Race.Name()] then mq.cmd('/pet leave') else common.petClicky() end end}},
-    {Group='sow', Spells={'Pack Shrew', 'Spirit of the Shrew', 'Spirit of Wolf'}, Options={alias='SOW'}},
+    {Group='sow', Spells={'Pack Shrew', 'Spirit of the Shrew', 'Spirit of Bih`Li', 'Spirit of Wolf'}, Options={alias='SOW'}},
     {Group='shrink', Spells={'Shrink'}, Options={alias='SHRINK'}},
     {Group='petshrink', Spells={'Tiny Companion'}, Options={}},
 
@@ -393,7 +393,7 @@ Shaman.SpellLines = {
     },
     { -- regen
         Group='regen',
-        Spells={'Talisman of Perseverance', 'Chloroplast', 'Regeneration'},
+        Spells={'Talisman of Perseverance', 'Chloroplast', 'Replenishment', 'Regeneration'},
         Options={alias='REGEN'}
     },
     { -- regen + wis bear form low level buff

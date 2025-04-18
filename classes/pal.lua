@@ -75,7 +75,7 @@ Paladin.SpellLines = {
     {
         Group='groupheal',
         NumToPick=3,
-        Spells={'Wave of Penitence', --[[emu cutoff]] 'Wave of Piety', 'Wave of Trushar', 'Wave of Marr'},
+        Spells={'Wave of Penitence', --[[emu cutoff]] 'Wave of Piety', 'Wave of Trushar', 'Wave of Marr', 'Healing Wave of Prexus', 'Wave of Life'},
         Options={Gems=state.emu and {1,2,3} or {7}, heal=true, group=true},
     },
     { -- Normal no damage stun line
@@ -118,7 +118,7 @@ Paladin.SpellLines = {
     --     Spells={'Penitence'},
     --     Options={Gem=6, panic=true},
     -- },
-    -- {
+    --  
     --     Group='grouphealfast',
     --     Spells={'Aurora of Daybreak'},
     --     Options={Gem=8, threshold=2, heal=true, group=true},
@@ -158,11 +158,11 @@ Paladin.SpellLines = {
         Spells={'Armor of Implacable Faith', --[[emu cutoff]] 'Armor of the Champion'},
         Options={selfbuff=true},
     },
-    -- {
-    --     Group='heal',
-    --     Spells={'Greater Healing', 'Healing', 'Light Healing', 'Minor Healing', 'Salve'},
-    --     Options={Gem=function(lvl) return lvl <= 60 and 2 or nil end, heal=true, tank=true, regular=true}
-    -- },
+ {
+         Group='heal',
+         Spells={'Superior Healing','Greater Healing', 'Healing', 'Light Healing', 'Minor Healing', 'Salve'},
+         Options={Gem=function(lvl) return lvl <= 70 and 2 or nil end, heal=true, tank=true, regular=true}
+    },
     {
         Group='curepoison',
         Spells={'Counteract Poison', 'Cure Poison'},

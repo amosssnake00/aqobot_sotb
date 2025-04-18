@@ -85,6 +85,11 @@ Wizard.Abilities = {
         Name='Force of Will',
         Options={dps=true}
     },
+    {
+        Type='Item',
+        Name='Imbued Rune of Mana Weave',
+        Options={dps=true, condition=function() return not mq.TLO.Me.Buff('Weave of Power')() and not mq.TLO.Me.Song('Weave of Power')() end}
+    },
 
     -- Burns
     {

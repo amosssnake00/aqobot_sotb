@@ -1,18 +1,5 @@
-# 2024/09/22
-- Add offtank config option. Tank will broadcast xtargets it doesn't have aggro on. Offtanks will pick targets based off that.
-
-# 2024/09/21
-- Consolidate hottank and hotdps options to hot
-- Some lame attempts at fixing pet aftercast clickies
-- Ranger try to maintain proper bow range if not project lazarus
-- Add RTZ command like e3: /aqo rtz
-- Add a simple getting started window on first use
-
-# 2024/09/14
-- Fix loop casting buff after spell swap
-- Rogue evasion tweaks
-- Add druid spell nettlecoat
-- Use gem 8 if swap gem > num gems
+# 2025/04/18 AMS
+- pushing some SOTB customizations
 
 # 2024/09/13
 - Fix beastlord trying to mem same spell in two spots

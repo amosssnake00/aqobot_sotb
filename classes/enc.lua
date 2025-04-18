@@ -75,7 +75,7 @@ end
 Enchanter.SpellLines = {
     {-- Slot 1
         Group='tash',
-        Spells={'Roar of Tashan', 'Edict of Tashan', 'Proclamation of Tashan', 'Order of Tashan', 'Decree of Tashan', 'Enunciation of Tashan', 'Declaration of Tashan', 'Clamor of Tashan', --[[emu cutoff]] 'Bite of Tashani', 'Echo of Tashan', 'Tashani', 'Tashan'},
+        Spells={'Roar of Tashan', 'Edict of Tashan', 'Proclamation of Tashan', 'Order of Tashan', 'Decree of Tashan', 'Enunciation of Tashan', 'Declaration of Tashan', 'Clamor of Tashan', --[[emu cutoff]]'Howl of Tashan', 'Tashanian', 'Bite of Tashani', 'Echo of Tashan', 'Tashani', 'Tashan'},
         Options={debuff=true, opt='USEDEBUFF', Gem=1}
     },
     {-- Slot 2
@@ -90,7 +90,7 @@ Enchanter.SpellLines = {
     },
     {-- 9 ticks. Slot 3
         Group='mezst',
-        Spells={'Flummox', 'Addle', 'Deceive', 'Delude', 'Bewilder', 'Confound', 'Mislead', 'Baffle', --[[emu cutoff]] 'Euphoria', 'Entrance', 'Mesmerization', 'Enthrall', 'Mesmerize'},
+        Spells={'Flummox', 'Addle', 'Deceive', 'Delude', 'Bewilder', 'Confound', 'Mislead', 'Baffle', --[[emu cutoff]] 'Apathy', 'Euphoria', 'Entrance', 'Mesmerization', 'Enthrall', 'Mesmerize'},
         Options={Gem=3, precast=function() if not mq.TLO.Target.Tashed() and Enchanter:isEnabled('TASHTHENMEZ') and Enchanter.spells.tash then
             Enchanter.spells.tash:use()
             mq.delay(50)
@@ -157,9 +157,9 @@ Enchanter.SpellLines = {
     },
 
     {Group='mezst2', Spells={'Flummoxing Flash', 'Addling Flash'}, Options={emu=false}}, -- 6 ticks
-    {Group='mezae', Spells={'Stupefying Wave', 'Bewildering Wave', 'Neutralizing Wave', 'Bliss of the Nihil'}, Options={emu=false}}, -- targeted AE mez
+    {Group='mezae', Spells={'Stupefying Wave', 'Bewildering Wave', 'Neutralizing Wave', 'Bliss of the Nihil', 'Fascination'}, Options={emu=false}}, -- targeted AE mez
     {Group='mezaehate', Spells={'Vexing Glance', 'Confounding Glance'}, Options={emu=false}}, -- targeted AE mez + 100% hate reduction
-    {Group='mezpbae', Spells={'Wonderment', 'Bewilderment'}, Options={emu=false}},
+    {Group='mezpbae', Spells={'Wonderment', 'Bewilderment', 'Word of Morell'}, Options={emu=true}},
     {Group='mezpbae2', Spells={'Perilous Confounding', 'Perilous Bewilderment'}, Options={emu=false}}, -- lvl 120
     {Group='mezshield', Spells={'Ward of the Stupefier', 'Ward of the Beguiler', 'Ward of the Deviser'}, Options={emu=false}}, -- mez proc on being hit
 
@@ -199,8 +199,11 @@ Enchanter.SpellLines = {
     {Group='resmagicgroup', Spells={'Guard of Druzzil', 'Group Resist Magic'}, Options={alias='RESMAGIC', selfbuff=true, condition=function() return mq.TLO.EverQuest.Server() ~= 'Project Lazarus' end}},
     {Group='keigroup', Spells={'Voice of Preordination', 'Voice of Perception', 'Voice of Sagacity', 'Voice of Perspicacity', 'Voice of Precognition', 'Voice of Foresight', 'Voice of Premeditation', 'Voice of Forethought', 'Unified Alacrity', 'Voice of Clairvoyance', 'Voice of Quellious', 'Koadic\'s Endless Intellect'}, Options={alias='KEI', selfbuff=true, opt='USEKEI'}},
     {Group='kei', Spells={'Preordination', 'Scrying Visions', 'Sagacity', 'Foresight', 'Premiditation', 'Forethought', 'Clairovoyance', 'Clarity', 'Breeze'}, Options={alias='SINGLEKEI', selfbuff=function() return not Enchanter.spells.keigroup and true or false end}},
-    {Group='grouphaste', Spells={'Hastening of Margator', 'Hastening of Jharin', 'Hastening of Cekenar', 'Hastening of Milyex', 'Hastening of Prokev', 'Hastening of Sviir', 'Hastening of Aransir', 'Hastening of Novak', 'Unified Alacrity', 'Hastening of Salik', 'Vallon\'s Quickening', 'Speed of the Brood'}, Options={alias='HASTE'}}, -- group haste
-    {Group='haste', Spells={'Speed of Margator', 'Speed of Itzal', 'Speed of Cekenar', 'Speed of Milyex', 'Speed of Prokev', 'Speed of Sviir', 'Speed of Aransir', 'Speed of Novak', 'Visions of Grandeur', 'Augmentation', 'Alacrity', 'Quickness'}, Options={alias='SINGLEHASTE'}}, -- single target buff
+    {Group='grouphaste', Spells={'Hastening of Margator', 'Hastening of Jharin', 'Hastening of Cekenar', 'Hastening of Milyex', 'Hastening of Prokev', 'Hastening of Sviir', 'Hastening of Aransir', 'Hastening of Novak', 'Unified Alacrity', 'Hastening of Salik', 'Vallon\'s Quickening', 'Speed of the Brood'}, Options={alias='GROUPHASTE'}}, -- group haste
+    {Group='haste', Spells={'Speed of Margator', 'Speed of Itzal', 'Speed of Cekenar', 'Speed of Milyex', 'Speed of Prokev', 'Speed of Sviir', 'Speed of Aransir', 'Speed of Novak', 'Speed of Vallon', 'Visions of Grandeur', 'Augmentation', 'Alacrity', 'Quickness'}, Options={alias='HASTE'}}, -- single target buff
+    -- {Group='grouphaste', Spells={'Hastening of Margator', 'Hastening of Jharin', 'Hastening of Cekenar', 'Hastening of Milyex', 'Hastening of Prokev', 'Hastening of Sviir', 'Hastening of Aransir', 'Hastening of Novak', 'Unified Alacrity', 'Hastening of Salik', 'Vallon\'s Quickening', 'Speed of the Brood'}, Options={alias='HASTE'}}, -- group haste
+--    {Group='haste', Spells={'Speed of Margator', 'Speed of Itzal', 'Speed of Cekenar', 'Speed of Milyex', 'Speed of Prokev', 'Speed of Sviir', 'Speed of Aransir', 'Speed of Novak', 'Visions of Grandeur', 'Augmentation', 'Alacrity', 'Quickness'}, Options={alias='SINGLEHASTE'}}, -- single target buff
+
     -- auras - mana, learners, spellfocus, combatinnate, disempower, rune, twincast
     {Group='twincast', Spells={'Twincast Aura'}, Options={aurabuff=true, condition=function() return Enchanter:get('AURA1') == Enchanter.spells.twincast.Name or Enchanter:get('AURA2') == Enchanter.spells.twincast.Name end}},
     {Group='regen', Spells={'Esoteric Aura', 'Marvel\'s Aura', 'Deviser\'s Aura'}, Options={aurabuff=true, condition=function() return Enchanter:get('AURA1') == Enchanter.spells.regen.Name or Enchanter:get('AURA2') == Enchanter.spells.regen.Name end}}, -- mana + end regen aura
@@ -214,7 +217,7 @@ Enchanter.SpellLines = {
 
     {Group='spasm', Spells={'Synaptic Seizure', 'Synapsis Spasm', 'Insipid Weakness', 'Listless Power', 'Feckless Might', 'Disempower', 'Ebbing Strength', 'Enfeeblement', 'Weaken'}, Options={debuff=true, opt='USECRIPPLE', emu=true, Gem=function(lvl) return (lvl <= 60 and 6) or (lvl == 70 and 2) or nil end}},--, condition=function() return mq.TLO.Target.Named() end}},
     {Group='dispel', Spells={'Abashi\'s Disempowerment', 'Recant Magic', 'Nullify Magic', 'Strip Enchantment', 'Cancel Magic', 'Taper Enchantment'}, Options={opt='USEDISPEL'}},
-    {Group='slow', Spells={'Tepid Deeds', 'Languid Pace'}, Options={opt='USESLOW', debuff=true, slow=true, Gem=function(lvl) return lvl <= 60 and 2 or nil end}},
+    {Group='slow', Spells={'Forlorn Deeds', 'Tepid Deeds', 'Languid Pace'}, Options={opt='USESLOW', debuff=true, slow=true, Gem=function(lvl) return lvl <= 60 and 2 or nil end}},
     {Group='charisma', Spells={'Overwhelming Splendor'}, Options={alias='CHA'}},
     {Group='boon', Spells={'Boon of the Legion'}}, Options={Gem=function(lvl) end, alias='BOON'}
 }

@@ -125,7 +125,7 @@ local version = 1.8
 -- Public default settings, also read in from Loot.ini [Settings] section
 local loot = {
     logger = logger,
-    Version = '"'..tostring(version)..'"',
+    Version = tostring(version),
     LootFile = mq.configDir .. '/Loot.ini',
     SettingsFile = mq.configDir.. '/LootNScoot_'..eqServer..'_'..eqChar..'.ini',
     GlobalLootOn = true,        -- Enable Global Loot Items. not implimented yet
@@ -239,7 +239,7 @@ local function loadSettings()
             loot[key] = value
         end
     end
-    if tonumber(loot.Version) < tonumber(version) then
+    if loot.Version and version and tonumber(loot.Version) < tonumber(version) then
         loot.Version = tostring(version)
         print('Updating Settings File to Version '..tostring(version))
         writeSettings()
@@ -1251,15 +1251,15 @@ end
 
 init({...})
 
-while not loot.Terminate do
-    if mq.TLO.Window('CharacterListWnd').Open() then loot.Terminate = true end -- exit sctipt if at char select.
-    -- if loot.DoLoot and not areFull then loot.lootMobs() end
-    if loot.DoLoot then loot.lootMobs() end
-    if doSell then loot.processItems('Sell') doSell = false end
-    if doBuy then loot.processItems('Buy') doBuy = false end
-    if doTribute then loot.processItems('Tribute') doTribute = false end
-    mq.doevents()
-    mq.delay(1000)
-end
+-- while not loot.Terminate do
+--     if mq.TLO.Window('CharacterListWnd').Open() then loot.Terminate = true end -- exit sctipt if at char select.
+--     -- if loot.DoLoot and not areFull then loot.lootMobs() end
+--     if loot.DoLoot then loot.lootMobs() end
+--     if doSell then loot.processItems('Sell') doSell = false end
+--     if doBuy then loot.processItems('Buy') doBuy = false end
+--     if doTribute then loot.processItems('Tribute') doTribute = false end
+--     mq.doevents()
+--     mq.delay(1000)
+-- end
 
 return loot

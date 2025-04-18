@@ -54,6 +54,7 @@ function Cleric:init()
     self:initClassOptions()
     self:loadSettings()
     table.insert(self.rezAbility, common.getItem('Exalted Glowing Bath Token'))
+    
     self:initSpellLines()
     self:initSpellRotations()
     self:initAbilities()
@@ -147,12 +148,12 @@ Cleric.SpellLines = {
     {-- multiple remedies main heals lvl 101+ or just 1 remedy below lvl 100. Slot 1, 2, 5
         Group='remedy',
         NumToPick=mq.TLO.Me.Level() < 101 and 1 or 2,
-        Spells={'Avowed Remedy', 'Guileless Remedy', 'Sincere Remedy', 'Merciful Remedy', 'Spiritual Remedy', 'Graceful Remedy', 'Faithful Remedy', 'Earnest Remedy', --[[emu cutoff]] 'Sacred Remedy', 'Pious Remedy', 'Supernal Remedy', 'Remedy'},
+        Spells={'Avowed Remedy', 'Guileless Remedy', 'Sincere Remedy', 'Merciful Remedy', 'Spiritual Remedy', 'Graceful Remedy', 'Faithful Remedy', 'Earnest Remedy', --[[emu cutoff]] 'Pious Remedy','Supernal Remedy','Ethereal Remedy', 'Sacred Remedy', 'Pious Remedy', 'Supernal Remedy', 'Remedy'},
         Options={Gems={1,2}, regular=true}
     },
     {-- emu or before remedies standard heal. Slot 2, otherwise slot 11
         Group='lightheal',
-        Spells={'Avowed Light', 'Fervent Light', 'Sincere Light', 'Merciful Light', 'Ardent Light', 'Reverent Light', 'Zealoud Light', 'Earnest Light', 'Devout Light', --[[emu cutoff]] 'Ancient: Hallowed Light', 'Pious Light', 'Holy Light', 'Divine Light', 'Healing Light', 'Superior Healing', 'Greater Healing', 'Healing', 'Light Healing', 'Minor Healing'},
+        Spells={'Avowed Light', 'Fervent Light', 'Sincere Light', 'Merciful Light', 'Ardent Light', 'Reverent Light', 'Zealoud Light', 'Earnest Light', 'Devout Light', --[[emu cutoff]] 'Supernal Light','Ethereal Light','Ancient: Hallowed Light', 'Pious Light', 'Holy Light', 'Divine Light', 'Healing Light', 'Superior Healing', 'Greater Healing', 'Healing', 'Light Healing', 'Minor Healing'},
         Options={Gem=function(lvl) return lvl < 101 and 2 or 11 end, tank=true, regular=true}
     },
     {-- Heal target + nuke targets target. Slot 3, 4
@@ -188,7 +189,7 @@ Cleric.SpellLines = {
     },
     {-- Regular group heal, slower than syllable. Slot 8
         Group='groupheal',
-        Spells={'Word of Acceptance', 'Word of Redress', 'Word of Soothing', 'Word of Mending', 'Word of Convalescence', 'Word of Renewal', 'Word of Recuperation', 'Word of Awakening', --[[emu cutoff]] },
+        Spells={'Word of Acceptance', 'Word of Redress', 'Word of Soothing', 'Word of Mending', 'Word of Convalescence', 'Word of Renewal', 'Word of Recuperation', 'Word of Awakening', 'Word of Healing',--[[emu cutoff]] },
         Options={Gem=8, threshold=3, group=true, emu=false},
     },
     {-- Group heal with cure component. Slot 8
@@ -249,7 +250,7 @@ Cleric.SpellLines = {
 
     -- Buffs
     {Group='aura', Spells={'Bastion of Divinity', 'Aura of Divinity'}, Options={aura=true, aurabuff=true, condition=function() return not state.emu or not mq.TLO.Me.AltAbility('Spirit Mastery')() end}},
-    {Group='spellhaste', Spells={'Hand of Devotion', 'Hand of Devoutness', 'Hand of Reverence', 'Hand of Sanctity', 'Hand of Zeal', 'Hand of Will', --[[emu cutoff]] 'Aura of Devotion'}, Options={selfbuff=true, classes={CLR=true,DRU=true,SHM=true,MAG=true,ENC=true,WIZ=true,NEC=true}, alias='SPELLHASTE', condition=function() return mq.TLO.EverQuest.Server() ~= 'Project Lazarus' end}},
+    {Group='spellhaste', Spells={'Hand of Devotion', 'Hand of Devoutness', 'Hand of Reverence', 'Hand of Sanctity', 'Hand of Zeal', 'Hand of Will', --[[emu cutoff]]'Blessing of Devotion','Blessing of Reverence', 'Aura of Devotion'}, Options={selfbuff=true, classes={CLR=true,DRU=true,SHM=true,MAG=true,ENC=true,WIZ=true,NEC=true}, alias='SPELLHASTE', condition=function() return mq.TLO.EverQuest.Server() ~= 'Project Lazarus' end}},
     {
         Group='groupaego',
         Spells={'Unified Hand of Infallibility', 'Unified Hand of Persistence', 'Unified Hand of Righteousness', 'Unified Hand of Assurance', 'Unified Hand of Surety', 'Hand of Reliance', --[[emu cutoff]] 'Hand of Conviction', 'Hand of Virtue', 'Blessing of Aegolism', 'Blessing of Temperance'},
@@ -285,17 +286,17 @@ Cleric.SpellLines = {
     },
     {Group='grouphotcure', Spells={'Avowed Acquittal', 'Devout Acquittal', 'Sincere Acquittal', 'Merciful Acquittal', 'Ardent Acquittal', --[[emu cutoff]] }, Options={opt='USEHOTGROUP', grouphot=true, emu=false}},
     {Group='grouphot', Spells={'Elixir of Realization', 'Elixir of Benevolence', 'Elixir of Transcendence', 'Elixir of Wulthan', 'Elixir of the Seas', --[[emu cutoff]] 'Elixir of Divinity'}, Options={Gem=function(lvl) return lvl <= 70 and 7 or nil end, opt='USEHOTGROUP', grouphot=true}},
-    {Group='hot', Spells={--[[emu cutoff]] 'Pious Elixir', 'Holy Elixir', 'Celestial Healing', 'Celestial Health', 'Celestial Remedy'}, Options={Gem=function(lvl) return lvl <= 70 and 3 or nil end, opt='USEHOT', hot=true, alias='HOT'}},
+    {Group='hot', Spells={--[[emu cutoff]] 'Supernal Elixir','Pious Elixir', 'Holy Elixir', 'Celestial Healing', 'Celestial Health', 'Celestial Remedy'}, Options={Gem=function(lvl) return lvl <= 70 and 3 or nil end, opt='USEHOT', hot=true, alias='HOT'}},
     -- left for compat
-    {Group='hottank', Spells={--[[emu cutoff]] 'Pious Elixir', 'Holy Elixir', 'Celestial Healing', 'Celestial Health', 'Celestial Remedy'}, Options={}},
-    {Group='hotdps', Spells={--[[emu cutoff]] 'Pious Elixir', 'Holy Elixir', 'Celestial Healing', 'Celestial Health', 'Celestial Remedy'}, Options={}},
+    {Group='hottank', Spells={--[[emu cutoff]] 'Pious Elixir','Supernal Elixir',  'Holy Elixir', 'Celestial Healing', 'Celestial Health', 'Celestial Remedy'}, Options={}},
+    {Group='hotdps', Spells={--[[emu cutoff]] 'Pious Elixir','Supernal Elixir', 'Holy Elixir', 'Celestial Healing', 'Celestial Health', 'Celestial Remedy'}, Options={}},
     {Group='issuance', Spells={'Issuance of Heroism', 'Issuance of Conviction', 'Issuance of Sincerity', 'Issuance of Mercy', 'Issuance of Spirit', --[[emu cutoff]] }, Options={emu=false}}, -- stationary ward heal, requires enemy on target
     {
         Group='mark',
         Spells={'Mark of Thormir', 'Mark of Ezra', 'Mark of Wenglawks', 'Mark of Shandral', 'Mark of the Vicarum', --[[emu cutoff]] 'Mark of the Blameless', 'Mark of the Righteous', 'Mark of Kings', 'Mark of Karn', 'Mark of Retribution'},
         Options={opt='USEDEBUFF', debuff=true, Gem=function(lvl) return lvl <= 70 and 9 or nil end, condition=function() return mq.TLO.Target.Named() end}
     },
-    {Group='yaulp', Spells={'Yaulp VI'}, Options={combat=true, ooc=false, opt='USEYAULP', selfbuff=true}},
+    {Group='yaulp', Spells={'Yaulp V', 'Yaulp VI'}, Options={combat=true, ooc=false, opt='USEYAULP', selfbuff=true}},
     {Group='hammerpet', Spells={'Unswerving Hammer of Justice'}, Options={Gem=function(lvl) return lvl <= 70 and not Cleric:isEnabled('USESTUN') and 11 or nil end, opt='USEHAMMER', precast=function() mq.cmdf('/mqt id %s', state.assistMobID) mq.delay(1) end}},
     {Group='rgc', Spells={'Remove Greater Curse'}, Options={cure=true,Curse=true, Gem=function(lvl) return lvl <= 70 and 12 or nil end}},
     {Group='stun', Spells={'Vigilant Condemnation', 'Sound of Divinity', 'Shock of Wonder', 'Holy Might', 'Stun'}, Options={opt='USESTUN', Gem=11}},
@@ -309,6 +310,11 @@ Cleric.allDPSSpellGroups = {'rebuke', 'contravention', 'stun', 'aestun', 'nuke'}
 
 Cleric.Abilities = {
     {
+        Type='Spell',
+        Name='Reviviscence',
+        Options={rez=true}
+    },
+    {
         Type='Item',
         Name='Water Sprinkler of Nem Ankh',
         Options={rez=true}
@@ -318,13 +324,16 @@ Cleric.Abilities = {
         Name='Blessing of Resurrection',
         Options={rez=true}
     },
-
     {
         Type='AA',
         Name='Divine Peace',
         Options={fade=true, opt='USEFADE', postcast=function() mq.delay(1000) mq.cmd('/makemevis') end}
     },
-
+    --[[ {
+        Type='Spell',
+        Name='Divine Aura',
+        Options={fade=true, opt='USEFADE', postcast=function() mq.delay(1000) mq.cmd('/makemevis') end}
+    }, ]]
     {
         Type='AA',
         Name='Turn Undead',

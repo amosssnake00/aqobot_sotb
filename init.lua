@@ -163,6 +163,7 @@ end
 local lootMyCorpseTimer = timer:new(2000)
 local reloadTimer = timer:new(60000)
 local function doLooting()
+    if true then return end --the fuck you are looting the corpse unrezzed...again!
     local myCorpse = mq.TLO.Spawn('pccorpse '..mq.TLO.Me.CleanName()..'\'s corpse radius 100')
     if mq.TLO.SpawnCount('pccorpse '..mq.TLO.Me.CleanName()..'\'s corpse radius 100')() > 1 and reloadTimer:expired() then mq.cmd('/reload') mq.delay(5000) reloadTimer:reset() end
     -- if not mq.TLO.Me.Combat() and mq.TLO.Me.CombatState() ~= 'COMBAT' and myCorpse() and lootMyCorpseTimer:expired() then

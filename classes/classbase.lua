@@ -1088,7 +1088,7 @@ function base:recover()
                 elseif ability.endurance and pct_end < (ability.threshold or config.get('RECOVERPCT')) and (ability.combat or combat_state ~= 'COMBAT') and (not ability.minhp or mq.TLO.Me.PctHPs() > ability.minhp) then
                     useAbility = ability
                     break
-                elseif not ability.mana and not ability.endurance and pct_mana < config.get('RECOVERPCT') then
+                elseif not ability.mana and not ability.endurance and ((mq.TLO.Me.Class.CanCast() and pct_mana < config.get('RECOVERPCT')) or (not mq.TLO.Me.Class.CanCast() and pct_end < config.get('RECOVERPCT'))) then
                     useAbility = ability
                 end
             end
