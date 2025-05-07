@@ -80,7 +80,7 @@ local Shaman = class:new()
     
 ]]
 function Shaman:init()
-    self.classOrder = {'heal', 'cure', 'assist', 'aggro', 'debuff', 'burn', 'cast', 'recover', 'rez', 'buff', 'rest', 'managepet'}
+    self.classOrder = {'heal', 'recover','cure', 'assist', 'aggro', 'debuff', 'burn', 'cast', 'rez', 'buff', 'rest', 'managepet'}
     self.spellRotations = {standard={},hybrid={},dps={},custom={}}
     self:initBase('SHM')
 
@@ -191,8 +191,8 @@ Shaman.SpellLines = {
     },
     {-- Below lvl 100 main heal. Slot 8
         Group='heal',
-        Spells={'Krasir\'s Mending', 'Ancient: Wilslik\'s Mending', 'Yoppa\'s Mending', 'Daluda\'s Mending', 'Chloroblast', 'Kragg\'s Salve', 'Superior Healing', 'Spirit Salve', 'Greater Healing', 'Healing', 'Light Healing', 'Minor Healing'},
-        Options={Gem=function(lvl) return (lvl <= 60 and 7) or (lvl < 105 and 8) or nil end, panic=true, regular=true, tank=true, pet=60}
+        Spells={'Krasir\'s Mending', 'Ancient: Wilslik\'s Mending', 'Yoppa\'s Mending', 'Tnarg\'s Mending', --[['Kragg\'s Mending',]]  'Daluda\'s Mending', 'Chloroblast', 'Kragg\'s Salve', 'Superior Healing', 'Spirit Salve', 'Greater Healing', 'Healing', 'Light Healing', 'Minor Healing'},
+        Options={Gem=function(lvl) return (lvl <= 70 and 7) or (lvl < 105 and 8) or nil end, panic=true, regular=true, tank=true, pet=60}
     },
     {-- DPS spellset. combo malo + DoT. Slot 9
         Group='malodot',
@@ -311,7 +311,7 @@ Shaman.SpellLines = {
     },
     {
         Group='singlefocus',
-        Spells={'Heroic Focusing', 'Vampyre Focusing', 'Kromrif Focusing', 'Wulthan Focusing', 'Doomscale Focusing', --[[emu cutoff]] 'Wunshi\'s Focusing', 'Harnessing of Spirit', 'Talisman of Attuna', 'Talisman of Tnarg', 'Inner Fire'},
+        Spells={'Heroic Focusing', 'Vampyre Focusing', 'Kromrif Focusing', 'Wulthan Focusing', 'Doomscale Focusing', --[[emu cutoff]] 'Wunshi\'s Focusing', 'Focus of Soul', 'Focus of Spirit', 'Harnessing of Spirit', 'Talisman of Attuna', 'Talisman of Tnarg', 'Inner Fire'},
         Options={alias='SINGLEFOCUS'}
     },
     {
@@ -332,7 +332,7 @@ Shaman.SpellLines = {
     },
 
     -- Utility
-    {Group='canni', Spells={'Cannibalize IV', 'Cannibalize III', 'Cannibalize II', 'Cannibalize'}, Options={Gem=function(lvl) return lvl <= 60 and 8 or nil end, recover=true, mana=true, threshold=70, combat=false, endurance=false, minhp=50, ooc=false}},
+    {Group='canni', Spells={'Cannibalize IV', 'Cannibalize III', 'Cannibalize II', 'Cannibalize'}, Options={Gem=function(lvl) return lvl <= 70 and 8 or nil end, recover=true, mana=true, threshold=70, combat=false, endurance=false, minhp=50, ooc=false}},
     {Group='pet', Spells={'Commune with the Wild', 'True Spirit', 'Frenzied Spirit', 'Vigilant Spirit', 'Companion Spirit'}, Options={opt='SUMMONPET', postcast=function() if Shaman.spells.pet.CastName == 'Commune with the Wild' and not PET_RACES[mq.TLO.Pet.Race.Name()] then mq.cmd('/pet leave') else common.petClicky() end end}},
     {Group='sow', Spells={'Pack Shrew', 'Spirit of the Shrew', 'Spirit of Bih`Li', 'Spirit of Wolf'}, Options={alias='SOW'}},
     {Group='shrink', Spells={'Shrink'}, Options={alias='SHRINK'}},

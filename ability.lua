@@ -161,6 +161,8 @@ function Ability.shouldUseSpell(spell, skipSelfStack, skipTargetCheck)
                 result = (skipSelfStack or spell.Stacks()) and not mq.TLO.Me.Buff(spell.Name())() and not mq.TLO.Me.Song(spell.Name())()
             elseif spell.TargetType() == 'Single' then
                 result = skipTargetCheck or (dist and dist <= spell.MyRange() and spell.StacksTarget() and not mq.TLO.Target.Buff(spell.Name())())
+            elseif spell.TargetType() == 'Group v2' and state.class ~= 'BRD' then
+                result = skipTargetCheck or (dist and dist <= spell.MyRange() and spell.StacksTarget() and not mq.TLO.Target.Buff(spell.Name())())
             elseif spell.TargetType() == 'Pet' then
                 result = (mq.TLO.Pet.Distance3D() or 300) <= spell.MyRange() and spell.StacksPet() and not mq.TLO.Pet.Buff(spell.Name())()
             else

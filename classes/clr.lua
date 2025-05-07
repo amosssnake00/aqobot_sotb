@@ -169,7 +169,7 @@ Cleric.SpellLines = {
     },
     {-- large proc heal on near death. Slot 6
         Group='di',
-        Spells={'Divine Interference', 'Divine Mediation', 'Divine Intermediation', 'Divine Imposition', 'Divine Indemnification', 'Divine Interposition', 'Divine Invocation', 'Divine Intercession', --[[emu cutoff]] 'Divine Intervention'},
+        Spells={'Divine Interference', 'Divine Mediation', 'Divine Intermediation', 'Divine Imposition', 'Divine Indemnification', 'Divine Interposition', 'Divine Invocation', 'Divine Intercession', --[[emu cutoff]] 'Divine Intervention', 'Death Pact'},
         Options={Gem=6, alias='DI', classes={WAR=true,SHD=true,PAL=true}, nodmz=true, combatbuffothers=true}
     },
     {-- Large quick heal, heals more the lower the targets hp. Slot 7
@@ -271,7 +271,7 @@ Cleric.SpellLines = {
         Spells={'Symbol of Ealdun', --[[emu cutoff]] 'Symbol of Balikor', 'Symbol of Kazad', 'Symbol of Marzin', 'Symbol of Naltron', 'Symbol of Pinzarn', 'Symbol of Ryltan', 'Symbol of Transal'},
         Options={opt='USESYMBOL', classes={CLR=true,DRU=true,SHM=true,MAG=true,ENC=true,WIZ=true,NEC=true}, condition=function() return mq.TLO.SpawnCount('pc group class druid')() > 0 end, alias='SINGLESYMBOL'}
     },
-    {Group='armor', Spells={'Armor of the Avowed', 'Armor of Penance', 'Armor of Sincerity', 'Armor of the Merciful', 'Armor of the Ardent', --[[emu cutoff]] 'Armor of the Pious', 'Armor of the Zealot'}, Options={selfbuff=true}},
+    {Group='armor', Spells={'Armor of the Avowed', 'Armor of Penance', 'Armor of Sincerity', 'Armor of the Merciful', 'Armor of the Ardent', --[[emu cutoff]] 'Armor of the Pious', 'Armor of the Zealot', 'Armor of the Faithful'}, Options={selfbuff=true}},
     -- Group buff, cast on self when down, damage absorb then heal proc on fade. absorbs 4x non-greater version. Swap gem
     {Group='bigvie', Spells={'Rallied Greater Aegis of Vie', 'Rallied Greater Blessing of Vie', 'Rallied Greater Protection of Vie', 'Rallied Greater Guard of Vie', 'Rallied Greater Ward of Vie', --[[emu cutoff]] 'Panoply of Vie'}, Options={opt='USEVIE', alias='VIE', selfbuff=true, Gem=function(lvl) return lvl <= 70 and 4 or nil end}},
     -- Just use greater line instead
@@ -286,7 +286,7 @@ Cleric.SpellLines = {
     },
     {Group='grouphotcure', Spells={'Avowed Acquittal', 'Devout Acquittal', 'Sincere Acquittal', 'Merciful Acquittal', 'Ardent Acquittal', --[[emu cutoff]] }, Options={opt='USEHOTGROUP', grouphot=true, emu=false}},
     {Group='grouphot', Spells={'Elixir of Realization', 'Elixir of Benevolence', 'Elixir of Transcendence', 'Elixir of Wulthan', 'Elixir of the Seas', --[[emu cutoff]] 'Elixir of Divinity'}, Options={Gem=function(lvl) return lvl <= 70 and 7 or nil end, opt='USEHOTGROUP', grouphot=true}},
-    {Group='hot', Spells={--[[emu cutoff]] 'Supernal Elixir','Pious Elixir', 'Holy Elixir', 'Celestial Healing', 'Celestial Health', 'Celestial Remedy'}, Options={Gem=function(lvl) return lvl <= 70 and 3 or nil end, opt='USEHOT', hot=true, alias='HOT'}},
+    {Group='hot', Spells={--[[emu cutoff]] 'Pious Elixir','Supernal Elixir','Pious Elixir', 'Holy Elixir', 'Celestial Healing', 'Celestial Health', 'Celestial Remedy'}, Options={Gem=function(lvl) return lvl <= 70 and 3 or nil end, opt='USEHOT', hot=true, alias='HOT'}},
     -- left for compat
     {Group='hottank', Spells={--[[emu cutoff]] 'Pious Elixir','Supernal Elixir',  'Holy Elixir', 'Celestial Healing', 'Celestial Health', 'Celestial Remedy'}, Options={}},
     {Group='hotdps', Spells={--[[emu cutoff]] 'Pious Elixir','Supernal Elixir', 'Holy Elixir', 'Celestial Healing', 'Celestial Health', 'Celestial Remedy'}, Options={}},
@@ -300,20 +300,16 @@ Cleric.SpellLines = {
     {Group='hammerpet', Spells={'Unswerving Hammer of Justice'}, Options={Gem=function(lvl) return lvl <= 70 and not Cleric:isEnabled('USESTUN') and 11 or nil end, opt='USEHAMMER', precast=function() mq.cmdf('/mqt id %s', state.assistMobID) mq.delay(1) end}},
     {Group='rgc', Spells={'Remove Greater Curse'}, Options={cure=true,Curse=true, Gem=function(lvl) return lvl <= 70 and 12 or nil end}},
     {Group='stun', Spells={'Vigilant Condemnation', 'Sound of Divinity', 'Shock of Wonder', 'Holy Might', 'Stun'}, Options={opt='USESTUN', Gem=11}},
-    {Group='aestun', Spells={'Silent Dictation'}},
+    {Group='aestun', Spells={'Silent Dictation', 'Sacred Word'}},
     {Group='da', Spells={'Divine Bulwark', 'Divine Keep', 'Divine Indemnity', 'Divine Haven', 'Divine Fortitude', 'Divine Eminence', 'Divine Destiny', 'Divine Custody', --[[emu cutoff]] 'Divine Barrier', 'Divine Aura'}},
-    {Group='nuke', Spells={'Ancient: Pious Conscience'}, Options={opt='USENUKES', Gem=function(lvl) return lvl <= 70 and 10 or nil end}}
+    {Group='nuke', Spells={'Reproach', 'Ancient: Pious Conscience'}, Options={opt='USENUKES', Gem=function(lvl) return lvl <= 70 and 10 or nil end}},
+    {Group='rez', Spells={'Reviviscence'}, Options={rez=true}},
 }
 
 Cleric.compositeNames = {['Ecliptic Blessing']=true, ['Composite Blessing']=true, ['Dissident Blessing']=true, ['Undying Life']=true}
 Cleric.allDPSSpellGroups = {'rebuke', 'contravention', 'stun', 'aestun', 'nuke'}
 
 Cleric.Abilities = {
-    {
-        Type='Spell',
-        Name='Reviviscence',
-        Options={rez=true}
-    },
     {
         Type='Item',
         Name='Water Sprinkler of Nem Ankh',
@@ -329,15 +325,25 @@ Cleric.Abilities = {
         Name='Divine Peace',
         Options={fade=true, opt='USEFADE', postcast=function() mq.delay(1000) mq.cmd('/makemevis') end}
     },
-    --[[ {
-        Type='Spell',
-        Name='Divine Aura',
-        Options={fade=true, opt='USEFADE', postcast=function() mq.delay(1000) mq.cmd('/makemevis') end}
-    }, ]]
+    {
+        Type='AA',
+        Name='Bestow Divine Aura',
+        Options={fade=true, opt='USEFADE', precast=function() mq.TLO.Me.DoTarget() mq.delay(100) end, postcast=function() mq.delay(1000) mq.cmd('/makemevis') end}
+    }, 
+    {
+        Type='AA',
+        Name='Sanctuary',
+        Options={fade=true, opt='USEFADE'}
+    }, 
     {
         Type='AA',
         Name='Turn Undead',
         Options={dps=true, condition=function() return (mq.TLO.Target.PctHPs() or 100) < 95 and mq.TLO.Target.Body() == 'Undead' end},
+    },
+    {
+        Type='AA',
+        Name='Divine Ressurrection',
+        Options={classes={WAR=true,SHD=true,PAL=true}, rez=true}
     },
 
     -- Heal
@@ -370,6 +376,16 @@ Cleric.Abilities = {
         Type='AA',
         Name='Divine Arbitration',
         Options={heal=true, panic=true, grouppanic=true}
+    },
+    {
+        Type='AA',
+        Name='Radiant Cure',
+        Options={cure=true, all=true, self=true}
+    },
+    {
+        Type='AA',
+        Name='Purify Soul',
+        Options={cure=true, classes={WAR=true}}
     },
 
     -- Buff
@@ -454,6 +470,25 @@ Cleric.Abilities = {
         Name='Battle Frenzy',
         Options={first=true}
     },
+    {
+        Type='AA',
+        Name='Celestial Hammer',
+        Options={first=true}
+    },
+    {
+        Type='AA',
+        Name='Divine Avatar',
+        Options={first=true}
+    },
+    {
+        Type='AA',
+        Name='Divine Retribution',
+        Options={first=true}
+    },
+    
+    
+    
+
     -- table.insert(self.burnAbilities, self:addAA('Divine Avatar'))
     -- table.insert(self.burnAbilities, self:addAA('Celestial Hammer'))
 }
@@ -486,10 +521,10 @@ function Cleric:initHeals()
     table.insert(self.healAbilities, self.spells.groupheal)
     table.insert(self.healAbilities, self.spells.grouphealcure)
     table.insert(self.healAbilities, self.spells.grouphot)
-    -- table.insert(self.healAbilities, self.spells.hot)
-    -- table.insert(self.healAbilities, common.getItem('Weighted Hammer of Conviction', {tank=true, regular=true, panic=true, pet=60}))
-    -- table.insert(self.healAbilities, self.spells.hottank)
-    -- table.insert(self.healAbilities, self.spells.hotdps)
+    table.insert(self.healAbilities, self.spells.hot)
+    table.insert(self.healAbilities, common.getItem('Weighted Hammer of Conviction', {tank=true, regular=true, panic=true, pet=60}))
+    table.insert(self.healAbilities, self.spells.hottank)
+    table.insert(self.healAbilities, self.spells.hotdps)
 end
 
 return Cleric

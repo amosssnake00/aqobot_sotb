@@ -46,10 +46,12 @@ constants.commandHelp = {
 
 constants.bufflines = {
     -- Standard Buffs
-    {key='AEGO', label='Aegolism (Cleric HP/AC)', category='Standard', exclusivewith='SYMBOL, SKIN'},
+    {key='AEGO', label='Aegolism (Cleric HP/AC)', category='Standard', exclusivewith='SYMBOL, SKIN, SINGLEAEGO'},
+    {key='SINGLEAEGO', label='Aegolism (Cleric HP/AC)', category='Standard', exclusivewith='SYMBOL, SKIN, AEGO'},
     {key='SYMBOL', label='Symbol (Cleric HP)', category='Standard', exclusivewith='AEGO'},
     {key='SKIN', label='Skin (Druid HP)', category='Standard', exclusivewith='AEGO'},
-    {key='FOCUS', label='Focus (Shaman HP)', category='Standard'},
+    {key='FOCUS', label='Focus (Shaman HP)', category='Standard', exclusivewith='SINGLEFOCUS'},
+    {key='SINGLEFOCUS', label='Focus (Shaman HP)', category='Standard', exclusivewith='FOCUS'},
     {key='HASTE', label='Haste', category='Standard'},
     {key='EPICHASTE', label='Enc Epic Haste', category='Standard'},
     {key='KEI', label='Clarity', category='Standard'},

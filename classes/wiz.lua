@@ -51,7 +51,7 @@ Wizard.SpellLines = {
     {Group='harvest', Spells={'Harvest'}, Options={Gem=9, opt='USEHARVEST', condition=function() return not state.burn_active end}},
     {Group='rune', Spells={'Ether Skin'}, Options={selfbuff=true, Gem=10}},
     {Group='dispel', Spells={'Annul Magic', 'Nullify Magic', 'Cancel Magic'}, Options={debuff=true, dispel=true, opt='USEDISPEL',}},-- Gem=11}},
-    {Group='hpbuff', Spells={'Ether Shield', 'Greater Shielding', 'Major Shielding', 'Shielding', 'Lesser Shielding', 'Minor Shielding'}, Options={selfbuff=true, Gem=12}},
+    {Group='hpbuff', Spells={'Ether Shield', 'Greater Shielding', 'Major Shielding', 'Shielding', 'Lesser Shielding', 'Minor Shielding'}, Options={selfbuff=true}},
 
     {Group='largeice', Spells={'Gelidin Comet', 'Ice Meteor', 'Ice Comet'}, Options={}},-- Gem=3
     {Group='smallice', Spells={'Claw of Vox', 'Spark of Ice', 'Claw of Frost', 'Ice Shock', 'Frost Shock', 'Shock of Ice', 'Blast of Cold'}, Options={}},-- Gem=1
@@ -144,7 +144,11 @@ Wizard.Abilities = {
         Name='Kerafyrm\'s Prismatic Familiar',
         Options={selfbuff=true}
     },
-
+    {
+        Type='AA',
+        Name='Ro\'s Flaming Familiar',
+        Options={selfbuff=true}
+    },
     {
         Type='AA',
         Name='Concussive Intuition',

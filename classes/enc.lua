@@ -193,7 +193,7 @@ Enchanter.SpellLines = {
     {Group='stunaerune', Spells={'Polyluminous Rune', 'Polycascading Rune', 'Polyfluorescent Rune', 'Ethereal Rune', 'Arcane Rune'}, Options={selfbuff=true, condition=function() return not mq.TLO.FindItem('Mindreaver\'s Leggings of Coercion')() end}}, -- self rune, proc ae stun on fade
 
     {Group='pet', Spells={'Flariton\'s Animation', 'Constance\'s Animation', 'Omica\'s Animation', 'Nureya\'s Animation', 'Gordianus\' Animation', 'Xorlex\'s Animation', 'Seronvall\'s Animation', 'Novak\'s Animation', --[[emu cutoff]] 'Salik\'s Animation', 'Aeidorb\'s Animation', 'Boltran\'s Animation', 'Uleen\'s Animation', 'Sagar\'s Animation', 'Sisna\'s Animation', 'Shalee\'s Animation', 'Kilan\'s Animation', 'Myrcil\'s Animation', 'Juli\'s Animation', 'Pendril\'s Animation'}, Options={postcast=function() common.petClicky() end}},
-    {Group='pethaste', Spells={'Invigorated Minion'}, Options={petbuff=true}},
+    {Group='pethaste', Spells={'Invigorated Minion', 'Speed of Vallon'}, Options={petbuff=true}},
     -- buffs
     -- {Group='unified', Spells={'Unified Alacrity'}, Options={emu=true, alias='KEI', selfbuff=true}},
     {Group='resmagicgroup', Spells={'Guard of Druzzil', 'Group Resist Magic'}, Options={alias='RESMAGIC', selfbuff=true, condition=function() return mq.TLO.EverQuest.Server() ~= 'Project Lazarus' end}},
@@ -217,7 +217,7 @@ Enchanter.SpellLines = {
 
     {Group='spasm', Spells={'Synaptic Seizure', 'Synapsis Spasm', 'Insipid Weakness', 'Listless Power', 'Feckless Might', 'Disempower', 'Ebbing Strength', 'Enfeeblement', 'Weaken'}, Options={debuff=true, opt='USECRIPPLE', emu=true, Gem=function(lvl) return (lvl <= 60 and 6) or (lvl == 70 and 2) or nil end}},--, condition=function() return mq.TLO.Target.Named() end}},
     {Group='dispel', Spells={'Abashi\'s Disempowerment', 'Recant Magic', 'Nullify Magic', 'Strip Enchantment', 'Cancel Magic', 'Taper Enchantment'}, Options={opt='USEDISPEL'}},
-    {Group='slow', Spells={'Forlorn Deeds', 'Tepid Deeds', 'Languid Pace'}, Options={opt='USESLOW', debuff=true, slow=true, Gem=function(lvl) return lvl <= 60 and 2 or nil end}},
+    {Group='slow', Spells={'Forlorn Deeds', 'Tepid Deeds', 'Languid Pace'}, Options={opt='USESLOW', debuff=true, slow=true, Gem=function(lvl) return lvl <= 70 and 6 or nil end}},
     {Group='charisma', Spells={'Overwhelming Splendor'}, Options={alias='CHA'}},
     {Group='boon', Spells={'Boon of the Legion'}}, Options={Gem=function(lvl) end, alias='BOON'}
 }

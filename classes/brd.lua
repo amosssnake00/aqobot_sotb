@@ -52,8 +52,9 @@ function Bard:initClassOptions()
     self:addOption('USEFROSTDOTS', 'Use Frost DoT', false, nil, 'Toggle use of Frost DoT songs if they are in the selected song list', 'checkbox', nil, 'UseFrostDoTs', 'bool')
     self:addOption('USEPOISONDOTS', 'Use Poison DoT', false, nil, 'Toggle use of Poison DoT songs if they are in the selected song list', 'checkbox', nil, 'UsePoisonDoTs', 'bool')
     self:addOption('USEDISEASEDOTS', 'Use Disease DoT', false, nil, 'Toggle use of Disease DoT songs if they are in the selected song list', 'checkbox', nil, 'UseDiseaseDoTs', 'bool')
-    self:addOption('USEREGENSONG', 'Use Regen Song', false, nil, 'Toggle use of hp/mana regen song line', 'checkbox', nil, 'UseRegenSong', 'bool')
+    self:addOption('USEREGENSONG', 'Use Regen Song', false, nil, 'Toggle use of hp/mana/heal regen song line', 'checkbox', nil, 'UseRegenSong', 'bool')
     self:addOption('USESELOSAA', 'Use Selos AA', false, nil, 'Toggle use of Selos AA', 'checkbox', nil, 'UseSelosAA', 'bool')
+    self:addOption('USESELOS', 'Use Selos', false, nil, 'Toggle use of Selos at all', 'checkbox', nil, 'UseSelos', 'bool')
     self:addOption('USEJONTHANS', 'Use Jonthans', false, nil, 'Toggle use Jonthans self-only song', 'checkbox', nil, 'UseJonthans', 'bool')
     self:addOption('USEAMPLIFICATION', 'Use Amplification', false, nil, 'Toggle use of Amplification song', 'checkbox', nil, 'UseAmplification', 'bool')
     self:addOption('USERESISTS', 'Use Resist Song', false, nil, 'Toggle use of Resists song', 'checkbox', nil, 'UseResists', 'bool')
@@ -129,12 +130,12 @@ Bard.SpellLines = {
     },
     {-- single target mez. Slot 8
         Group='mezst',
-        Spells={'Slumber of Suja', 'Slumber of the Diabo', 'Slumber of Zburator', 'Slumber of Jembel', 'Slumber of Silisia', --[[emu cutoff]] 'Dreams of Thule', 'Vulka\'s Lullaby', 'Creeping Dreams', 'Lullaby of Morell', 'Sionachie\'s Dreams', 'Crission\'s Pixie Strike', 'Kelin\'s Lucid Lullaby'},
+        Spells={'Slumber of Suja', 'Slumber of the Diabo', 'Slumber of Zburator', 'Slumber of Jembel', 'Slumber of Silisia', --[[emu cutoff]] 'Vulka\'s Lullaby', 'Luvwen\'s Lullaby','Lullaby of Morell','Dreams of Terris', 'Dreams of Thule', 'Vulka\'s Lullaby', 'Creeping Dreams', 'Lullaby of Morell', 'Sionachie\'s Dreams', 'Crission\'s Pixie Strike', 'Kelin\'s Lucid Lullaby'},
         Options={opt='MEZST', Gem=8}
     },
     {-- aoe mez. Slot 9
         Group='mezae',
-        Spells={'Wave of Stupor', 'Wave of Nocturn', 'Wave of Sleep', 'Wave of Somnolence', 'Wave of Torpor', --[[emu cutoff]] },
+        Spells={'Wave of Stupor', 'Wave of Nocturn', 'Wave of Sleep', 'Wave of Somnolence', 'Wave of Torpor', --[[emu cutoff]] 'Creeping Dreams', },
         Options={opt='MEZAE', Gem=9}
     },
     {-- small heal hp, mana, end. Slot 10
@@ -144,8 +145,8 @@ Bard.SpellLines = {
     },
     {-- heal focus + regen. Slot 11
         Group='pulse',
-        Spells={'Pulse of August', 'Pulse of Nikolas', 'Pulse of Vhal`Sera', 'Pulse of Xigarn', 'Pulse of Sionachie', --[[emu cutoff]] 'Cantata of Replenishment', 'Cantata of Life', 'Chorus of Life', 'Wind of Marr', 'Chorus of Marr', 'Chorus of Replenishment', 'Cantata of Soothing', 'Hymn of Restoration'},
-        Options={opt='USEREGENSONG', Gem=function(lvl) return (lvl <= 20 and 7) or (lvl >= 34 and lvl <= 60 and 7) or 11 end}
+        Spells={'Pulse of August', 'Pulse of Nikolas', 'Pulse of Vhal`Sera', 'Pulse of Xigarn', 'Pulse of Sionachie', --[[emu cutoff]]},
+        Options={opt='USEREGENSONG', Gem=function(lvl) return (lvl <= 20 and 7) or (lvl >= 34 and lvl <= 70 and 7) or 11 end}
     },
     {-- DD+melee dmg bonus + small heal. Slot 12
         Group='composite',
@@ -171,22 +172,22 @@ Bard.SpellLines = {
     -- Voice of Suja, charm
     -- Zinnia's Melodic Binding, PB slow
     -- haste song doesn't stack with enc haste?
-    {Group='overhaste', Spells={'Ancient: Call of Power', 'Warsong of the Vah Shir', 'Battlecry of the Vah Shir'}, Options={Gem=function(lvl) return state.emu and 1 or nil end}},
-    {Group='bardhaste', Spells={'Verse of Veeshan', 'Psalm of Veeshan', 'Composition of Ervaj'}, Options={Gem=function(lvl) return state.emu and 5 or nil end}},
-    {Group='emuhaste', Spells={'Warsong of Zek','War March of Muram', 'War March of the Mastruq', 'McVaxius\' Rousing Rondo', 'McVaxius\' Berserker Crescendo', 'Vilia\'s Verses of Celerity', 'Anthem de Arms'}},
+    {Group='overhaste', Spells={'Ancient: Call of Power', 'Rizlona\'s Call of Flame','Warsong of the Vah Shir', 'Battlecry of the Vah Shir'}, Options={Gem=function(lvl) return state.emu and 1 or nil end}},
+    {Group='bardhaste', Spells={'Verse of Veeshan',  'Composition of Ervaj'}, Options={Gem=function(lvl) return state.emu and 5 or nil end}},
+    {Group='emuhaste', Spells={'War March of Muram','War March of the Mastruq','Warsong of Zek','War March of Muram', 'War March of the Mastruq', 'McVaxius\' Rousing Rondo', 'McVaxius\' Berserker Crescendo', 'Vilia\'s Verses of Celerity', 'Anthem de Arms'}},
     {Group='snare', Spells={'Selo\'s Assonant Strain','Selo\'s Consonant Chain'}, Options={opt='USESNARE'}},
     {Group='debuff', Spells={'Harmony of Sound'}},
     {Group='jonthans', Spells={'Jonthan\'s Inspiration', 'Jonthan\'s Whistling Warsong'}, Options={opt='USEJONTHANS'}},
     {Group='magicweapons', Spells={'Magical Monologue'}, Options={}},
     {Group='chantmagic', Spells={'Fufil\'s Curtailing Chant'}, Options={}},
-    {Group='selos', Spells={'Selo\'s Accelerating Chorus', 'Selo\'s Rhythm of Speed', 'Selo\'s Accelerando'}, Options={alias='SELOS', Gem=function(lvl) return lvl <= 70 and 10 or nil end}},
+    {Group='selos', Spells={'Selo\'s Accelerating Chorus', 'Selo\'s Rhythm of Speed', 'Selo\'s Accelerando'}, Options={alias='SELOS', opt='USESELOS', Gem=function(lvl) return lvl <= 70 and 10 or nil end}},
 
     {Group='aedot', Spells={'Denon\'s Disruptive Discord', 'Chords of Dissonance'}, Options={'USEAOE'}},
     {Group='aeslow', Spells={'Largo\'s Melodic Binding'}, Options={}},
-    {Group='manasong', Spells={'Wind of Marr', 'Cassindra\'s Chorus of Clarity', 'Cassindra\'s Chant of Clarity'}, Options={}},
+    {Group='manasong', Spells={'Chorus of Life', 'Cantata of Life', 'Chorus of Marr', 'Wind of Marr', 'Ancient: Lcea\'s Lament', 'Chorus of Replenishment', 'Cantata of Replenishment', 'Cassindra\'s Chorus of Clarity', 'Cassindra\'s Chant of Clarity'},  Options={}},
     {Group='dispel', Spells={'Syvelian\'s Anti-Magic Aria', 'Alenia\'s Disenchanting Melody'}, Options={}},
     {Group='amplification', Spells={'Amplification'}, Options={opt='USEAMPLIFICATION', selfbuff=true, combatbuff=true}},
-    {Group='allresists', Spells={'Elemental Chorus'}, Options={opt='USERESISTS'}},
+    {Group='allresists', Spells={'Psalm of Veeshan', 'Elemental Chorus'}, Options={opt='USERESISTS'}},
 }
 
 Bard.compositeNames = {['Ecliptic Psalm']=true,['Composite Psalm']=true,['Dissident Psalm']=true,['Dichotomic Psalm']=true}
@@ -444,7 +445,7 @@ function Bard:initSpellRotations()
         table.insert(self.spellRotations.emuaura55, self.spells.emuhaste)
 
         table.insert(self.spellRotations.emunoaura, self.spells.selos)
-        table.insert(self.spellRotations.emunoaura, self.spells.pulse)
+        table.insert(self.spellRotations.emunoaura, self.spells.manasong)
         table.insert(self.spellRotations.emunoaura, self.spells.overhaste)
         table.insert(self.spellRotations.emunoaura, self.spells.emuhaste)
         table.insert(self.spellRotations.emunoaura, self.spells.allresists)

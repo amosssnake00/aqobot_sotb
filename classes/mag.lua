@@ -229,7 +229,7 @@ Magician.SpellLines = {
             'Firebolt of Tallon',                           -- [[MAG/61 - Mana: 515 - Cast: 7s - Recast 1,5s  - Duration: 0s - Resist: Fire  - Target: Line of Sight - Effects: 1: Decrease Current HP by 2100 ]]
             'Seeking Flame of Seukor',                      -- [[MAG/59 - Mana: 413 - Cast: 6,5s - Recast 1,5s  - Duration: 0s - Resist: Fire  - Target: Line of Sight - Effects: 1: Decrease Current HP by 1607 ]]
             'Char',                                         -- [[MAG/52 - Mana: 291 - Cast: 6s - Recast 1,5s  - Duration: 0s - Resist: Fire  - Target: Single - Effects: 1: Decrease Current HP by 974 ]]
-          --[[   'Cinder Bolt',                                  -- [[MAG/33 - Mana: 165 - Cast: 4s - Recast 1,5s  - Duration: 0s - Resist: Fire  - Target: Line of Sight - Effects: 1: Decrease Current HP by 510 ]]
+        --[[   'Cinder Bolt', ]]                                  -- [[MAG/33 - Mana: 165 - Cast: 4s - Recast 1,5s  - Duration: 0s - Resist: Fire  - Target: Line of Sight - Effects: 1: Decrease Current HP by 510 ]]
             'Blaze',                                        -- [[MAG/31 - Mana: 136 - Cast: 4s - Recast 1,5s  - Duration: 0s - Resist: Fire  - Target: Single - Effects: 1: Decrease Current HP by 418 ]]
             'Bolt of Flame',                                -- [[MAG/18 - Mana: 102 - Cast: 3s - Recast 1,5s  - Duration: 0s - Resist: Fire  - Target: Line of Sight - Effects: 1: Decrease Current HP by 297 ]]
             'Shock of Flame',                               -- [[MAG/15 - Mana: 48 - Cast: 2,5s - Recast 1,5s  - Duration: 0s - Resist: Fire  - Target: Single - Effects: 1: Decrease Current HP by 122 ]]

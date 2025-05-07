@@ -1068,7 +1068,11 @@ end
 
 function base:recover()
     if common.amIDead() then return end
-    if constants.DMZ[mq.TLO.Zone.ID()] or (mq.TLO.Me.Level() == 70 and mq.TLO.Me.MaxHPs() < 6000) or mq.TLO.Me.Buff('Resurrection Sickness')() then return end
+    -- hum 6k...
+    --if constants.DMZ[mq.TLO.Zone.ID()] or (mq.TLO.Me.Level() == 70 and mq.TLO.Me.MaxHPs() < 6000) or mq.TLO.Me.Buff('Resurrection Sickness')() then return end
+    if constants.DMZ[mq.TLO.Zone.ID()] or mq.TLO.Me.Buff('Resurrection Sickness')() then 
+        return end
+
     if self.recoverClass then self:recoverClass() end
     -- modrods
     common.checkMana()
@@ -1094,7 +1098,7 @@ function base:recover()
             end
         end
         if useAbility and useAbility:isReady() == abilities.IsReady.SHOULD_CAST then
-            if mq.TLO.Me.MaxHPs() < 6000 then return end
+            -- if mq.TLO.Me.MaxHPs() < 6000 then return end
             local originalTargetID = 0
             if useAbility.TargetType == 'Single' and mq.TLO.Target.ID() ~= mq.TLO.Me.ID() then
                 originalTargetID = mq.TLO.Target.ID()
