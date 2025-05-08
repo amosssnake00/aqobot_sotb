@@ -81,7 +81,7 @@ function tank.findMobToTank()
     for id,_ in pairs(state.targets) do
         -- loop through for named, highest level, unmezzed, lowest hp
         local mob = mq.TLO.Spawn(id)
-        if mob() then
+        if mob.Aggressive() then -- this seems to fix attacking swarm pets. Side effects: unknown?
             local name = mob.CleanName() or ''
             if firstid == 0 then firstid = mob.ID() firstname = name end
             if mob.Named() then
