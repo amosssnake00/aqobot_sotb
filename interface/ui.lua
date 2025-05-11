@@ -209,6 +209,7 @@ local function drawBurnTab()
     if class.drawBurnTab then class:drawBurnTab() end
 end
 
+-- TODO: enable polygon pull, add 3 points to enter, when 3+ entered, add one point (until 10) - do center calc when polygon changes
 local function drawPullTab()
     local x,_ = ImGui.GetContentRegionAvail()
     local buttonWidth = (x / 2) - 4

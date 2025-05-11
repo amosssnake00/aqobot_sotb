@@ -22,6 +22,7 @@ end
 
 local PULL_TARGET_SKIP = {}
 
+local polygon = config.get('POLYGON')
 -- mob at 135, SE
 -- pull arc left 90
 -- pull arc right 180
@@ -84,6 +85,124 @@ local function checkPathLength(pull_spawn)
     return path_len
 end
 
+---Checks if a point is inside a polygon using the Ray Casting algorithm.
+---@param point_x number @The x-coordinate of the point to check.
+---@param point_y number @The y-coordinate of the point to check.
+---@param polygon table @A table of ordered vertices, where each vertex is a table {x_coord, y_coord}, e.g., {{x1,y1}, {x2,y2}, ...}.
+---@return boolean @True if the point is inside the polygon, false otherwise.
+local function isPointInPolygon(point_x, point_y, polygon)
+    -- Validate the input point's coordinates first
+    if not point_x or not point_y then
+        -- Consider adding a logger.debug here if this case should be exceptional
+        -- logger.debug(logger.flags.routines.pull, "isPointInPolygon: Received nil for point_x or point_y.")
+        return false
+    end
+
+    local numVertices = #polygon
+    if numVertices < 3 then
+        -- logger.debug(logger.flags.routines.pull, "isPointInPolygon: Polygon has less than 3 vertices.")
+        return false -- Not a polygon
+    end
+
+    local inside = false
+
+    -- p1 is the last vertex in the polygon, forming the first edge with polygon[1]
+    local p1x = polygon[numVertices][1]
+    local p1y = polygon[numVertices][2]
+
+    -- Robustness: Check if the initial polygon vertex is valid
+    if not p1x or not p1y then
+        logger.debug(logger.flags.routines.pull, "isPointInPolygon: Invalid coordinates for vertex %d in polygon.",
+            numVertices)
+        return false
+    end
+
+    for i = 1, numVertices do
+        -- p2 is the current vertex in the loop
+        local p2x = polygon[i][1]
+        local p2y = polygon[i][2]
+
+        -- Robustness: Check if the current polygon vertex is valid
+        if not p2x or not p2y then
+            logger.debug(logger.flags.routines.pull, "isPointInPolygon: Invalid coordinates for vertex %d in polygon.", i)
+            return false -- Invalid polygon structure
+        end
+
+        -- Check if the horizontal ray crosses the edge (p1x,p1y) to (p2x,p2y)
+        -- (point_y < p2y) ~= (point_y < p1y) checks if the edge straddles the horizontal line at point_y
+        if (point_y < p2y) ~= (point_y < p1y) then
+            -- Calculate the x-intersection of the ray and the edge's extended line.
+            -- This check is only performed if the edge is not horizontal (p1y ~= p2y),
+            -- because if p1y == p2y, the first condition ((point_y < p2y) ~= (point_y < p1y)) will be false.
+            if point_x < (p1x - p2x) * (point_y - p2y) / (p1y - p2y) + p2x then
+                inside = not inside -- Toggle the inside state for each crossing
+            end
+        end
+
+        -- Move to the next edge: current p2 becomes the new p1
+        p1x = p2x
+        p1y = p2y
+    end
+
+    return inside
+end
+
+--- Calculates the center and radius based on the longest segment of a polygon.
+--- The center is the midpoint of the longest segment.
+--- The radius is half the length of this longest segment.
+--- @param polygon_points table @A table of ordered vertices, e.g., {{x1,y1}, {x2,y2}, ...}.
+--- @return table|nil @A table {x, y, radius} or nil if not enough points.
+local function calculatePolygonCenterAndRadius(polygon_points)
+    if not polygon_points or #polygon_points < 2 then -- Need at least 2 points to form a segment
+        logger.debug(logger.flags.routines.pull, 'Polygon has less than 2 points for center calculation.')
+        return nil
+    end
+
+    local max_distance_sq = 0
+    local p1_longest, p2_longest = nil, nil
+
+    if #polygon_points == 2 then -- Only one segment possible
+        p1_longest = polygon_points[1]
+        p2_longest = polygon_points[2]
+        if not p1_longest or not p2_longest or not p1_longest[1] or not p1_longest[2] or not p2_longest[1] or not p2_longest[2] then
+            logger.debug(logger.flags.routines.pull, 'Invalid point format in 2-point polygon for center calculation.')
+            return nil
+        end
+        max_distance_sq = (p2_longest[1] - p1_longest[1]) ^ 2 + (p2_longest[2] - p1_longest[2]) ^ 2
+    else -- More than 2 points, find the longest segment
+        for i = 1, #polygon_points - 1 do
+            for j = i + 1, #polygon_points do
+                local p1_seg = polygon_points[i]
+                local p2_seg = polygon_points[j]
+                if not p1_seg or not p2_seg or not p1_seg[1] or not p1_seg[2] or not p2_seg[1] or not p2_seg[2] then
+                    logger.debug(logger.flags.routines.pull,
+                        'Invalid point format in polygon for center calculation at indices %d, %d.', i, j)
+                    -- Optionally skip this pair or return nil early
+                    goto continue_outer_loop
+                end
+                local seg_dist_sq = (p2_seg[1] - p1_seg[1]) ^ 2 + (p2_seg[2] - p1_seg[2]) ^ 2
+                if seg_dist_sq > max_distance_sq then
+                    max_distance_sq = seg_dist_sq
+                    p1_longest = p1_seg
+                    p2_longest = p2_seg
+                end
+            end
+            ::continue_outer_loop::
+        end
+    end
+
+    if not p1_longest or not p2_longest then -- Should not happen if #polygon_points >= 2 and points are valid
+        logger.debug(logger.flags.routines.pull, 'Could not determine longest segment for polygon center calculation.')
+        return nil
+    end
+
+    local center_x = (p1_longest[1] + p2_longest[1]) / 2
+    local center_y = (p1_longest[2] + p2_longest[2]) / 2
+    local derived_radius = math.sqrt(max_distance_sq) / 2
+
+    return { x = center_x, y = center_y, radius = derived_radius }
+end
+
 ---Validate that the spawn is good for pulling
 ---@param pull_spawn MQSpawn @The MQ Spawn to validate.
 ---@param path_len number @The navigation path length to the spawn.
@@ -96,9 +215,16 @@ local function validatePull(pull_spawn, path_len, zone_sn)
             PULL_TARGET_SKIP[mob_id])
         return false
     end
-    return checkMobAngle(pull_spawn) and checkZRadius(pull_spawn) and checkMobLevel(pull_spawn) and
-        not config.ignoresContains(zone_sn, pull_spawn.CleanName())
+    if config.get('POLYGONPULL_ENABLED') then
+        return checkZRadius(pull_spawn) and checkMobLevel(pull_spawn) and
+            not config.ignoresContains(zone_sn, pull_spawn.CleanName()) and
+            isPointInPolygon(mq.TLO.Spawn(mob_id).X(), mq.TLO.Spawn(mob_id).Y(), polygon)
+    else
+        return checkMobAngle(pull_spawn) and checkZRadius(pull_spawn) and checkMobLevel(pull_spawn) and
+            not config.ignoresContains(zone_sn, pull_spawn.CleanName())
+    end
 end
+
 
 --local medding = false
 local healers = { CLR = true, DRU = true, SHM = true }
@@ -299,7 +425,8 @@ local function pullNavToMob(pull_spawn, announce_pull)
     if announce_pull then
         logger.info('Pulling \at%s\ax (\at%s\ax)', pull_spawn.CleanName(), pull_spawn.ID())
     end
-    if helpers.distance(mq.TLO.Me.X(), mq.TLO.Me.Y(), mob_x, mob_y) > 100 then
+       -- TODO: find proper pullability range and check for that - safety margin
+    if ((helpers.distance(mq.TLO.Me.X(), mq.TLO.Me.Y(), mob_x, mob_y) > 100) and config.get('PULLWITH') == 'melee') or (config.get('PULLWITH') ~= 'melee' and ( not pull_spawn.LineOfSight() or pull_spawn.Distance3D() > 200))  then
         logger.debug(logger.flags.routines.pull, 'Moving to pull target (\at%s\ax)', state.pullMobID)
         -- TODO: set timeout as parameter
         movement.navToSpawn('id ' .. state.pullMobID, 'dist=5', 1000)
@@ -410,7 +537,7 @@ local function pullEngage(pull_spawn)
                 mq.delay(1000,
                     function()
                         return mq.TLO.Me.TargetOfTarget.ID() == mq.TLO.Me.ID() or
-                        mq.TLO.Me.CombatState() == 'COMBAT'
+                            mq.TLO.Me.CombatState() == 'COMBAT'
                     end)
             end
             state.pullStatus = constants.pullStates.WAIT_FOR_AGGRO

@@ -393,7 +393,7 @@ Shaman.SpellLines = {
     },
     { -- regen
         Group='regen',
-        Spells={'Talisman of Perseverance', 'Chloroplast', 'Replenishment', 'Regeneration'},
+        Spells={'Talisman of Perseverance', 'Spirit of Perseverance', 'Chloroplast', 'Replenishment', 'Regeneration'},
         Options={alias='REGEN'}
     },
     { -- regen + wis bear form low level buff

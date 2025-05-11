@@ -89,7 +89,7 @@ function tank.findMobToTank()
                 state.tankMobID = mob.ID()
                 return true
             else--if not mob.Mezzed() then -- TODO: mez check requires targeting
-                if firstname and firstname:find('scarab') and not name:find('scarab') then
+                if firstname and firstname:find('scarab') and not name:find('scarab')  then
                     firstid = mob.ID()
                     firstname = mob.CleanName()
                 end

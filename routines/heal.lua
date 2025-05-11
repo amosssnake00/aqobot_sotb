@@ -315,7 +315,7 @@ function healing.massRez()
         local corpseName = corpse.Name()
         if corpseName then
             corpseName = corpseName:gsub('\'s corpse.*', '')
-            if not rezzedCorpses[corpseName] and (config:get('REZGROUP') and mq.TLO.Group.Member(corpseName)()) or (config.get('REZRAID') and mq.TLO.Raid.Member(corpseName)()) then
+            if not rezzedCorpses[corpseName] and (config.get('REZGROUP') and mq.TLO.Group.Member(corpseName)()) or (config.get('REZRAID') and (mq.TLO.Raid.Member(corpseName)() or mq.TLO.DanNet(corpseName)())) then
                 corpse.DoTarget()
                 mq.delay(100)
                 if mq.TLO.Target.Type() == 'Corpse' then
@@ -361,7 +361,7 @@ local function doRezFor(rezAbility)
     local corpseName = corpse.Name()
     if not corpseName then return false end
     corpseName = corpseName:gsub('\'s corpse.*', '')
-    if (config.get('REZGROUP') and mq.TLO.Group.Member(corpseName)()) or (config.get('REZRAID') and mq.TLO.Raid.Member(corpseName)()) then
+    if (config.get('REZGROUP') and mq.TLO.Group.Member(corpseName)()) or (config.get('REZRAID') and (mq.TLO.Raid.Member(corpseName)() or mq.TLO.DanNet(corpseName)())) then
         -- no corpse to rez
         if mq.TLO.Zone.ShortName() ~= 'poknowledge' then
             if not newCorpses[corpseName] and waitForZoning then

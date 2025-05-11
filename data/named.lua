@@ -39,6 +39,9 @@ return {
         ['Grizzleknot'] = true,
         ['Gnashmaw'] = true,
     },
+    ['wallofslaughter'] = {
+        ['Discordling Warfiend'] = true,
+    },
     ['everfrost'] = {
         ['Redwind'] = true,
         ['Martar IceBear'] = true,
