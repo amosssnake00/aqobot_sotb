@@ -121,20 +121,21 @@ function Ability:new(spellData, type)
     }
     setmetatable(ability, self)
     self.__index = self
-    for key,value in pairs(spellData) do
+    for key, value in pairs(spellData) do
         ability[key] = value
     end
     -- Prefer the type which was passed in over detecting the type
     if not ability.CastType then ability:setSpellType() end
     ability:setSpellData()
-    ability.timer = ability.timer or timer:new(1000) -- prevent spam, ready checks should be fine once the ability is actually on cd
+    ability.timer = ability.timer or
+    timer:new(1000)                                  -- prevent spam, ready checks should be fine once the ability is actually on cd
     ability.timer:reset(0)
     return ability
 end
 
 function Ability:tostring()
     local s = 'Ability['
-    for k,v in pairs(self) do
+    for k, v in pairs(self) do
         s = s .. k .. '=' .. tostring(v) .. ', '
     end
     s = s .. ']'
@@ -158,13 +159,17 @@ function Ability.shouldUseSpell(spell, skipSelfStack, skipTargetCheck)
             if spell.TargetType() == 'Self' then
                 -- skipselfstack == true when its a disc, so that a defensive disc can still replace a always up sort of disc
                 -- like war resolute stand should be able to replace primal defense
-                result = (skipSelfStack or spell.Stacks()) and not mq.TLO.Me.Buff(spell.Name())() and not mq.TLO.Me.Song(spell.Name())()
+                result = (skipSelfStack or spell.Stacks()) and not mq.TLO.Me.Buff(spell.Name())() and
+                not mq.TLO.Me.Song(spell.Name())()
             elseif spell.TargetType() == 'Single' then
-                result = skipTargetCheck or (dist and dist <= spell.MyRange() and spell.StacksTarget() and not mq.TLO.Target.Buff(spell.Name())())
+                result = skipTargetCheck or
+                (dist and dist <= spell.MyRange() and spell.StacksTarget() and not mq.TLO.Target.Buff(spell.Name())())
             elseif spell.TargetType() == 'Group v2' and state.class ~= 'BRD' then
-                result = skipTargetCheck or (dist and dist <= spell.MyRange() and spell.StacksTarget() and not mq.TLO.Target.Buff(spell.Name())())
+                result = skipTargetCheck or
+                (dist and dist <= spell.MyRange() and spell.StacksTarget() and not mq.TLO.Target.Buff(spell.Name())())
             elseif spell.TargetType() == 'Pet' then
-                result = (mq.TLO.Pet.Distance3D() or 300) <= spell.MyRange() and spell.StacksPet() and not mq.TLO.Pet.Buff(spell.Name())()
+                result = (mq.TLO.Pet.Distance3D() or 300) <= spell.MyRange() and spell.StacksPet() and
+                not mq.TLO.Pet.Buff(spell.Name())()
             else
                 -- no one to check stacking on, sure
                 result = true
@@ -185,8 +190,10 @@ function Ability.shouldUseSpell(spell, skipSelfStack, skipTargetCheck)
             elseif spell.TargetType() == 'Single' or spell.TargetType() == 'Targeted AE' then
                 local buff_duration = mq.TLO.Target.MyBuffDuration(spell.Name())() or 0
                 local cast_time = spell.MyCastTime() or 0
-                local debuffMissingOrFading = not mq.TLO.Target.MyBuff(spell.Name())() or buff_duration < cast_time + 3000
-                result = dist and dist <= spell.MyRange() and mq.TLO.Target.LineOfSight() and spell.StacksTarget() and debuffMissingOrFading and mq.TLO.Target.Type() ~= 'Corpse'
+                local debuffMissingOrFading = not mq.TLO.Target.MyBuff(spell.Name())() or
+                buff_duration < cast_time + 3000
+                result = dist and dist <= spell.MyRange() and mq.TLO.Target.LineOfSight() and spell.StacksTarget() and
+                debuffMissingOrFading and mq.TLO.Target.Type() ~= 'Corpse'
             else
                 -- no one to check stacking on, sure
                 result = true
@@ -195,14 +202,16 @@ function Ability.shouldUseSpell(spell, skipSelfStack, skipTargetCheck)
             if mq.TLO.Me.CurrentMana() > 0 and spell.Mana() > 0 and mq.TLO.Me.PctMana() < config.get('NUKEMANAMIN') then
                 result = false
             elseif spell.TargetType() == 'Single' or spell.TargetType() == 'LifeTap' or spell.TargetType() == 'Line of Sight' then
-                result = dist and dist <= spell.MyRange() and mq.TLO.Target.LineOfSight() and mq.TLO.Target.Type() ~= 'Corpse'
+                result = dist and dist <= spell.MyRange() and mq.TLO.Target.LineOfSight() and
+                mq.TLO.Target.Type() ~= 'Corpse'
             else
                 -- instant detrimental spell that requires no target, sure
                 result = true
             end
         end
     end
-    logger.debug(logger.flags.ability.validation, 'EXIT shouldUseSpell: \ag%s\ax=%s', spell.Name(), result and IsReady.SHOULD_CAST or IsReady.SHOULD_NOT_CAST)
+    logger.debug(logger.flags.ability.validation, 'EXIT shouldUseSpell: \ag%s\ax=%s', spell.Name(),
+        result and IsReady.SHOULD_CAST or IsReady.SHOULD_NOT_CAST)
     return result and IsReady.SHOULD_CAST or IsReady.SHOULD_NOT_CAST
 end
 
@@ -219,39 +228,46 @@ function Ability.canUseSpell(spell, spellTable, skipReagentCheck, skipCastingChe
     if not spellTable.timer:expired() then return IsReady.NOT_READY end
     if abilityType == AbilityTypes.Spell then
         if not mq.TLO.Me.Gem(spell.Name())() then
-            logger.debug(logger.flags.ability.validation, 'Spell not memorized (id=%s, name=%s, type=%s)', spell.ID(), spell.Name(), abilityType)
+            logger.debug(logger.flags.ability.validation, 'Spell not memorized (id=%s, name=%s, type=%s)', spell.ID(),
+                spell.Name(), abilityType)
             return IsReady.NOT_MEMMED
         end
         if not skipCastingCheck and not mq.TLO.Me.SpellReady(spell.Name())() then
-            logger.debug(logger.flags.ability.validation, 'Spell not ready (id=%s, name=%s, type=%s)', spell.ID(), spell.Name(), abilityType)
+            logger.debug(logger.flags.ability.validation, 'Spell not ready (id=%s, name=%s, type=%s)', spell.ID(),
+                spell.Name(), abilityType)
             return IsReady.NOT_READY
         end
     end
     if not skipCastingCheck then
         if state.class ~= 'BRD' then
             if mq.TLO.Me.Casting() or ((spellTable.MyCastTime or 0) > 0 and mq.TLO.Me.Moving()) then
-                logger.debug(logger.flags.ability.validation, 'Not in control or moving (id=%s, name=%s, type=%s)', spell.ID(), spell.Name(), abilityType)
+                logger.debug(logger.flags.ability.validation, 'Not in control or moving (id=%s, name=%s, type=%s)',
+                    spell.ID(), spell.Name(), abilityType)
                 return IsReady.BUSY
             end
         else
             if mq.TLO.Me.Casting() and spellTable.MyCastTime >= 500 then
-                logger.debug(logger.flags.ability.validation, 'Not in control or moving (id=%s, name=%s, type=%s)', spell.ID(), spell.Name(), abilityType)
+                logger.debug(logger.flags.ability.validation, 'Not in control or moving (id=%s, name=%s, type=%s)',
+                    spell.ID(), spell.Name(), abilityType)
                 return IsReady.BUSY
             end
         end
     end
     if abilityType ~= AbilityTypes.Item and (spell.Mana() > mq.TLO.Me.CurrentMana() or spell.EnduranceCost() > mq.TLO.Me.CurrentEndurance()) then
-        logger.debug(logger.flags.ability.validation, 'Not enough mana or endurance (id=%s, name=%s, type=%s)', spell.ID(), spell.Name(), abilityType)
+        logger.debug(logger.flags.ability.validation, 'Not enough mana or endurance (id=%s, name=%s, type=%s)',
+            spell.ID(), spell.Name(), abilityType)
         return IsReady.LOW_MANAEND
     end
     -- emu hack for bard for the time being, songs requiring an instrument are triggering reagent logic?
     if not skipReagentCheck then
-        for i=1,3 do
+        for i = 1, 3 do
             local reagentid = spell.ReagentID(i)()
             if reagentid ~= -1 then
                 local reagent_count = spell.ReagentCount(i)()
                 if mq.TLO.FindItemCount(reagentid)() < reagent_count then
-                    logger.debug(logger.flags.ability.validation, 'Missing Reagent for (id=%d, name=%s, type=%s, reagentid=%s)', spell.ID(), spell.Name(), abilityType, reagentid)
+                    logger.debug(logger.flags.ability.validation,
+                        'Missing Reagent for (id=%d, name=%s, type=%s, reagentid=%s)', spell.ID(), spell.Name(),
+                        abilityType, reagentid)
                     return IsReady.REAGENTS
                 end
             else
@@ -273,12 +289,14 @@ function Ability.use(theAbility, class, doSwap, skipShouldUseCheck, queuedAction
     logger.debug(logger.flags.ability.all, 'ENTER Ability.use \ag%s\ax', theAbility.Name)
     if theAbility.swap ~= nil then doSwap = theAbility.swap end
     local canUseResult = theAbility:canUse()
-    local isReady = (skipShouldUseCheck and canUseResult == IsReady.CAN_CAST and IsReady.SHOULD_CAST) or (skipShouldUseCheck and canUseResult) or theAbility:isReady()
+    local isReady = (skipShouldUseCheck and canUseResult == IsReady.CAN_CAST and IsReady.SHOULD_CAST) or
+    (skipShouldUseCheck and canUseResult) or theAbility:isReady()
     -- ability is ready or needs to be mem'd and swapping is enabled
     -- ability has no condition or condition is met
     -- ability has no associated config option or the config option is enabled
     -- ability is enabled (only applies to clickies)
-    if theAbility.opt == 'USEDOTS' and class and class:isEnabled('DOTNAMEDONLY') and not mq.TLO.Target.Named() then return result end
+    if theAbility.opt == 'USEDOTS' and class and class:isEnabled('DOTNAMEDONLY') and not mq.TLO.Target.Named() then return
+        result end
     if (isReady == IsReady.SHOULD_CAST or (isReady == IsReady.NOT_MEMMED and doSwap)) and (not theAbility.condition or theAbility:condition()) and (not class or class:isAbilityEnabled(theAbility.opt)) and (theAbility.enabled == nil or theAbility.enabled) then
         if theAbility.CastType == AbilityTypes.Spell and doSwap and not mq.TLO.Me.Gem(theAbility.CastName)() then
             -- swappings enabled for this spell so memorize it so it can be cast
@@ -366,11 +384,13 @@ function Spell:execute()
     logger.debug(logger.flags.ability.spell, 'ENTER Spell:execute \ag%s\ax', self.Name)
     local requiresTarget = self.TargetType == 'Single'
     if state.class == 'BRD' then
-        mq.cmd('/stopsong') mq.delay(1)
+        mq.cmd('/stopsong')
+        mq.delay(1)
     else
         mq.cmd('/stick pause')
     end
-    if logger.flags.announce.spell then logger.info('Casting \ag%s\ax%s', self.Name, requiresTarget and (' on \at%s\ax'):format(mq.TLO.Target.CleanName()) or '') end
+    if logger.flags.announce.spell then logger.info('Casting \ag%s\ax%s', self.Name,
+            requiresTarget and (' on \at%s\ax'):format(mq.TLO.Target.CleanName()) or '') end
     mq.cmdf('/cast "%s"', self.Name)
     state.setCastingState(self)
     return true
@@ -400,7 +420,8 @@ end
 ---@return boolean # Returns true if the disc is an active disc, otherwise false.
 function Disc:isActive()
     local spell = mq.TLO.Spell(self.Name)
-    return spell.IsSkill() and (tonumber(spell.Duration()) or 0) > 0 and spell.TargetType() == 'Self' and not spell.StacksWithDiscs()
+    return spell.IsSkill() and (tonumber(spell.Duration()) or 0) > 0 and spell.TargetType() == 'Self' and
+    not spell.StacksWithDiscs()
 end
 
 ---Determine whether a disc is ready, including checking whether the character is currently capable.
@@ -433,7 +454,8 @@ function Disc:execute()
         mq.delay(50)
     end
     if not self:isActive() or not mq.TLO.Me.ActiveDisc.ID() then
-        if logger.flags.announce.skill then logger.info('Use Disc: \ag%s\ax%s', self.Name, self.TargetType == 'Single' and (' on \at%s\ax'):format(mq.TLO.Target.CleanName()) or '') end
+        if logger.flags.announce.skill then logger.info('Use Disc: \ag%s\ax%s', self.Name,
+                self.TargetType == 'Single' and (' on \at%s\ax'):format(mq.TLO.Target.CleanName()) or '') end
         if self.Name:find('Composite') then
             mq.cmdf('/disc %s', self.ID)
         else
@@ -475,7 +497,8 @@ function AA:isReady()
     if mq.TLO.Me.AltAbilityReady(self.Name)() then
         local spell = mq.TLO.AltAbility(self.Name).Spell
         local canUse = Ability.canUseSpell(spell, self)
-        local result = canUse == IsReady.CAN_CAST and Ability.shouldUseSpell(spell, false, self.skipTargetCheck) or canUse
+        local result = canUse == IsReady.CAN_CAST and Ability.shouldUseSpell(spell, false, self.skipTargetCheck) or
+        canUse
         return result
     else
         return IsReady.NOT_READY
@@ -496,7 +519,8 @@ end
 function AA:execute()
     logger.debug(logger.flags.ability.aa, 'ENTER AA:execute \ag%s\ax', self.Name)
     if logger.flags.announce.aa then
-        logger.info('Use AA: \ag%s\ax%s', self.Name, self.TargetType == 'Single' and (' on \at%s\ax'):format(mq.TLO.Target.CleanName()) or '')
+        logger.info('Use AA: \ag%s\ax%s', self.Name,
+            self.TargetType == 'Single' and (' on \at%s\ax'):format(mq.TLO.Target.CleanName()) or '')
     end
     mq.cmdf('/alt activate %d', self.ID)
     state.setCastingState(self)
@@ -534,7 +558,8 @@ function Item:isReady(item)
     if state.subscription ~= 'GOLD' and item.Prestige() then return IsReady.CANT_USE_PRESTIGE end
     local spell = item.Clicky.Spell
     if spell() and item.Timer.TotalSeconds() == 0 then
-        if not spell.Beneficial() and (not mq.TLO.Target() or mq.TLO.Target.ID() == mq.TLO.Me.ID() or (mq.TLO.Target.PctHPs() or 100) >= 99) then return IsReady.NOT_READY end
+        if not spell.Beneficial() and (not mq.TLO.Target() or mq.TLO.Target.ID() == mq.TLO.Me.ID() or (mq.TLO.Target.PctHPs() or 100) >= 99) then return
+            IsReady.NOT_READY end
         if not spell.Beneficial() and mq.TLO.Target.Master.ID() ~= 0 then return IsReady.NOT_READY end
         local canUse = Ability.canUseSpell(spell, self)
         return canUse == IsReady.CAN_CAST and Ability.shouldUseSpell(spell) or canUse
@@ -561,8 +586,12 @@ end
 
 function Item:execute()
     logger.debug(logger.flags.ability.item, 'ENTER item:execute \ag%s\ax', self.Name)
-    if state.class == 'BRD' and mq.TLO.Me.Casting() and self.MyCastTime > 500 then mq.cmd('/stopcast') mq.delay(250) end
-    if logger.flags.announce.item then logger.info('Use Item: \ag%s\ax%s', self.Name, self.TargetType == 'Single' and (' on \at%s\ax'):format(mq.TLO.Target.CleanName()) or '') end
+    if state.class == 'BRD' and mq.TLO.Me.Casting() and self.MyCastTime > 500 then
+        mq.cmd('/stopcast')
+        mq.delay(250)
+    end
+    if logger.flags.announce.item then logger.info('Use Item: \ag%s\ax%s', self.Name,
+            self.TargetType == 'Single' and (' on \at%s\ax'):format(mq.TLO.Target.CleanName()) or '') end
     mq.cmdf('/useitem "%s"', self.Name)
     if self.isActiveDisc then
         mq.delay(1000, function() return not mq.TLO.Me.ItemReady(self.Name)() and mq.TLO.Me.ActiveDisc() end)
@@ -608,7 +637,8 @@ end
 
 function Skill:execute()
     logger.debug(logger.flags.ability.skill, 'ENTER skill:execute \ag%s\ax', self.Name)
-    if logger.flags.announce.skill then logger.info('Use skill: \ag%s\ax%s', self.Name, mq.TLO.Target() and (' on \at%s\ax'):format(mq.TLO.Target.CleanName()) or '') end
+    if logger.flags.announce.skill then logger.info('Use skill: \ag%s\ax%s', self.Name,
+            mq.TLO.Target() and (' on \at%s\ax'):format(mq.TLO.Target.CleanName()) or '') end
     mq.cmdf('/doability "%s"', self.Name)
     state.setCastingState(self)
     return true
@@ -651,7 +681,7 @@ function Ability.swapAndCast(spell, gem, class, skipReadyCheck, queuedAction)
     if not mq.TLO.Me.Gem(spell.Name)() then
         if gem > mq.TLO.Me.NumGems() then gem = 8 end
         if mq.TLO.Me.Gem(gem)() then
-            state.restore_gem = {Name=mq.TLO.Me.Gem(gem)(),gem=gem}
+            state.restore_gem = { Name = mq.TLO.Me.Gem(gem)(), gem = gem }
             state.restoreGemTimer:reset()
         end
         if not Ability.swapSpell(spell, gem, true) then
@@ -688,7 +718,7 @@ function Ability:setSpellType()
         self.CastType = AbilityTypes.Disc
     elseif mq.TLO.Me.Ability(self.CastName)() then
         self.CastType = AbilityTypes.Skill
-    elseif mq.TLO.FindItem('='..self.CastName)() then
+    elseif mq.TLO.FindItem('=' .. self.CastName)() then
         self.CastType = AbilityTypes.Item
     else
         self.CastType = AbilityTypes.None
@@ -701,7 +731,7 @@ function Ability:setSpellData()
         if tonumber(self.CastName) then
             itemRef = mq.TLO.FindItem(self.CastName)
         else
-            itemRef = mq.TLO.FindItem('='..self.CastName)
+            itemRef = mq.TLO.FindItem('=' .. self.CastName)
         end
         if not itemRef() then return end
 
@@ -717,7 +747,7 @@ function Ability:setSpellData()
             self.MustEquip = true
         end
         if itemRef.Clicky.RecastType() then
-            self.RecastTime = itemRef.Clicky.TimerID()*1000
+            self.RecastTime = itemRef.Clicky.TimerID() * 1000
         end
         self.timer = timer:new(self.RecastTime)
 
@@ -735,7 +765,7 @@ function Ability:setSpellData()
         local aaSpellRef = aaRef.Spell
         self:setCommonSpellData(aaSpellRef)
 
-        self.RecastTime = aaRef.ReuseTime()*1000
+        self.RecastTime = aaRef.ReuseTime() * 1000
         -- self.timer = timer:new(self.RecastTime)
         self.SpellName = aaSpellRef.Name()
         self.CastID = aaRef.ID()
@@ -765,7 +795,7 @@ function Ability:setSpellData()
     end
 end
 
----@param spellRef MQSpell # 
+---@param spellRef MQSpell #
 function Ability:setCommonSpellData(spellRef)
     self.SpellID = spellRef.ID()
     self.TargetType = spellRef.TargetType()
@@ -794,7 +824,7 @@ function Ability:setCommonSpellData(spellRef)
 
     if spellRef.HasSPA(374)() then
         -- Trigger spell SPA
-        for i=1,12 do
+        for i = 1, 12 do
             if spellRef.Attrib(i)() == 374 then
                 local triggerName = spellRef.Trigger(i).BaseName()
                 if spellRef.Trigger(i).HasSPA(58)() then
@@ -817,7 +847,7 @@ function Ability:setCommonSpellData(spellRef)
     elseif spellRef.HasSPA(470)() then
         self.CheckFor = spellRef.Trigger(1).BaseName()
     elseif spellRef.HasSPA(340)() then
-        for i=1,12 do
+        for i = 1, 12 do
             if spellRef.Attrib(i)() == 340 then
                 self.CheckFor = spellRef.Trigger(i).BaseName()
                 self.Duration = spellRef.Trigger(i).Duration()
@@ -847,16 +877,16 @@ function Ability:setCommonSpellData(spellRef)
 end
 
 return {
-    Types=AbilityTypes,
-    IsReady=IsReady,
-    canUse=Ability.canUse,
-    canUseSpell=Ability.canUseSpell,
-    use=Ability.use,
-    swapAndCast=Ability.swapAndCast,
-    swapSpell=Ability.swapSpell,
-    Spell=Spell,
-    Disc=Disc,
-    AA=AA,
-    Item=Item,
-    Skill=Skill,
+    Types = AbilityTypes,
+    IsReady = IsReady,
+    canUse = Ability.canUse,
+    canUseSpell = Ability.canUseSpell,
+    use = Ability.use,
+    swapAndCast = Ability.swapAndCast,
+    swapSpell = Ability.swapSpell,
+    Spell = Spell,
+    Disc = Disc,
+    AA = AA,
+    Item = Item,
+    Skill = Skill,
 }

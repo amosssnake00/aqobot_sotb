@@ -697,9 +697,7 @@ function config.fileExists(file_name)
     if f ~= nil then
         io.close(f)
         return true
-    else
-        return false
-    end
+    else return false end
 end
 
 ---Load common settings from settings file

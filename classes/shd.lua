@@ -112,51 +112,26 @@ ShadowKnight.SpellLines = {
     {
         Group = 'poison',
         Spells = { 'Blood of Shoru', 'Blood of Tearc', 'Blood of Inruku', 'Blood of Pain', --[[emu cutoff]] 'Heat Blood' },
-        Options = {
-            opt = 'USEDOTS',
-            Gem = function(lvl)
-                return (ShadowKnight:get('SPELLSET') == 'dps' and 6) or
-                    (lvl <= 60 and 4) or nil
-            end
-        }
+        Options = { opt = 'USEDOTS', Gem = function(lvl) return (ShadowKnight:get('SPELLSET') == 'dps' and 6) or
+            (lvl <= 60 and 4) or nil end }
     },
     { -- ST increase hate by 1. Slot 7
         Group = 'aeterror',
         Spells = { 'Animus', 'Antipathy', 'Dread Gaze' },
-        Options = {
-            aetank = true,
-            Gem = function() return ShadowKnight:get('SPELLSET') == 'standard' and 7 or nil end,
-            threshold = 2,
-            condition = function()
-                return
-                    mode.currentMode:isTankMode() and mq.TLO.Me.PctHPs() > 70 and conditions.mobsMissingAggro()
-            end
-        }
+        Options = { aetank = true, Gem = function() return ShadowKnight:get('SPELLSET') == 'standard' and 7 or nil end, threshold = 2, condition = function() return
+            mode.currentMode:isTankMode() and mq.TLO.Me.PctHPs() > 70 and conditions.mobsMissingAggro() end }
     },
     { -- AE lifetap + aggro. Slot 7
         Group = 'aetap',
         Spells = { 'Insidious Repudiation', 'Insidious Renunciation' },
-        Options = {
-            aetank = true,
-            opt = 'USEINSIDIOUS',
-            Gem = function()
-                return ShadowKnight:get('SPELLSET') ==
-                    'standard' and 7 or nil
-            end,
-            threshold = 2,
-            emu = false
-        }
+        Options = { aetank = true, opt = 'USEINSIDIOUS', Gem = function() return ShadowKnight:get('SPELLSET') ==
+            'standard' and 7 or nil end, threshold = 2, emu = false }
     },
     { -- DPS spellset. disease dot. Slot 7
         Group = 'disease',
         Spells = { 'Plague of the Fleawalker', 'Plague of Fleshrot', --[[emu cutoff]] 'Disease Cloud' },
-        Options = {
-            opt = 'USEDOTS',
-            Gem = function(lvl)
-                return (ShadowKnight:get('SPELLSET') == 'dps' and 7) or
-                    (lvl <= 60 and 3) or nil
-            end
-        }
+        Options = { opt = 'USEDOTS', Gem = function(lvl) return (ShadowKnight:get('SPELLSET') == 'dps' and 7) or
+            (lvl <= 60 and 3) or nil end }
     },
     { -- lifetap dot. Slot 8
         Group = 'dottap',
@@ -166,17 +141,9 @@ ShadowKnight.SpellLines = {
     { -- main hate spell. Slot 9
         Group = 'challenge',
         Spells = { 'Petition for Power', 'Parlay for Power', 'Terror of Thule', 'Aura of Hate', 'Scream of Pain', 'Scream of Hate' },
-        Options = {
-            tanking = true,
-            Gem = function(lvl)
-                return (ShadowKnight:get('SPELLSET') == 'standard' and 9) or
-                    (lvl <= 60 and 2) or nil
-            end,
-            condition = function()
-                return mode.currentMode:isTankMode() and
-                    mq.TLO.Me.PctHPs() > 70
-            end
-        }
+        Options = { tanking = true, Gem = function(lvl) return (ShadowKnight:get('SPELLSET') == 'standard' and 9) or
+            (lvl <= 60 and 2) or nil end, condition = function() return mode.currentMode:isTankMode() and
+            mq.TLO.Me.PctHPs() > 70 end }
     },
     { -- DPS spellset. corruption dot. Slot 9
         Group = 'corruption',
@@ -198,101 +165,49 @@ ShadowKnight.SpellLines = {
         Spells = { 'Krizad\'s Skin', 'Xenacious\' Skin', 'Decrepit Skin', 'Vampiric Embrace' },
         Options = { Gem = function(lvl) return lvl <= 70 and 8 or 12 end, selfbuff = true, combatbuff = true }
     },
-    {                                                                                                                       -- lifetap with hp/mana recourse. Slot 13
+    {                                                                                                                 -- lifetap with hp/mana recourse. Slot 13
         Group = 'bitetap',
-        Spells = { 'Charka\'s Bite', 'Cruor\'s Bite', 'Inruku\'s Bite', 'Zevfeer\'s Bite' },                                -- 'Ancient: Bite of Muram',
+        Spells = { 'Charka\'s Bite', 'Cruor\'s Bite', 'Inruku\'s Bite', 'Zevfeer\'s Bite' },                          -- 'Ancient: Bite of Muram',
         Options = { Gem = function(lvl) return lvl <= 70 and 4 or (ShadowKnight:isEnabled('USETORRENT') and 13) or 10 end } -- if state.emu then return nil else
     },
-    {                                                                                                                       -- Slot 13
+    {                                                                                                                 -- Slot 13
         Group = 'tap3',
         Spells = { 'Touch of Drendar' },
         Options = { Gem = 13 }
     },
 
-    { Group = 'alliance',   Spells = { 'Bloodletting Conjunction', 'Bloodletting Coalition', 'Bloodletting Covenant', 'Bloodletting Alliance' }, Options = { emu = false } },                                                                -- alliance
+    { Group = 'alliance', Spells = { 'Bloodletting Conjunction', 'Bloodletting Coalition', 'Bloodletting Covenant', 'Bloodletting Alliance' },                                                                  Options = { emu = false } }, -- alliance
     --['']={'Oppressor\'s Audacity', 'Usurper\'s Audacity'}), -- increase hate by a lot, does this get used?
 
-    { Group = 'acdis',      Spells = { 'Dire Squelch', 'Dire Seizure' },                                                                         Options = { opt = 'USEDOTS' } },                                                                -- disease + ac dot
+    { Group = 'acdis',    Spells = { 'Dire Squelch', 'Dire Seizure' },                                                                                                                                          Options = { opt = 'USEDOTS' } }, -- disease + ac dot
     --['']={'Odious Bargain', 'Despicable Bargain'}), -- ae hate nuke, does this get used?
     -- Short Term Buffs
     { Group = 'disruption', Spells = { 'Confluent Disruption', 'Scream of Death' } }, -- lifetap proc on heal
     --['']={'Impertinent Influence'}), -- ac buff, 20% dmg mitigation, lifetap proc, is this upgraded by xetheg's carapace? stacks?
     -- Pet
-    {
-        Group = 'pet',
-        Spells = { 'Minion of Fandrel', 'Minion of Itzal', 'Son of Decay', 'Invoke Death', 'Cackling Bones', 'Animate Dead', 'Restless Bones', 'Convoke Shadow', 'Bone Walk', 'Leering Corpse' },
-        Options = {
-            Gem = function(
-                lvl)
-                return lvl <= 60 and 8
-            end,
-            postcast = function() common.petClicky() end
-        }
-    },                                                                                                                                                                                                                                          -- pet
-    { Group = 'pethaste', Spells = { 'Gift of Fandrel', 'Gift of Itzal', 'Rune of Decay', 'Augmentation of Death', 'Augment Death', 'Strengthen Death' }, Options = { petbuff = true } },                                                       -- pet haste
+    { Group = 'pet',      Spells = { 'Minion of Fandrel', 'Minion of Itzal', 'Son of Decay', 'Invoke Death', 'Cackling Bones', 'Animate Dead', 'Restless Bones', 'Convoke Shadow', 'Bone Walk', 'Leering Corpse' }, Options = { Gem = function(
+        lvl) return lvl <= 60 and 8 end, postcast = function() common.petClicky() end } },                                                                                                                                                                                                                   -- pet
+    { Group = 'pethaste', Spells = { 'Gift of Fandrel', 'Gift of Itzal', 'Rune of Decay', 'Augmentation of Death', 'Augment Death', 'Strengthen Death' },                                                       Options = { petbuff = true } },                                                              -- pet haste
     -- Unity Buffs
-    {
-        Group = 'shroud',
-        Spells = { 'Shroud of Rimeclaw', 'Shroud of Zelinstein', 'Shroud of Discord', 'Black Shroud' },
-        Options = {
-            Gem = function(
-                lvl)
-                return not mq.TLO.FindItem('Forsaken Blood Ember Bracer')() and lvl <= 70 and 11 or nil
-            end,
-            swap = false,
-            selfbuff = true
-        }
-    },                                                                                                                                                                                                                                                            -- Shroud of Zelinstein Strike proc
-    { Group = 'bezaproc', Spells = { 'Mental Wretchedness', 'Mental Anguish', 'Mental Horror' },                                                          Options = { opt = 'USEBEZA', selfbuff = true } },                                                       -- Mental Anguish Strike proc
-    { Group = 'aziaproc', Spells = { 'Mortimus\' Horror', 'Brightfield\'s Horror' },                                                                      Options = { opt = 'USEAZIA' } },                                                                        -- Brightfield's Horror Strike proc
-    { Group = 'ds',       Spells = { 'Goblin Skin', 'Tekuel Skin' } },                                                                                                                                                                                            -- large damage shield self buff
-    { Group = 'lich',     Spells = { 'Kar\'s Covenant', 'Aten Ha Ra\'s Covenant' },                                                                       Options = { selfbuff = true } },                                                                        -- lich mana regen
-    {
-        Group = 'drape',
-        Spells = { 'Drape of the Ankexfen', 'Drape of the Akheva', 'Cloak of Discord', 'Cloak of Luclin' },
-        Options = {
-            selfbuff = true,
-            Gem = function(
-                lvl)
-                return mq.TLO.FindItem('Forsaken Blood Ember Bracer')() and lvl <= 70 and 11 or nil
-            end
-        }
-    },                                                                                                                                                                                                                                                            -- self buff hp, ac, ds
-    { Group = 'atkbuff',    Spells = { 'Call of Blight', 'Penumbral Call', 'Dark Temptation', 'Grim Aura' } },                                                                                                                                                    -- atk buff, hp drain on self
-    {
-        Group = 'voice',
-        Spells = { 'Voice of Innoruuk' },
-        Options = {
-            Gem = function(
-                lvl)
-                return lvl <= 70 and 12 or nil
-            end,
-            opt = 'USEVOICEOFTHULE',
-            selfbuff = true
-        }
-    },
+    { Group = 'shroud',   Spells = { 'Shroud of Rimeclaw', 'Shroud of Zelinstein', 'Shroud of Discord', 'Black Shroud' },                                                                                       Options = { Gem = function(
+        lvl) return not mq.TLO.FindItem('Forsaken Blood Ember Bracer')() and lvl <= 70 and 11 or nil end, swap = false, selfbuff = true } },                                                                                                                                                                 -- Shroud of Zelinstein Strike proc
+    { Group = 'bezaproc', Spells = { 'Mental Wretchedness', 'Mental Anguish', 'Mental Horror' },                                                                                                                Options = { opt = 'USEBEZA', selfbuff = true } },                                            -- Mental Anguish Strike proc
+    { Group = 'aziaproc', Spells = { 'Mortimus\' Horror', 'Brightfield\'s Horror' },                                                                                                                            Options = { opt = 'USEAZIA' } },                                                             -- Brightfield's Horror Strike proc
+    { Group = 'ds',       Spells = { 'Goblin Skin', 'Tekuel Skin' } },                                                                                                                                                                                                                                       -- large damage shield self buff
+    { Group = 'lich',     Spells = { 'Kar\'s Covenant', 'Aten Ha Ra\'s Covenant' },                                                                                                                             Options = { selfbuff = true } },                                                             -- lich mana regen
+    { Group = 'drape',    Spells = { 'Drape of the Ankexfen', 'Drape of the Akheva', 'Cloak of Discord', 'Cloak of Luclin' },                                                                                   Options = { selfbuff = true, Gem = function(
+        lvl) return mq.TLO.FindItem('Forsaken Blood Ember Bracer')() and lvl <= 70 and 11 or nil end } },                                                                                                                                                                                                    -- self buff hp, ac, ds
+    { Group = 'atkbuff',  Spells = { 'Call of Blight', 'Penumbral Call', 'Dark Temptation', 'Grim Aura' } },                                                                                                                                                                                                 -- atk buff, hp drain on self
+    { Group = 'voice',    Spells = { 'Voice of Innoruuk' },                                                                                                                                                     Options = { Gem = function(
+        lvl) return lvl <= 70 and 12 or nil end, opt = 'USEVOICEOFTHULE', selfbuff = true } },
     --['']=common.get_best_spell({'Remorseless Demeanor'})
-    {
-        Group = 'snare',
-        Spells = { 'Engulfing Darkness', 'Clinging Darkness' },
-        Options = {
-            Gem = function(
-                lvl)
-                return lvl <= 60 and 2
-            end,
-            opt = 'USESNARE',
-            debuff = true
-        }
-    },
-    { Group = 'undeadnuke', Spells = { 'Ward Undead' },                                                     Options = { opt = 'USENUKES' } },
+    { Group = 'snare',    Spells = { 'Engulfing Darkness', 'Clinging Darkness' },                                                                                                                               Options = { Gem = function(
+        lvl) return lvl <= 60 and 2 end, opt = 'USESNARE', debuff = true } },
+    { Group = 'undeadnuke', Spells = { 'Ward Undead' },                                                                                                                                                         Options = { opt = 'USENUKES' } },
 }
 
-ShadowKnight.compositeNames = {
-    ['Ecliptic Fang'] = true,
-    ['Composite Fang'] = true,
-    ['Dissident Fang'] = true,
-    ['Dichotomic Fang'] = true
-}
+ShadowKnight.compositeNames = { ['Ecliptic Fang'] = true, ['Composite Fang'] = true, ['Dissident Fang'] = true,
+    ['Dichotomic Fang'] = true }
 ShadowKnight.allDPSSpellGroups = { 'tap1', 'tap2', 'largetap', 'composite', 'spear', 'terror', 'poison', 'aeterror',
     'aetap', 'disease', 'dottap', 'challenge',
     'corruption', 'acdebuff', 'bitetap', 'tap3', 'alliance', 'acdis' }
@@ -553,14 +468,8 @@ ShadowKnight.Abilities = {
         Type = 'Disc',
         Group = 'soulshield',
         Names = { 'Soul Shield', 'Ichor Guard' },
-        Options = {
-            opt = 'USEDEFENSIVE',
-            second = true,
-            condition = function()
-                return not ShadowKnight.rampart or
-                    not mq.TLO.Me.CombatAbilityReady(ShadowKnight.rampart.Name)()
-            end
-        },
+        Options = { opt = 'USEDEFENSIVE', second = true, condition = function() return not ShadowKnight.rampart or
+            not mq.TLO.Me.CombatAbilityReady(ShadowKnight.rampart.Name)() end },
     },
     {
         Type = 'Disc',
