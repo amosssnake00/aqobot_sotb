@@ -10,17 +10,17 @@ local healing = {}
 function healing.init() end
 
 local HEAL_TYPES = {
-    GROUP='group',
-    GROUPPANIC='grouppanic',
-    HOT='hot',
-    PANIC='panic',
-    REGULAR='regular',
-    TANK='tank',
-    GROUPHOT='grouphot',
+    GROUP = 'group',
+    GROUPPANIC = 'grouppanic',
+    HOT = 'hot',
+    PANIC = 'panic',
+    REGULAR = 'regular',
+    TANK = 'tank',
+    GROUPHOT = 'grouphot',
 }
 
-local tankClasses = {WAR=true,PAL=true,SHD=true}
-local melees = {MNK=true,BER=true,ROG=true,BST=true,WAR=true,PAL=true,SHD=true,RNG=true}
+local tankClasses = { WAR = true, PAL = true, SHD = true }
+local melees = { MNK = true, BER = true, ROG = true, BST = true, WAR = true, PAL = true, SHD = true, RNG = true }
 local hottimers = {}
 local reztimer = timer:new(30000)
 
@@ -80,12 +80,13 @@ function healing.getHurt(options)
         tank = mq.TLO.Spawn(('id %s'):format(state.actorTankID))
     end
     if (not tank or not tank()) and config.get('PRIORITYTARGET'):len() > 0 then
-        tank = mq.TLO.Spawn('='..config.get('PRIORITYTARGET'))
+        tank = mq.TLO.Spawn('=' .. config.get('PRIORITYTARGET'))
     end
     if tank and tank() and not tank.Dead() then
         local tankHP = tank.PctHPs() or 100
         local distance = tank.Distance3D() or 300
-        if tankHP < config.get('PANICHEALPCT') and distance < 200 then return tank.ID(), HEAL_TYPES.PANIC, mq.TLO.Group.Member(tank.CleanName())() ~= nil end
+        if tankHP < config.get('PANICHEALPCT') and distance < 200 then return tank.ID(), HEAL_TYPES.PANIC,
+                mq.TLO.Group.Member(tank.CleanName())() ~= nil end
     end
     if healEnabled(options, 'HEALPET') and mq.TLO.Pet.ID() > 0 then
         local memberPetHP = mq.TLO.Pet.PctHPs() or 100
@@ -104,7 +105,7 @@ function healing.getHurt(options)
         elseif (mq.TLO.Group.Injured(config.get('GROUPHEALPCT'))() or 0) >= config.get('GROUPHEALMIN') then
             return nil, HEAL_TYPES.GROUP, true
         end
-        for i=1,groupSize-1 do
+        for i = 1, groupSize - 1 do
             local member = mq.TLO.Group.Member(i)
             if not member.Dead() then
                 local memberHP = member.PctHPs() or 100
@@ -141,16 +142,18 @@ function healing.getHurt(options)
     elseif numHurt >= config.get('GROUPHEALMIN') then
         return nil, HEAL_TYPES.GROUP, true
     elseif mostHurtPct < config.get('HEALPCT') and mostHurtDistance < 200 then
-        return mostHurtID, ((tankClasses[mostHurtClass] or mostHurtName==config.get('PRIORITYTARGET')) and HEAL_TYPES.TANK) or HEAL_TYPES.REGULAR, true
-    -- elseif mostHurtPct < config.get('HOTHEALPCT') and melees[mostHurtClass] and mostHurtDistance < 100 then
-    --     local hotTimer = hottimers[mostHurtName]
-    --     if (not hotTimer or hotTimer:expired()) then
-    --         return mostHurtID, HEAL_TYPES.HOT
-    --     end
+        return mostHurtID,
+            ((tankClasses[mostHurtClass] or mostHurtName == config.get('PRIORITYTARGET')) and HEAL_TYPES.TANK) or
+            HEAL_TYPES.REGULAR, true
+        -- elseif mostHurtPct < config.get('HOTHEALPCT') and melees[mostHurtClass] and mostHurtDistance < 100 then
+        --     local hotTimer = hottimers[mostHurtName]
+        --     if (not hotTimer or hotTimer:expired()) then
+        --         return mostHurtID, HEAL_TYPES.HOT
+        --     end
     end
     if config.get('XTARGETHEAL') then
         mostHurtPct = 100
-        for i=1,mq.TLO.Me.XTargetSlots() do
+        for i = 1, mq.TLO.Me.XTargetSlots() do
             local xtarSpawn = mq.TLO.Me.XTarget(i)
             local xtarType = xtarSpawn.Type()
             if xtarType == 'PC' or xtarType == 'Pet' and xtarSpawn.TargetType() ~= 'Auto Hater' then
@@ -170,28 +173,32 @@ function healing.getHurt(options)
         if mostHurtPct < config.get('PANICHEALPCT') then
             return mostHurtID, HEAL_TYPES.PANIC, false
         elseif mostHurtPct < config.get('HEALPCT') and mostHurtDistance < 200 then
-            return mostHurtID, ((tankClasses[mostHurtClass] or mostHurtName==config.get('PRIORITYTARGET')) and HEAL_TYPES.TANK) or HEAL_TYPES.REGULAR, false
-        -- elseif mostHurtPct < config.get('HOTHEALPCT') and melees[mostHurtClass] and mostHurtDistance < 100 then
-        --     local hotTimer = hottimers[mostHurtName]
-        --     if (not hotTimer or hotTimer:expired()) then
-        --         return mostHurtID, HEAL_TYPES.HOT
-        --     end
+            return mostHurtID,
+                ((tankClasses[mostHurtClass] or mostHurtName == config.get('PRIORITYTARGET')) and HEAL_TYPES.TANK) or
+                HEAL_TYPES.REGULAR, false
+            -- elseif mostHurtPct < config.get('HOTHEALPCT') and melees[mostHurtClass] and mostHurtDistance < 100 then
+            --     local hotTimer = hottimers[mostHurtName]
+            --     if (not hotTimer or hotTimer:expired()) then
+            --         return mostHurtID, HEAL_TYPES.HOT
+            --     end
         end
     end
     if mostHurtPetID ~= 0 and mostHurtPetDistance < 200 then
-        return mostHurtPetID, mostHurtPetName == config.get('PRIORITYTARGET') and HEAL_TYPES.TANK or HEAL_TYPES.REGULAR, false
+        return mostHurtPetID, mostHurtPetName == config.get('PRIORITYTARGET') and HEAL_TYPES.TANK or HEAL_TYPES.REGULAR,
+            false
     end
     return nil, HEAL_TYPES.GROUPHOT, true
 end
 
 local groupHOTTimer = timer:new(60000)
 function healing.getHeal(healAbilities, healType, whoToHeal, options, inGroup, skipCastingCheck)
-    for _,heal in ipairs(healAbilities) do
+    for _, heal in ipairs(healAbilities) do
         if heal[healType] and healEnabled(options, heal.opt) then
             if inGroup or (not inGroup and not heal.group and not heal.grouppanic) then
                 if not heal.tot or (mq.TLO.Me.CombatState() == 'COMBAT' and whoToHeal ~= mq.TLO.Me.ID()) then
                     if healType == HEAL_TYPES.GROUPHOT then
-                        if mq.TLO.Me.CombatState() == 'COMBAT' and groupHOTTimer:expired() and not mq.TLO.Me.Song(heal.Name)() and heal:isReady() == abilities.IsReady.SHOULD_CAST then return heal end
+                        if mq.TLO.Me.CombatState() == 'COMBAT' and groupHOTTimer:expired() and not mq.TLO.Me.Song(heal.Name)() and heal:isReady() == abilities.IsReady.SHOULD_CAST then return
+                            heal end
                     elseif heal.CastType == abilities.Types.Spell then
                         local spell = mq.TLO.Spell(heal.Name)
                         if abilities.canUseSpell(spell, heal, false, skipCastingCheck) == abilities.IsReady.CAN_CAST then
@@ -209,8 +216,10 @@ function healing.getHeal(healAbilities, healType, whoToHeal, options, inGroup, s
             end
         end
     end
-    if healType == HEAL_TYPES.PANIC then return healing.getHeal(healAbilities, HEAL_TYPES.REGULAR, whoToHeal, options, inGroup) end
-    if healType == HEAL_TYPES.GROUPPANIC then return healing.getHeal(healAbilities, HEAL_TYPES.GROUP, whoToHeal, options, inGroup) end
+    if healType == HEAL_TYPES.PANIC then return healing.getHeal(healAbilities, HEAL_TYPES.REGULAR, whoToHeal, options,
+            inGroup) end
+    if healType == HEAL_TYPES.GROUPPANIC then return healing.getHeal(healAbilities, HEAL_TYPES.GROUP, whoToHeal, options,
+            inGroup) end
 end
 
 function healing.heal(healAbilities, options)
@@ -232,37 +241,39 @@ function healing.heal(healAbilities, options)
     elseif not healToUse and typeOfHeal == HEAL_TYPES.GROUPPANIC then
         healToUse = healing.getHeal(healAbilities, HEAL_TYPES.GROUP, whoToHeal, options)
     end
-    logger.debug(logger.flags.routines.heal, string.format('heal %s %s %s', whoToHeal, typeOfHeal, healToUse and healToUse.name or ''))
+    logger.debug(logger.flags.routines.heal,
+        string.format('heal %s %s %s', whoToHeal, typeOfHeal, healToUse and healToUse.name or ''))
     if healToUse and (healToUse.CastType ~= abilities.Types.Spell or not mq.TLO.Me.SpellInCooldown()) then
         if whoToHeal and mq.TLO.Target.ID() ~= whoToHeal then
             -- mq.cmdf('/mqt id %s', whoToHeal)
-            mq.TLO.Spawn('id '..whoToHeal).DoTarget()
+            mq.TLO.Spawn('id ' .. whoToHeal).DoTarget()
         end
         if abilities.use(healToUse) then
-            if config.get('ANNOUNCEHEALS') then mq.cmdf('/g Healing >>> %s <<< with %s', mq.TLO.Target.CleanName(), healToUse.CastName) end
+            if config.get('ANNOUNCEHEALS') then mq.cmdf('/g Healing >>> %s <<< with %s', mq.TLO.Target.CleanName(),
+                    healToUse.CastName) end
             state.setHealState(whoToHeal, typeOfHeal, healToUse)
             if typeOfHeal == HEAL_TYPES.REGULAR then state.canInterrupt = true end
             return true
         end
         -- if typeOfHeal == HEAL_TYPES.HOT then
-            -- local targetName = mq.TLO.Target.CleanName()
-            -- if not targetName then return end
-            -- local hotTimer = hottimers[targetName]
-            -- if not hotTimer then
-            --     hottimers[targetName] = timer:new(60000)
-            -- else
-            --     hotTimer:reset()
-            -- end
+        -- local targetName = mq.TLO.Target.CleanName()
+        -- if not targetName then return end
+        -- local hotTimer = hottimers[targetName]
+        -- if not hotTimer then
+        --     hottimers[targetName] = timer:new(60000)
+        -- else
+        --     hotTimer:reset()
+        -- end
         -- end
     end
-    for toon,data in pairs(state.actors) do
+    for toon, data in pairs(state.actors) do
         local wantBuffs = data.wantBuffs
         if wantBuffs then
-            for _,buffAlias in ipairs(wantBuffs) do
+            for _, buffAlias in ipairs(wantBuffs) do
                 if buffAlias == 'HOT' then
                     local healToUse = healing.getHeal(healAbilities, HEAL_TYPES.HOT, toon, options)
                     if healToUse then
-                        mq.TLO.Spawn('pc ='..toon).DoTarget()
+                        mq.TLO.Spawn('pc =' .. toon).DoTarget()
                         if abilities.use(healToUse) then return true end
                     end
                 end
@@ -276,7 +287,7 @@ function healing.healPetOrSelf(healAbilities, options)
     local petHP = mq.TLO.Pet.PctHPs() or 100
     if myHP < 60 then healing.healSelf(healAbilities, options) end
     if not healEnabled(options, 'HEALPET') then return end
-    for _,heal in ipairs(healAbilities) do
+    for _, heal in ipairs(healAbilities) do
         if heal.pet and petHP < heal.pet then
             if abilities.use(heal) then
                 return true
@@ -287,7 +298,7 @@ end
 
 function healing.healSelf(healAbilities, options)
     if mq.TLO.Me.PctHPs() > config.get('HEALPCT') then return end
-    for _,heal in ipairs(healAbilities) do
+    for _, heal in ipairs(healAbilities) do
         if heal.self and healEnabled(options, heal.opt) then
             local originalTargetID = mq.TLO.Target.ID()
             if heal.TargetType == 'Single' and abilities.canUseSpell(mq.TLO.Spell(heal.SpellName), heal) == abilities.IsReady.CAN_CAST then
@@ -310,8 +321,8 @@ local newCorpses = {}
 
 function healing.massRez()
     local numCorpses = mq.TLO.SpawnCount('pccorpse radius 100')()
-    for i=1,numCorpses do
-        local corpse = mq.TLO.NearestSpawn(i..',pccorpse radius 100')
+    for i = 1, numCorpses do
+        local corpse = mq.TLO.NearestSpawn(i .. ',pccorpse radius 100')
         local corpseName = corpse.Name()
         if corpseName then
             corpseName = corpseName:gsub('\'s corpse.*', '')
@@ -342,7 +353,7 @@ end
 
 local function doRezFor(rezAbility)
     local waitForZoning = true
-    local corpse = mq.TLO.Spawn('pccorpse '..mq.TLO.Me.CleanName()..'\'s corpse radius 100')
+    local corpse = mq.TLO.Spawn('pccorpse ' .. mq.TLO.Me.CleanName() .. '\'s corpse radius 100')
     if not corpse() then
         corpse = mq.TLO.Spawn('pccorpse tank radius 100 noalert 0')
         if not corpse() then
@@ -417,7 +428,7 @@ function healing.rez(rezAbility)
     if not config.get('REZGROUP') and not config.get('REZRAID') then return end
     local rezToUse = nil
     if type(rezAbility) == 'table' then
-        for _,rez in ipairs(rezAbility) do
+        for _, rez in ipairs(rezAbility) do
             if isRezAbilityReady(rez) then
                 rezToUse = rez
                 break
@@ -430,7 +441,10 @@ function healing.rez(rezAbility)
         rezToUse = rezAbility
     end
     if not rezToUse then return end
-    if reztimer:expired() and mq.TLO.Alert(0)() then mq.cmd('/squelch /alert clear 0') newCorpses = {} end
+    if reztimer:expired() and mq.TLO.Alert(0)() then
+        mq.cmd('/squelch /alert clear 0')
+        newCorpses = {}
+    end
     return doRezFor(rezToUse)
 end
 

@@ -36,8 +36,10 @@ function Enchanter:initClassOptions()
     -- self:addOption('INTERRUPTFORMEZ', 'Interrupt for Mez', false, nil, 'Toggle interrupting current spell casts to cast mez', 'checkbox', nil, 'InterruptForMez', 'bool')
     self:addOption('TASHTHENMEZ', 'Tash Then Mez', true, nil, 'Toggle use of tash prior to attempting to mez mobs',
         'checkbox', nil, 'TashThenMez', 'bool')
-    if not state.emu then self:addOption('USECHAOTIC', 'Use Chaotic', true, nil, 'Toggle use of Chaotic mez line',
-            'checkbox', nil, 'UseChaotic', 'bool') end
+    if not state.emu then
+        self:addOption('USECHAOTIC', 'Use Chaotic', true, nil, 'Toggle use of Chaotic mez line',
+            'checkbox', nil, 'UseChaotic', 'bool')
+    end
     self:addOption('USECHARM', 'Use Charm', false, nil, 'Attempt to maintain a charm pet instead of using a regular pet',
         'checkbox', nil, 'UseCharm', 'bool')
     self:addOption('USEDOTS', 'Use DoTs', true, nil, 'Toggle use of DoTs', 'checkbox', nil, 'UseDoTs', 'bool')
@@ -51,8 +53,10 @@ function Enchanter:initClassOptions()
         'bool')
     self:addOption('USEMINDOVERMATTER', 'Use Mind Over Matter', true, nil, 'Toggle use of Mind over Matter', 'checkbox',
         nil, 'UseMindOverMatter', 'bool')
-    if not state.emu then self:addOption('USENIGHTSTERROR', 'Buff Nights Terror', true, nil,
-            'Toggle use of Nights Terror buff line', 'checkbox', nil, 'UseNDT', 'bool') end
+    if not state.emu then
+        self:addOption('USENIGHTSTERROR', 'Buff Nights Terror', true, nil,
+            'Toggle use of Nights Terror buff line', 'checkbox', nil, 'UseNDT', 'bool')
+    end
     self:addOption('USENUKES', 'Use Nuke', true, nil, 'Toggle use of nukes', 'checkbox', nil, 'UseNukes', 'bool')
     -- self:addOption('USEPHANTASMAL', 'Use Phantasmal', true, nil, 'Toggle use of Phantasmal', 'checkbox', nil, 'UsePhantasmal', 'bool')
     -- self:addOption('USEREPLICATION', 'Buff Mana Proc', true, nil, 'Toggle use of Replication buff line', 'checkbox', nil, 'UseReplication', 'bool')
@@ -173,8 +177,14 @@ Enchanter.SpellLines = {
     { -- melee attack proc. Slot 13 or 2
         Group = 'nightsterror',
         Spells = { 'Night\'s Perpetual Terror', 'Night\'s Endless Terror', --[[emu cutoff]] },
-        Options = { opt = 'USENIGHTSTERROR', Gem = function() return (not Enchanter:isEnabled('USEALLIANCE') and 13) or
-            (not Enchanter:isEnabled('USECHARM') and 2) or nil end, emu = false }
+        Options = {
+            opt = 'USENIGHTSTERROR',
+            Gem = function()
+                return (not Enchanter:isEnabled('USEALLIANCE') and 13) or
+                    (not Enchanter:isEnabled('USECHARM') and 2) or nil
+            end,
+            emu = false
+        }
     },
     { -- Slot 13
         Group = 'alliance',
@@ -182,93 +192,224 @@ Enchanter.SpellLines = {
         Options = { opt = 'USEALLIANCE', Gem = 13, emu = false }
     },
 
-    { Group = 'mezst2',       Spells = { 'Flummoxing Flash', 'Addling Flash' },                                                                                                                                                                                                                                                                                                                                                                                                                                  Options = { emu = false } }, -- 6 ticks
-    { Group = 'mezae',        Spells = { 'Stupefying Wave', 'Bewildering Wave', 'Neutralizing Wave', 'Bliss of the Nihil', 'Fascination' },                                                                                                                                                                                                                                                                                                                                                                      Options = { emu = false } }, -- targeted AE mez
-    { Group = 'mezaehate',    Spells = { 'Vexing Glance', 'Confounding Glance' },                                                                                                                                                                                                                                                                                                                                                                                                                                Options = { emu = false } }, -- targeted AE mez + 100% hate reduction
-    { Group = 'mezpbae',      Spells = { 'Wonderment', 'Bewilderment', 'Word of Morell' },                                                                                                                                                                                                                                                                                                                                                                                                                       Options = { emu = true } },
-    { Group = 'mezpbae2',     Spells = { 'Perilous Confounding', 'Perilous Bewilderment' },                                                                                                                                                                                                                                                                                                                                                                                                                      Options = { emu = false } }, -- lvl 120
-    { Group = 'mezshield',    Spells = { 'Ward of the Stupefier', 'Ward of the Beguiler', 'Ward of the Deviser' },                                                                                                                                                                                                                                                                                                                                                                                               Options = { emu = false } }, -- mez proc on being hit
+    { Group = 'mezst2',    Spells = { 'Flummoxing Flash', 'Addling Flash' },                                                             Options = { emu = false } },                                                                                                                                                                                                                                                                                                                                                                             -- 6 ticks
+    { Group = 'mezae',     Spells = { 'Stupefying Wave', 'Bewildering Wave', 'Neutralizing Wave', 'Bliss of the Nihil', 'Fascination' }, Options = { emu = false } },                                                                                                                                                                                                                                                                                                                                                                             -- targeted AE mez
+    { Group = 'mezaehate', Spells = { 'Vexing Glance', 'Confounding Glance' },                                                           Options = { emu = false } },                                                                                                                                                                                                                                                                                                                                                                             -- targeted AE mez + 100% hate reduction
+    { Group = 'mezpbae',   Spells = { 'Wonderment', 'Bewilderment', 'Word of Morell' },                                                  Options = { emu = true } },
+    { Group = 'mezpbae2',  Spells = { 'Perilous Confounding', 'Perilous Bewilderment' },                                                 Options = { emu = false } },                                                                                                                                                                                                                                                                                                                                                                             -- lvl 120
+    { Group = 'mezshield', Spells = { 'Ward of the Stupefier', 'Ward of the Beguiler', 'Ward of the Deviser' },                          Options = { emu = false } },                                                                                                                                                                                                                                                                                                                                                                             -- mez proc on being hit
 
-    { Group = 'rune',         Spells = { 'Disquieting Rune', 'Marvel\'s Rune', 'Rune of Zebuxoruk' } },                                                                     -- 160k rune, self
-    { Group = 'rune2',        Spells = { 'Rune of Zoraxmen', 'Rune of Tearc', 'Uproar', 'Rune III', 'Rune II', 'Rune I' },                                                                                                                                                                                                                                                                                                                                                                                       Options = { Gem = function(
-        lvl) return lvl <= 70 and 8 or nil end } },                                                                                                                         -- 90k rune, single target
-    { Group = 'dotrune',      Spells = { 'Aegis of Dhakka', 'Aegis of Xetheg' },                                                                                                                                                                                                                                                                                                                                                                                                                                 Options = { emu = false } }, -- absorb DoT dmg
-    { Group = 'guard',        Spells = { 'Shield of Inescapability', 'Shield of Inevitability', 'Shield of Destiny', 'Shield of Order' },                                                                                                                                                                                                                                                                                                                                                                        Options = { selfbuff = true } }, -- spell + melee guard
-    { Group = 'dotmiti',      Spells = { 'Deviser\'s Auspice', 'Transfixer\'s Auspice' },                                                                                                                                                                                                                                                                                                                                                                                                                        Options = { emu = false } }, -- DoT guard
-    { Group = 'spellmiti',    Spells = { 'Aegis of Elmara', 'Aegis of Sefra' },                                                                                                                                                                                                                                                                                                                                                                                                                                  Options = { emu = false } }, -- 20% spell mitigation
+    { Group = 'rune',      Spells = { 'Disquieting Rune', 'Marvel\'s Rune', 'Rune of Zebuxoruk' } },                                                                                                                                                                                                                                                                                                                                                                                                                                              -- 160k rune, self
+    {
+        Group = 'rune2',
+        Spells = { 'Rune of Zoraxmen', 'Rune of Tearc', 'Uproar', 'Rune III', 'Rune II', 'Rune I' },
+        Options = {
+            Gem = function(
+                lvl)
+                return lvl <= 70 and 8 or nil
+            end
+        }
+    },                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            -- 90k rune, single target
+    { Group = 'dotrune',        Spells = { 'Aegis of Dhakka', 'Aegis of Xetheg' },                                                                                               Options = { emu = false } },                                                                                                                                                                                                                                                                                                                                     -- absorb DoT dmg
+    { Group = 'guard',          Spells = { 'Shield of Inescapability', 'Shield of Inevitability', 'Shield of Destiny', 'Shield of Order' },                                      Options = { selfbuff = true } },                                                                                                                                                                                                                                                                                                                                 -- spell + melee guard
+    { Group = 'dotmiti',        Spells = { 'Deviser\'s Auspice', 'Transfixer\'s Auspice' },                                                                                      Options = { emu = false } },                                                                                                                                                                                                                                                                                                                                     -- DoT guard
+    { Group = 'spellmiti',      Spells = { 'Aegis of Elmara', 'Aegis of Sefra' },                                                                                                Options = { emu = false } },                                                                                                                                                                                                                                                                                                                                     -- 20% spell mitigation
 
-    { Group = 'meleemiti',    Spells = { 'Gloaming Auspice', 'Eclipsed Auspice' },                                                                                                                                                                                                                                                                                                                                                                                                                               Options = { emu = false } }, -- melee guard, + hate
-    { Group = 'absorbbuff',   Spells = { 'Brimstone Stability', 'Brimstone Endurance' },                                                                                                                                                                                                                                                                                                                                                                                                                         Options = { emu = false } }, -- increase absorb dmg, + hate
-    { Group = 'aggrorune',    Spells = { 'Esoteric Rune', 'Ghastly Rune' },                                                                                                                                                                                                                                                                                                                                                                                                                                      Options = { emu = false } }, -- single target rune + hate increase
+    { Group = 'meleemiti',      Spells = { 'Gloaming Auspice', 'Eclipsed Auspice' },                                                                                             Options = { emu = false } },                                                                                                                                                                                                                                                                                                                                     -- melee guard, + hate
+    { Group = 'absorbbuff',     Spells = { 'Brimstone Stability', 'Brimstone Endurance' },                                                                                       Options = { emu = false } },                                                                                                                                                                                                                                                                                                                                     -- increase absorb dmg, + hate
+    { Group = 'aggrorune',      Spells = { 'Esoteric Rune', 'Ghastly Rune' },                                                                                                    Options = { emu = false } },                                                                                                                                                                                                                                                                                                                                     -- single target rune + hate increase
     -- Polyradiant Rune -- hate mod rune, stun proc on fade
 
-    { Group = 'groupdotrune', Spells = { 'Legion of Dhakka', 'Legion of Xetheg', 'Legion of Cekenar' },                                                                                                                                                                                                                                                                                                                                                                                                          Options = { emu = false } },
-    { Group = 'groupspellrune', Spells = { 'Legion of Ogna', 'Legion of Liako', 'Legion of Kildrukaun', --[[emu cutoff]] 'Circle of Alendar' },                                                                                                                                                                                                                                                                                                                                                                  Options = { alias = 'SPELLRUNE' } },
-    { Group = 'groupaggrorune', Spells = { 'Gloaming Rune', 'Eclipsed Rune', --[[emu cutoff]] 'Rune of Rikkukin' },                                                                                                                                                                                                                                                                                                                                                                                              Options = { alias = 'MELEERUNE' } }, -- group rune + big nuke/aggro reduction proc
+    { Group = 'groupdotrune',   Spells = { 'Legion of Dhakka', 'Legion of Xetheg', 'Legion of Cekenar' },                                                                        Options = { emu = false } },
+    { Group = 'groupspellrune', Spells = { 'Legion of Ogna', 'Legion of Liako', 'Legion of Kildrukaun', --[[emu cutoff]] 'Circle of Alendar' },                                  Options = { alias = 'SPELLRUNE' } },
+    { Group = 'groupaggrorune', Spells = { 'Gloaming Rune', 'Eclipsed Rune', --[[emu cutoff]] 'Rune of Rikkukin' },                                                              Options = { alias = 'MELEERUNE' } },                                                                                                                                                                                                                                                                                                                                 -- group rune + big nuke/aggro reduction proc
 
-    { Group = 'debuffdot',    Spells = { 'Dismaying Constriction', 'Perplexing Constriction', 'Confounding Constriction', 'Confusing Constriction', 'Baffling Constriction' },                                                                                                                                                                                                                                                                                                                                   Options = { emu = false } }, -- debuff + nuke + dot
-    { Group = 'manadot',      Spells = { 'Tears of Kasha', 'Tears of Xenacious' },                                                                                                                                                                                                                                                                                                                                                                                                                               Options = { emu = false } }, -- hp + mana DoT
-    { Group = 'nukerune',     Spells = { 'Chromatic Spike', 'Chromatic Flare' },                                                                                                                                                                                                                                                                                                                                                                                                                                 Options = { emu = false } }, -- 18k nuke + self rune
+    { Group = 'debuffdot',      Spells = { 'Dismaying Constriction', 'Perplexing Constriction', 'Confounding Constriction', 'Confusing Constriction', 'Baffling Constriction' }, Options = { emu = false } },                                                                                                                                                                                                                                                                                                                                         -- debuff + nuke + dot
+    { Group = 'manadot',        Spells = { 'Tears of Kasha', 'Tears of Xenacious' },                                                                                             Options = { emu = false } },                                                                                                                                                                                                                                                                                                                                         -- hp + mana DoT
+    { Group = 'nukerune',       Spells = { 'Chromatic Spike', 'Chromatic Flare' },                                                                                               Options = { emu = false } },                                                                                                                                                                                                                                                                                                                                         -- 18k nuke + self rune
 
-    { Group = 'nuke1',        Spells = { 'Polyradiant Assault', 'Polyluminous Assault', 'Colored Chaos' },                                                                                                                                                                                                                                                                                                                                                                                                       Options = { Gem = function(
-        lvl) return lvl == 70 and 7 or nil end } },                                                                                                                                        -- 35k nuke
-    { Group = 'aenuke',       Spells = { 'Gravity Roil' },                                                                                                                                                                                                                                                                                                                                                                                                                                                       Options = { emu = false } }, -- 23k targeted ae nuke
+    {
+        Group = 'nuke1',
+        Spells = { 'Polyradiant Assault', 'Polyluminous Assault', 'Colored Chaos' },
+        Options = {
+            Gem = function(
+                lvl)
+                return lvl == 70 and 7 or nil
+            end
+        }
+    },                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        -- 35k nuke
+    { Group = 'aenuke', Spells = { 'Gravity Roil' },                                                                         Options = { emu = false } },                                                                                                                                                                                                                                                                                                                                                                                     -- 23k targeted ae nuke
 
-    { Group = 'calm',         Spells = { 'Still Mind' },                                                                                                                                                                                                                                                                                                                                                                                                                                                         Options = { emu = false } },
-    { Group = 'stunst',       Spells = { 'Dizzying Spindle', 'Dizzying Vortex', 'Dyn\'s Dizzying Draught', 'Whirl till you hurl' } }, -- single target stun
-    { Group = 'stunae',       Spells = { 'Remote Color Calibration', 'Remote Color Conflagration' } },
-    { Group = 'stunpbae',     Spells = { 'Color Calibration', 'Color Conflagration', 'Color Shift', 'Color Flux' },                                                                                                                                                                                                                                                                                                                                                                                              { Gem = function(
-        lvl) return not Enchanter:get('MEZAE') and lvl <= 60 and 4 or nil end } },
-    { Group = 'stunaerune',   Spells = { 'Polyluminous Rune', 'Polycascading Rune', 'Polyfluorescent Rune', 'Ethereal Rune', 'Arcane Rune' },                                                                                                                                                                                                                                                                                                                                                                    Options = { selfbuff = true, condition = function() return not
-        mq.TLO.FindItem('Mindreaver\'s Leggings of Coercion')() end } },                                                                                                                                                                                    -- self rune, proc ae stun on fade
+    { Group = 'calm',   Spells = { 'Still Mind' },                                                                           Options = { emu = false } },
+    { Group = 'stunst', Spells = { 'Dizzying Spindle', 'Dizzying Vortex', 'Dyn\'s Dizzying Draught', 'Whirl till you hurl' } },       -- single target stun
+    { Group = 'stunae', Spells = { 'Remote Color Calibration', 'Remote Color Conflagration' } },
+    {
+        Group = 'stunpbae',
+        Spells = { 'Color Calibration', 'Color Conflagration', 'Color Shift', 'Color Flux' },
+        {
+            Gem = function(
+                lvl)
+                return not Enchanter:get('MEZAE') and lvl <= 60 and 4 or nil
+            end
+        }
+    },
+    {
+        Group = 'stunaerune',
+        Spells = { 'Polyluminous Rune', 'Polycascading Rune', 'Polyfluorescent Rune', 'Ethereal Rune', 'Arcane Rune' },
+        Options = {
+            selfbuff = true,
+            condition = function()
+                return not
+                    mq.TLO.FindItem('Mindreaver\'s Leggings of Coercion')()
+            end
+        }
+    },                                                                   -- self rune, proc ae stun on fade
 
-    { Group = 'pet',          Spells = { 'Flariton\'s Animation', 'Constance\'s Animation', 'Omica\'s Animation', 'Nureya\'s Animation', 'Gordianus\' Animation', 'Xorlex\'s Animation', 'Seronvall\'s Animation', 'Novak\'s Animation', --[[emu cutoff]] 'Salik\'s Animation', 'Aeidorb\'s Animation', 'Boltran\'s Animation', 'Uleen\'s Animation', 'Sagar\'s Animation', 'Sisna\'s Animation', 'Shalee\'s Animation', 'Kilan\'s Animation', 'Myrcil\'s Animation', 'Juli\'s Animation', 'Pendril\'s Animation' }, Options = { postcast = function()
-        common.petClicky() end } },
-    { Group = 'pethaste',     Spells = { 'Invigorated Minion', 'Speed of Salik', 'Speed of Vallon' },                                                                                                                                                                                                                                                                                                                                                                                                            Options = { petbuff = true } },
+    {
+        Group = 'pet',
+        Spells = { 'Flariton\'s Animation', 'Constance\'s Animation', 'Omica\'s Animation', 'Nureya\'s Animation', 'Gordianus\' Animation', 'Xorlex\'s Animation', 'Seronvall\'s Animation', 'Novak\'s Animation', --[[emu cutoff]] 'Salik\'s Animation', 'Aeidorb\'s Animation', 'Boltran\'s Animation', 'Uleen\'s Animation', 'Sagar\'s Animation', 'Sisna\'s Animation', 'Shalee\'s Animation', 'Kilan\'s Animation', 'Myrcil\'s Animation', 'Juli\'s Animation', 'Pendril\'s Animation' },
+        Options = {
+            postcast = function()
+                common.petClicky()
+            end
+        }
+    },
+    { Group = 'pethaste', Spells = { 'Invigorated Minion', 'Speed of Salik', 'Speed of Vallon' },                                                                                                                                                                                                                                        Options = { petbuff = true } },
     -- buffs
     -- {Group='unified', Spells={'Unified Alacrity'}, Options={emu=true, alias='KEI', selfbuff=true}},
-    { Group = 'resmagicgroup', Spells = { 'Guard of Druzzil', 'Group Resist Magic' },                                                                                                                                                                                                                                                                                                                                                                                                                            Options = { alias = 'RESMAGIC', selfbuff = true, condition = function() return
-        mq.TLO.EverQuest.Server() ~= 'Project Lazarus' end } },
-    { Group = 'keigroup',     Spells = { 'Voice of Preordination', 'Voice of Perception', 'Voice of Sagacity', 'Voice of Perspicacity', 'Voice of Precognition', 'Voice of Foresight', 'Voice of Premeditation', 'Voice of Forethought', 'Unified Alacrity', 'Voice of Clairvoyance', 'Voice of Quellious', 'Koadic\'s Endless Intellect' },                                                                                                                                                                     Options = { alias = 'KEI', selfbuff = true, opt = 'USEKEI' } },
-    { Group = 'kei',          Spells = { 'Preordination', 'Scrying Visions', 'Sagacity', 'Foresight', 'Premiditation', 'Forethought', 'Clairovoyance', 'Clarity', 'Breeze' },                                                                                                                                                                                                                                                                                                                                    Options = { alias = 'SINGLEKEI', selfbuff = function() return not
-        Enchanter.spells.keigroup and true or false end } },
-    { Group = 'grouphaste',   Spells = { 'Hastening of Margator', 'Hastening of Jharin', 'Hastening of Cekenar', 'Hastening of Milyex', 'Hastening of Prokev', 'Hastening of Sviir', 'Hastening of Aransir', 'Hastening of Novak', 'Unified Alacrity', 'Hastening of Salik', 'Vallon\'s Quickening', 'Speed of the Brood' },                                                                                                                                                                                     Options = { alias = 'GROUPHASTE' } }, -- group haste
-    { Group = 'haste',        Spells = { 'Speed of Margator', 'Speed of Itzal', 'Speed of Cekenar', 'Speed of Milyex', 'Speed of Prokev', 'Speed of Sviir', 'Speed of Aransir', 'Speed of Novak', 'Speed of Salik', 'Speed of Vallon', 'Visions of Grandeur', 'Augmentation', 'Alacrity', 'Quickness' },                                                                                                                                                                                                         Options = { alias = 'HASTE' } }, -- single target buff
+    {
+        Group = 'resmagicgroup',
+        Spells = { 'Guard of Druzzil', 'Group Resist Magic' },
+        Options = {
+            alias = 'RESMAGIC',
+            selfbuff = true,
+            condition = function()
+                return
+                    mq.TLO.EverQuest.Server() ~= 'Project Lazarus'
+            end
+        }
+    },
+    { Group = 'keigroup', Spells = { 'Voice of Preordination', 'Voice of Perception', 'Voice of Sagacity', 'Voice of Perspicacity', 'Voice of Precognition', 'Voice of Foresight', 'Voice of Premeditation', 'Voice of Forethought', 'Unified Alacrity', 'Voice of Clairvoyance', 'Voice of Quellious', 'Koadic\'s Endless Intellect' }, Options = { alias = 'KEI', selfbuff = true, opt = 'USEKEI' } },
+    {
+        Group = 'kei',
+        Spells = { 'Preordination', 'Scrying Visions', 'Sagacity', 'Foresight', 'Premiditation', 'Forethought', 'Clairovoyance', 'Clarity', 'Breeze' },
+        Options = {
+            alias = 'SINGLEKEI',
+            selfbuff = function()
+                return not
+                    Enchanter.spells.keigroup and true or false
+            end
+        }
+    },
+    { Group = 'grouphaste', Spells = { 'Hastening of Margator', 'Hastening of Jharin', 'Hastening of Cekenar', 'Hastening of Milyex', 'Hastening of Prokev', 'Hastening of Sviir', 'Hastening of Aransir', 'Hastening of Novak', 'Unified Alacrity', 'Hastening of Salik', 'Vallon\'s Quickening', 'Speed of the Brood' }, Options = { alias = 'GROUPHASTE' } },                                                                                                                                                                                       -- group haste
+    { Group = 'haste',      Spells = { 'Speed of Margator', 'Speed of Itzal', 'Speed of Cekenar', 'Speed of Milyex', 'Speed of Prokev', 'Speed of Sviir', 'Speed of Aransir', 'Speed of Novak', 'Speed of Salik', 'Speed of Vallon', 'Visions of Grandeur', 'Augmentation', 'Alacrity', 'Quickness' },                     Options = { alias = 'HASTE' } },                                                                                                                                                                                            -- single target buff
     -- {Group='grouphaste', Spells={'Hastening of Margator', 'Hastening of Jharin', 'Hastening of Cekenar', 'Hastening of Milyex', 'Hastening of Prokev', 'Hastening of Sviir', 'Hastening of Aransir', 'Hastening of Novak', 'Unified Alacrity', 'Hastening of Salik', 'Vallon\'s Quickening', 'Speed of the Brood'}, Options={alias='HASTE'}}, -- group haste
     --    {Group='haste', Spells={'Speed of Margator', 'Speed of Itzal', 'Speed of Cekenar', 'Speed of Milyex', 'Speed of Prokev', 'Speed of Sviir', 'Speed of Aransir', 'Speed of Novak', 'Visions of Grandeur', 'Augmentation', 'Alacrity', 'Quickness'}, Options={alias='SINGLEHASTE'}}, -- single target buff
 
     -- auras - mana, learners, spellfocus, combatinnate, disempower, rune, twincast
-    { Group = 'twincast',     Spells = { 'Twincast Aura' },                                                                                                                                                                                                                                                                                                                                                                                                                                                      Options = { aurabuff = true, condition = function() return
-        Enchanter:get('AURA1') == Enchanter.spells.twincast.Name or
-        Enchanter:get('AURA2') == Enchanter.spells.twincast.Name end } },
-    { Group = 'regen',        Spells = { 'Esoteric Aura', 'Marvel\'s Aura', 'Deviser\'s Aura' },                                                                                                                                                                                                                                                                                                                                                                                                                 Options = { aurabuff = true, condition = function() return
-        Enchanter:get('AURA1') == Enchanter.spells.regen.Name or Enchanter:get('AURA2') == Enchanter.spells.regen.Name end } },                                                                                                                                                             -- mana + end regen aura
-    { Group = 'spellfocus',   Spells = { 'Intensifying Aura', 'Enhancing Aura', 'Fortifying Aura' },                                                                                                                                                                                                                                                                                                                                                                                                             Options = { aurabuff = true, condition = function() return
-        Enchanter:get('AURA1') == Enchanter.spells.spellfocus.Name or
-        Enchanter:get('AURA2') == Enchanter.spells.spellfocus.Name end } },                                                                                                                                                                                                                 -- increase dmg of DDs
-    { Group = 'combatinnate', Spells = { 'Mana Ripple Aura', 'Mana Radix Aura', 'Mana Replication Aura' },                                                                                                                                                                                                                                                                                                                                                                                                       Options = { aurabuff = true, condition = function() return
-        Enchanter:get('AURA1') == Enchanter.spells.combatinnate.Name or
-        Enchanter:get('AURA2') == Enchanter.spells.combatinnate.Name end } },                                                                                                                                                                                                               -- dmg proc on spells, Issuance of Mana Radix == place aura at location
-    { Group = 'disempower',   Spells = { 'Arcane Disjunction Aura' },                                                                                                                                                                                                                                                                                                                                                                                                                                            Options = { aurabuff = true, condition = function() return
-        Enchanter:get('AURA1') == Enchanter.spells.disempower.Name or
-        Enchanter:get('AURA2') == Enchanter.spells.disempower.Name end } },
+    {
+        Group = 'twincast',
+        Spells = { 'Twincast Aura' },
+        Options = {
+            aurabuff = true,
+            condition = function()
+                return
+                    Enchanter:get('AURA1') == Enchanter.spells.twincast.Name or
+                    Enchanter:get('AURA2') == Enchanter.spells.twincast.Name
+            end
+        }
+    },
+    {
+        Group = 'regen',
+        Spells = { 'Esoteric Aura', 'Marvel\'s Aura', 'Deviser\'s Aura' },
+        Options = {
+            aurabuff = true,
+            condition = function()
+                return
+                    Enchanter:get('AURA1') == Enchanter.spells.regen.Name or
+                    Enchanter:get('AURA2') == Enchanter.spells.regen.Name
+            end
+        }
+    },                                                                                                                          -- mana + end regen aura
+    {
+        Group = 'spellfocus',
+        Spells = { 'Intensifying Aura', 'Enhancing Aura', 'Fortifying Aura' },
+        Options = {
+            aurabuff = true,
+            condition = function()
+                return
+                    Enchanter:get('AURA1') == Enchanter.spells.spellfocus.Name or
+                    Enchanter:get('AURA2') == Enchanter.spells.spellfocus.Name
+            end
+        }
+    },                                                                      -- increase dmg of DDs
+    {
+        Group = 'combatinnate',
+        Spells = { 'Mana Ripple Aura', 'Mana Radix Aura', 'Mana Replication Aura' },
+        Options = {
+            aurabuff = true,
+            condition = function()
+                return
+                    Enchanter:get('AURA1') == Enchanter.spells.combatinnate.Name or
+                    Enchanter:get('AURA2') == Enchanter.spells.combatinnate.Name
+            end
+        }
+    },                                                                        -- dmg proc on spells, Issuance of Mana Radix == place aura at location
+    {
+        Group = 'disempower',
+        Spells = { 'Arcane Disjunction Aura' },
+        Options = {
+            aurabuff = true,
+            condition = function()
+                return
+                    Enchanter:get('AURA1') == Enchanter.spells.disempower.Name or
+                    Enchanter:get('AURA2') == Enchanter.spells.disempower.Name
+            end
+        }
+    },
     -- 'Runic Scintillation Aura' -- rune aura
     -- unity buffs
-    { Group = 'shield',       Spells = { 'Shield of Memories', 'Shield of Shadow', 'Shield of Restless Ice', 'Greater Shielding', 'Major Shielding', 'Shielding', 'Lesser Shielding', 'Minor Shielding' } },
-    { Group = 'ward',         Spells = { 'Ward of the Beguiler', 'Ward of the Transfixer' },                                                                                                                                                                                                                                                                                                                                                                                                                     Options = { emu = false } },
+    { Group = 'shield', Spells = { 'Shield of Memories', 'Shield of Shadow', 'Shield of Restless Ice', 'Greater Shielding', 'Major Shielding', 'Shielding', 'Lesser Shielding', 'Minor Shielding' } },
+    { Group = 'ward',   Spells = { 'Ward of the Beguiler', 'Ward of the Transfixer' },                                                                                                              Options = { emu = false } },
 
-    { Group = 'spasm',        Spells = { 'Synaptic Seizure', 'Synapsis Spasm', 'Insipid Weakness', 'Listless Power', 'Feckless Might', 'Disempower', 'Ebbing Strength', 'Enfeeblement', 'Weaken' },                                                                                                                                                                                                                                                                                                              Options = { debuff = true, opt = 'USECRIPPLE', emu = true, Gem = function(
-        lvl) return (lvl <= 60 and 6) or (lvl == 70 and 2) or nil end } },                                                                                                                                                                                                                                            --, condition=function() return mq.TLO.Target.Named() end}},
-    { Group = 'dispel',       Spells = { 'Abashi\'s Disempowerment', 'Recant Magic', 'Nullify Magic', 'Strip Enchantment', 'Cancel Magic', 'Taper Enchantment' },                                                                                                                                                                                                                                                                                                                                                Options = { opt = 'USEDISPEL' } },
-    { Group = 'slow',         Spells = { 'Forlorn Deeds', 'Tepid Deeds', 'Languid Pace' },                                                                                                                                                                                                                                                                                                                                                                                                                       Options = { opt = 'USESLOW', debuff = true, slow = true, Gem = function(
-        lvl) return lvl <= 70 and 6 or nil end } },
-    { Group = 'charisma',     Spells = { 'Overwhelming Splendor' },                                                                                                                                                                                                                                                                                                                                                                                                                                              Options = { alias = 'CHA' } },
-    { Group = 'boon',         Spells = { 'Boon of the Legion' } },
+    {
+        Group = 'spasm',
+        Spells = { 'Synaptic Seizure', 'Synapsis Spasm', 'Insipid Weakness', 'Listless Power', 'Feckless Might', 'Disempower', 'Ebbing Strength', 'Enfeeblement', 'Weaken' },
+        Options = {
+            debuff = true,
+            opt = 'USECRIPPLE',
+            emu = true,
+            Gem = function(
+                lvl)
+                return (lvl <= 60 and 6) or (lvl == 70 and 2) or nil
+            end
+        }
+    },                                                                     --, condition=function() return mq.TLO.Target.Named() end}},
+    { Group = 'dispel',   Spells = { 'Abashi\'s Disempowerment', 'Recant Magic', 'Nullify Magic', 'Strip Enchantment', 'Cancel Magic', 'Taper Enchantment' }, Options = { opt = 'USEDISPEL' } },
+    {
+        Group = 'slow',
+        Spells = { 'Forlorn Deeds', 'Tepid Deeds', 'Languid Pace' },
+        Options = {
+            opt = 'USESLOW',
+            debuff = true,
+            slow = true,
+            Gem = function(
+                lvl)
+                return lvl <= 70 and 6 or nil
+            end
+        }
+    },
+    { Group = 'charisma', Spells = { 'Overwhelming Splendor' },                                                                                               Options = { alias = 'CHA' } },
+    { Group = 'boon',     Spells = { 'Boon of the Legion' } },
     Options = { Gem = function(lvl) end, alias = 'BOON' }
 }
 
-Enchanter.compositeNames = { ['Ecliptic Reinforcement'] = true, ['Composite Reinforcement'] = true,
-    ['Dissident Reinforcement'] = true, ['Dichotomic Reinforcement'] = true }
+Enchanter.compositeNames = {
+    ['Ecliptic Reinforcement'] = true,
+    ['Composite Reinforcement'] = true,
+    ['Dissident Reinforcement'] = true,
+    ['Dichotomic Reinforcement'] = true
+}
 Enchanter.allDPSSpellGroups = { 'dot1', 'dot2', 'mindnuke1', 'mindnuke2', 'nuke1', 'nuke2', 'nuke3', 'manadot',
     'nukerune', 'debuffdot', 'stunst', 'stunae', 'stunpbae', 'stunaerune' }
 
@@ -383,11 +524,14 @@ Enchanter.Abilities = {
     {
         Type = 'AA',
         Name = 'Self Stasis',
-        Options = { fade = true, postcast = function()
-            mq.delay(1000)
-            mq.cmd('/removebuff "Self Stasis"')
-            mq.cmd('/makemevis')
-        end }
+        Options = {
+            fade = true,
+            postcast = function()
+                mq.delay(1000)
+                mq.cmd('/removebuff "Self Stasis"')
+                mq.cmd('/makemevis')
+            end
+        }
     },
 
     -- Buffs

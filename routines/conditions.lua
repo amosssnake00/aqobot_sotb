@@ -134,8 +134,9 @@ end
 
 function conditions.withinMeleeDistance(ability)
     local targetDistance = mq.TLO.Target.Distance3D() or 300
-    local targetMaxRange  = mq.TLO.Target.MaxRangeTo() or 0
-    return targetDistance <= targetMaxRange and mq.TLO.Target.LineOfSight() and mq.TLO.Me.Heading() == mq.TLO.Target.HeadingTo()
+    local targetMaxRange = mq.TLO.Target.MaxRangeTo() or 0
+    return targetDistance <= targetMaxRange and mq.TLO.Target.LineOfSight() and
+    mq.TLO.Me.Heading() == mq.TLO.Target.HeadingTo()
 end
 
 function conditions.aboveMobThreshold(ability)
@@ -144,7 +145,8 @@ end
 
 function conditions.useBash(ability)
     return (mq.TLO.Me.AltAbility('Improved Bash')() or mq.TLO.Me.Inventory('offhand').Type() == 'Shield')
-        and (mq.TLO.Target.Distance3D() or 100) < (mq.TLO.Target.MaxMeleeTo() or 0) and mq.TLO.Me.Heading() == mq.TLO.Target.HeadingTo()
+        and (mq.TLO.Target.Distance3D() or 100) < (mq.TLO.Target.MaxMeleeTo() or 0) and
+        mq.TLO.Me.Heading() == mq.TLO.Target.HeadingTo()
 end
 
 function conditions.aggroBelow(ability)
@@ -153,16 +155,16 @@ function conditions.aggroBelow(ability)
 end
 
 function conditions.lowAggroInMelee(ability)
-    local aggropct = mq.TLO.Target.PctAggro() or 100
+    local aggropct       = mq.TLO.Target.PctAggro() or 100
     local targetDistance = mq.TLO.Target.Distance3D() or 300
-    local targetMaxRange  = mq.TLO.Target.MaxRangeTo() or 0
+    local targetMaxRange = mq.TLO.Target.MaxRangeTo() or 0
     return (ability.aggro == nil or aggropct < 100) and targetDistance <= targetMaxRange
 end
 
 function conditions.mobsMissingAggro()
     if state.mobCount >= 2 then
         local xtar_aggro_count = 0
-        for i=1,13 do
+        for i = 1, 13 do
             local xtar = mq.TLO.Me.XTarget(i)
             if xtar.ID() ~= mq.TLO.Target.ID() and xtar.TargetType() == 'Auto Hater' and xtar.PctAggro() < 100 then
                 xtar_aggro_count = xtar_aggro_count + 1

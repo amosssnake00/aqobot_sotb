@@ -19,8 +19,8 @@ local Ranger = class:new()
     https://forums.eqfreelance.net/index.php?topic=16647.0
 ]]
 function Ranger:init()
-    self.classOrder = {'assist', 'aggro', 'debuff', 'heal', 'cast', 'mash', 'burn', 'recover', 'buff', 'rest', 'rez'}
-    self.spellRotations = {standard={},custom={}}
+    self.classOrder = { 'assist', 'aggro', 'debuff', 'heal', 'cast', 'mash', 'burn', 'recover', 'buff', 'rest', 'rez' }
+    self.spellRotations = { standard = {}, custom = {} }
     self:initBase('RNG')
 
     mq.cmd('/squelch /stick mod 0')
@@ -35,137 +35,161 @@ end
 
 function Ranger:initClassOptions()
     if not state.emu then
-        self:addOption('USEUNITYAZIA', 'Use Unity (Azia)', true, nil, 'Use Azia Unity Buff', 'checkbox', 'USEUNITYBEZA', 'UseUnityAzia', 'bool')
-        self:addOption('USEUNITYBEZA', 'Use Unity (Beza)', false, nil, 'Use Beza Unity Buff', 'checkbox', 'USEUNITYAZIA', 'UseUnityBeza', 'bool')
+        self:addOption('USEUNITYAZIA', 'Use Unity (Azia)', true, nil, 'Use Azia Unity Buff', 'checkbox', 'USEUNITYBEZA',
+            'UseUnityAzia', 'bool')
+        self:addOption('USEUNITYBEZA', 'Use Unity (Beza)', false, nil, 'Use Beza Unity Buff', 'checkbox', 'USEUNITYAZIA',
+            'UseUnityBeza', 'bool')
     end
     self:addOption('USERANGE', 'Use Ranged', true, nil, 'Ranged DPS if possible', 'checkbox', nil, 'UseRange', 'bool')
-    self:addOption('USEDOTS', 'Use DoTs', false, nil, 'Cast expensive DoT on all mobs', 'checkbox', nil, 'UseDoTs', 'bool')
-    self:addOption('USEPOISONARROW', 'Use Poison Arrow', true, nil, 'Use Poison Arrows AA', 'checkbox', 'USEFIREARROW', 'UsePoisonArrow', 'bool')
-    self:addOption('USEFIREARROW', 'Use Fire Arrow', false, nil, 'Use Fire Arrows AA', 'checkbox', 'USEPOISONARROW', 'UseFireArrow', 'bool')
+    self:addOption('USEDOTS', 'Use DoTs', false, nil, 'Cast expensive DoT on all mobs', 'checkbox', nil, 'UseDoTs',
+        'bool')
+    self:addOption('USEPOISONARROW', 'Use Poison Arrow', true, nil, 'Use Poison Arrows AA', 'checkbox', 'USEFIREARROW',
+        'UsePoisonArrow', 'bool')
+    self:addOption('USEFIREARROW', 'Use Fire Arrow', false, nil, 'Use Fire Arrows AA', 'checkbox', 'USEPOISONARROW',
+        'UseFireArrow', 'bool')
     -- self:addOption('BUFFGROUP', 'Buff Group', false, nil, 'Buff group members', 'checkbox', nil, 'BuffGroup', 'bool')
     -- self:addOption('DSTANK', 'DS Tank', false, nil, 'DS Tank', 'checkbox', nil, 'DSTank', 'bool')
     self:addOption('USENUKES', 'Use Nukes', false, nil, 'Cast nukes on all mobs', 'checkbox', nil, 'UseNukes', 'bool')
-    self:addOption('USEARROWSPELLS', 'Use Arrow Spells', true, nil, 'Cast arrow spells', 'checkbox', nil, 'UseArrowSpells', 'bool')
-    self:addOption('USEDISPEL', 'Use Dispel', true, nil, 'Dispel mobs with Entropy AA', 'checkbox', nil, 'UseDispel', 'bool')
+    self:addOption('USEARROWSPELLS', 'Use Arrow Spells', true, nil, 'Cast arrow spells', 'checkbox', nil,
+        'UseArrowSpells', 'bool')
+    self:addOption('USEDISPEL', 'Use Dispel', true, nil, 'Dispel mobs with Entropy AA', 'checkbox', nil, 'UseDispel',
+        'bool')
     self:addOption('USEREGEN', 'Use Regen', false, nil, 'Buff regen on self', 'checkbox', nil, 'UseRegen', 'bool')
-    if not state.emu then self:addOption('USECOMPOSITE', 'Use Composite', true, nil, 'Cast composite as its available', 'checkbox', nil, 'UseComposite', 'bool') end
+    if not state.emu then self:addOption('USECOMPOSITE', 'Use Composite', true, nil, 'Cast composite as its available',
+            'checkbox', nil, 'UseComposite', 'bool') end
     self:addOption('USESNARE', 'Use Snare', true, nil, 'Cast snare on mobs', 'checkbox', nil, 'UseSnare', 'bool')
-    self:addOption('USEFADE', 'Use Fade', true, nil, 'Use Cover Tracks AA to reduce aggro', 'checkbox', nil, 'UseFade', 'bool')
-    self:addOption('USEWS', 'Use Weapon Shield', false, nil, 'Use Weapon Shield on aggro', 'checkbox', nil, 'UseWS', 'bool')
-    self:addOption('USEGROUPBURNS', 'Use Group Burns', true, nil, 'Toggle automatic use of Auspice and Group Guardian in burns', 'checkbox', nil, 'UseGroupBurns', 'bool')
-    self:addOption('USEHEALS', 'Use Heals', false, nil, 'Toggle use of single target heal spells', 'checkbox', nil, 'UseHeals', 'bool')
+    self:addOption('USEFADE', 'Use Fade', true, nil, 'Use Cover Tracks AA to reduce aggro', 'checkbox', nil, 'UseFade',
+        'bool')
+    self:addOption('USEWS', 'Use Weapon Shield', false, nil, 'Use Weapon Shield on aggro', 'checkbox', nil, 'UseWS',
+        'bool')
+    self:addOption('USEGROUPBURNS', 'Use Group Burns', true, nil,
+        'Toggle automatic use of Auspice and Group Guardian in burns', 'checkbox', nil, 'UseGroupBurns', 'bool')
+    self:addOption('USEHEALS', 'Use Heals', false, nil, 'Toggle use of single target heal spells', 'checkbox', nil,
+        'UseHeals', 'bool')
 end
 
 Ranger.SpellLines = {
-    {-- Slot 1
-        Group='firenuke1',
-        Spells={'Pyroclastic Ash', 'Wildfire Ash', 'Beastwood Ash', 'Cataclysm Ash', --[[emu cutoff]] 'Hearth Embers', 'Ignite', 'Burst of Fire'},
-        Options={Gem=1},
+    { -- Slot 1
+        Group = 'firenuke1',
+        Spells = { 'Pyroclastic Ash', 'Wildfire Ash', 'Beastwood Ash', 'Cataclysm Ash', --[[emu cutoff]] 'Hearth Embers', 'Ignite', 'Burst of Fire' },
+        Options = { Gem = 1 },
     },
-    {-- 4x archery attacks, Focused Blizzard of Arrows. Slot 2
-        Group='focused',
-        Spells={'Focused Frenzy of Arrows', 'Focused Whirlwind of Arrows', 'Focused Hail of Arrows', 'Focused Storm of Arrows'},
-        Options={opt='USEARROWSPELLS', Gem=function(lvl) return (lvl <= 70 and 5) or (not Ranger:isEnabled('USEAOE') and 2) or nil end}
-    },--, 'Hail of Arrows'})
-    {-- Slot 2
-        Group='aoearrow',
-        Spells={'Arrowstorm'},
-        Options={opt='USEAOE', Gem=function() return not Ranger:isEnabled('USEARROWSPELLS') and 2 or nil end}
+    { -- 4x archery attacks, Focused Blizzard of Arrows. Slot 2
+        Group = 'focused',
+        Spells = { 'Focused Frenzy of Arrows', 'Focused Whirlwind of Arrows', 'Focused Hail of Arrows', 'Focused Storm of Arrows' },
+        Options = { opt = 'USEARROWSPELLS', Gem = function(lvl) return (lvl <= 70 and 5) or
+            (not Ranger:isEnabled('USEAOE') and 2) or nil end }
+    }, --, 'Hail of Arrows'})
+    {  -- Slot 2
+        Group = 'aoearrow',
+        Spells = { 'Arrowstorm' },
+        Options = { opt = 'USEAOE', Gem = function() return not Ranger:isEnabled('USEARROWSPELLS') and 2 or nil end }
     },
-    {-- heal ToT, Meltwater Spring, slow cast. Slot 3
-        Group='healtot2',
-        Spells={'Elizerain Spring', 'Darkflow Spring'},
-        Options={Gem=3, emu=false}
+    { -- heal ToT, Meltwater Spring, slow cast. Slot 3
+        Group = 'healtot2',
+        Spells = { 'Elizerain Spring', 'Darkflow Spring' },
+        Options = { Gem = 3, emu = false }
     },
-    {-- consume class 3 wood silver tip arrow, strong vs animal/humanoid, magic bow shot, Heartruin. Slot 4
-        Group='heart',
-        Spells={'Heartbreak', 'Heartruin', 'Heartslit', 'Heartshot'},
-        Options={opt='USEARROWSPELLS', Gem=function(lvl) return lvl <= 70 and 6 or 4 end}
+    { -- consume class 3 wood silver tip arrow, strong vs animal/humanoid, magic bow shot, Heartruin. Slot 4
+        Group = 'heart',
+        Spells = { 'Heartbreak', 'Heartruin', 'Heartslit', 'Heartshot' },
+        Options = { opt = 'USEARROWSPELLS', Gem = function(lvl) return lvl <= 70 and 6 or 4 end }
     },
-    {-- fire + ice nuke, Summer's Sleet. Slot 5
-        Group='firenuke2',
-        Spells={'Summer\'s Deluge', 'Summer\'s Torrent', 'Summer\'s Mist', 'Scorched Earth', 'Sylvan Burn', 'Burning Arrow', 'Flaming Arrow'},
-        Options={Gem=function(lvl) return lvl <= 70 and 4 or 5 end}
+    { -- fire + ice nuke, Summer's Sleet. Slot 5
+        Group = 'firenuke2',
+        Spells = { 'Summer\'s Deluge', 'Summer\'s Torrent', 'Summer\'s Mist', 'Scorched Earth', 'Sylvan Burn', 'Burning Arrow', 'Flaming Arrow' },
+        Options = { Gem = function(lvl) return lvl <= 70 and 4 or 5 end }
     },
-    {-- main DoT. Slot 6
-        Group='dot',
-        Spells={'Hotaria Swarm', 'Bloodbeetle Swarm', 'Locust Swarm', 'Swarm of Pain', 'Stinging Swarm', 'Flame Lick'},
-        Options={opt='USEDOTS', Gem=function(lvl) return lvl <= 70 and 7 or 6 end}
+    { -- main DoT. Slot 6
+        Group = 'dot',
+        Spells = { 'Hotaria Swarm', 'Bloodbeetle Swarm', 'Locust Swarm', 'Swarm of Pain', 'Stinging Swarm', 'Flame Lick' },
+        Options = { opt = 'USEDOTS', Gem = function(lvl) return lvl <= 70 and 7 or 6 end }
     },
-    {-- heal ToT, Desperate Meltwater, fast cast, long cd. Slot 7
-        Group='healtot',
-        Spells={'Desperate Quenching', 'Desperate Geyser'},
-        Options={Gem=7, emu=false}
+    { -- heal ToT, Desperate Meltwater, fast cast, long cd. Slot 7
+        Group = 'healtot',
+        Spells = { 'Desperate Quenching', 'Desperate Geyser' },
+        Options = { Gem = 7, emu = false }
     },
-    {-- target or tot splash heal + cure. Slot 8
-        Group='balm',
-        Spells={'Lunar Balm'},
-        Options={Gem=8, poison=true, disease=true, curse=true, emu=false}
+    { -- target or tot splash heal + cure. Slot 8
+        Group = 'balm',
+        Spells = { 'Lunar Balm' },
+        Options = { Gem = 8, poison = true, disease = true, curse = true, emu = false }
     },
-    {-- 4x archery attacks + dmg buff to archery attacks for 18s, Marked Shots. Slot 9
-        Group='shots',
-        Spells={'Inevitable Shots', 'Claimed Shots'},
-        Options={opt='USEARROWSPELLS', Gem=9}
+    { -- 4x archery attacks + dmg buff to archery attacks for 18s, Marked Shots. Slot 9
+        Group = 'shots',
+        Spells = { 'Inevitable Shots', 'Claimed Shots' },
+        Options = { opt = 'USEARROWSPELLS', Gem = 9 }
     },
-    {-- DoT + reverse DS, Swarm of Hyperboreads. Slot 10
-        Group='dotds',
-        Spells={'Swarm of Fernflies', 'Swarm of Bloodflies'},
-        Options={opt='USEDOTS', Gem=10}
+    { -- DoT + reverse DS, Swarm of Hyperboreads. Slot 10
+        Group = 'dotds',
+        Spells = { 'Swarm of Fernflies', 'Swarm of Bloodflies' },
+        Options = { opt = 'USEDOTS', Gem = 10 }
     },
-    {-- Slot 11
-        Group='coldnuke1',
-        Spells={'Frostsquall Boon', 'Lunarflare boon', 'Ancient: North Wind', 'Icewind'},
-        Options={Gem=function(lvl) return lvl <= 70 and 3 or 11 end}
-    }, -- 'Fernflash Boon', 
-    {-- double bow shot and fire+ice nuke. Slot 12
-        Group='composite',
-        Spells={'Composite Fusillade'},
-        Options={Gem=12, emu=false}
+    { -- Slot 11
+        Group = 'coldnuke1',
+        Spells = { 'Frostsquall Boon', 'Lunarflare boon', 'Ancient: North Wind', 'Icewind' },
+        Options = { Gem = function(lvl) return lvl <= 70 and 3 or 11 end }
+    }, -- 'Fernflash Boon',
+    {  -- double bow shot and fire+ice nuke. Slot 12
+        Group = 'composite',
+        Spells = { 'Composite Fusillade' },
+        Options = { Gem = 12, emu = false }
     },
-    {-- Slot 13
-        Group='alliance',
-        Spells={'Arbor Stalker\'s Coalition'},
-        Options={Gem=13, emu=false}
+    { -- Slot 13
+        Group = 'alliance',
+        Spells = { 'Arbor Stalker\'s Coalition' },
+        Options = { Gem = 13, emu = false }
     },
 
-    {Group='opener', Spells={'Stealthy Shot'}, Options={opt='USEARROWSPELLS'}}, -- consume class 3 wood silver tip arrow, strong bow shot opener, OOC only
+    { Group = 'opener',  Spells = { 'Stealthy Shot' },                                                                                                                                     Options = { opt = 'USEARROWSPELLS' } },                                                        -- consume class 3 wood silver tip arrow, strong bow shot opener, OOC only
     -- summers == 2x nuke, fire and ice. flash boon == buff fire nuke, frost boon == buff ice nuke. laurion ash == normal fire nuke. gelid wind == normal ice nuke
-    {Group='firenuke3', Spells={'Laurion Ash'}, Options={emu=false}}, -- fire + ice nuke, Summer's Sleet
-    {Group='coldnuke2', Spells={'Gelid Wind', 'Frost Wind'}, Options={Gem=function(lvl) return lvl <= 70 and 2 end}}, -- 
-    {Group='rain', Spells={'Invoke Lightning'}, Options={Gem=function(lvl) return lvl <= 60 and 3 or nil end, opt='USEAOE'}},
-    {Group='dmgbuff', Spells={'Arbor Stalker\'s Enrichment', --[[emu cutoff]] 'Nature\'s Precision', 'Firefist'}, Options={selfbuff=true}}, -- inc base dmg of skill attacks, Arbor Stalker's Enrichment
-    {Group='buffs', Spells={'Shout of the Fernstalker', 'Shout of the Dusksage Stalker'}, Options={selfbuff=true, emu=false}}, -- cloak of rimespurs, frostroar of the predator, strength of the arbor stalker, Shout of the Arbor Stalker
+    { Group = 'firenuke3', Spells = { 'Laurion Ash' },                                                                                                                                     Options = { emu = false } },                                                                   -- fire + ice nuke, Summer's Sleet
+    { Group = 'coldnuke2', Spells = { 'Gelid Wind', 'Frost Wind' },                                                                                                                        Options = { Gem = function(
+        lvl) return lvl <= 70 and 2 end } },                                                                                                                                                                                                                                              --
+    { Group = 'rain',    Spells = { 'Invoke Lightning' },                                                                                                                                  Options = { Gem = function(
+        lvl) return lvl <= 60 and 3 or nil end, opt = 'USEAOE' } },
+    { Group = 'dmgbuff', Spells = { 'Arbor Stalker\'s Enrichment', --[[emu cutoff]] 'Nature\'s Precision', 'Firefist' },                                                                   Options = { selfbuff = true } },                                                               -- inc base dmg of skill attacks, Arbor Stalker's Enrichment
+    { Group = 'buffs',   Spells = { 'Shout of the Fernstalker', 'Shout of the Dusksage Stalker' },                                                                                         Options = { selfbuff = true, emu = false } },                                                  -- cloak of rimespurs, frostroar of the predator, strength of the arbor stalker, Shout of the Arbor Stalker
     -- Shout of the X Stalker Buffs
-    {Group='cloak', Spells={'Cloak of Needlespikes', 'Cloak of Bloodbarbs', --[[emu cutoff]] 'Riftwood\'s Protection'}}, -- Cloak of Rimespurs
-    {Group='predator', Spells={'Shriek of the Predator', 'Bay of the Predator', 'Howl of the Predator', 'Spirit of the Predator'}, Options={alias='SHOUT', selfbuff=true, Gem=function(lvl) return lvl <= 70 and 9 or nil end}}, -- Frostroar of the Predator
-    {Group='strength', Spells={'Strength of the Fernstalker', 'Strength of the Dusksage Stalker', 'Strength of the Hunter', 'Strength of Tunare', --[[emu cutoff]] 'Strength of Earth'}, Options={Gem=function(lvl) return lvl <= 70 and 8 or nil end, alias='STRENGTH', selfbuff=true}}, -- Strength of the Arbor Stalker
+    { Group = 'cloak',   Spells = { 'Cloak of Needlespikes', 'Cloak of Bloodbarbs', --[[emu cutoff]] 'Riftwood\'s Protection' } },                                                                                                                                                        -- Cloak of Rimespurs
+    { Group = 'predator', Spells = { 'Shriek of the Predator', 'Bay of the Predator', 'Howl of the Predator', 'Spirit of the Predator' },                                                  Options = { alias = 'SHOUT', selfbuff = true, Gem = function(
+        lvl) return lvl <= 70 and 9 or nil end } },                                                                                                                                                                                                                                       -- Frostroar of the Predator
+    { Group = 'strength', Spells = { 'Strength of the Fernstalker', 'Strength of the Dusksage Stalker', 'Strength of the Hunter', 'Strength of Tunare', --[[emu cutoff]] 'Strength of Earth' }, Options = { Gem = function(
+        lvl) return lvl <= 70 and 8 or nil end, alias = 'STRENGTH', selfbuff = true } },                                                                                                                                                                                                  -- Strength of the Arbor Stalker
     -- Unity AA Buffs
     -- {Group='protection', Spells={'Protection of Pal\'Lomen', 'Protection of the Valley', 'Ward of the Hunter', 'Protection of the Wild'}, Options={selfbuff=true}}, -- Protection of the Wakening Land
-    {Group='eyes', Spells={'Eyes of the Phoenix', 'Eyes of the Senshali', 'Eyes of the Hawk', 'Eyes of the Owl'}, Options={Gem=function(lvl) return lvl <= 70 and 12 or nil end, selfbuff=true}}, -- Eyes of the Visionary
-    {Group='hunt', Spells={'Engulfed by the Hunt', 'Steeled by the Hunt'}, Options={emu=false}}, -- Provoked by the Hunt
-    {Group='coat', Spells={'Needlespike Coat', 'Moonthorn Coat', --[[emu cutoff]] 'Bramblecoat', 'Barbcoat'}}, -- Rimespur Coat
-    {Group='sow', Spells={'Spirit of Wolf'}, Options={}},
+    { Group = 'eyes',    Spells = { 'Eyes of the Phoenix', 'Eyes of the Senshali', 'Eyes of the Hawk', 'Eyes of the Owl' },                                                                Options = { Gem = function(
+        lvl) return lvl <= 70 and 12 or nil end, selfbuff = true } },                                                                                                                             -- Eyes of the Visionary
+    { Group = 'hunt',    Spells = { 'Engulfed by the Hunt', 'Steeled by the Hunt' },                                                                                                       Options = { emu = false } }, -- Provoked by the Hunt
+    { Group = 'coat',    Spells = { 'Needlespike Coat', 'Moonthorn Coat', --[[emu cutoff]] 'Bramblecoat', 'Barbcoat' } },                                                                         -- Rimespur Coat
+    { Group = 'sow',     Spells = { 'Spirit of Wolf' },                                                                                                                                    Options = {} },
     -- Unity Azia only
-    {Group='barrage', Spells={'Devastating Barrage'}}, -- Devastating Velium
+    { Group = 'barrage', Spells = { 'Devastating Barrage' } },                                                                                                                          -- Devastating Velium
     -- Unity Beza only
-    {Group='blades', Spells={'Arcing Blades', 'Vociferous Blades', 'Call of Lightning', 'Sylvan Call'}, Options={Gem=function(lvl) return lvl <= 70 and 11 or nil end, selfbuff=true}}, -- Howling Blades
-    {Group='ds', Spells={'Shield of Needlespikes', 'Shield of Shadethorns'}}, -- DS
-    {Group='rune', Spells={'Shalowain\'s Crucible Cloak', 'Luclin\'s Darkfire Cloak'}, Options={selfbuff=true, emu=false}}, -- self rune + debuff proc
-    {Group='regen', Spells={'Dusksage Stalker\'s Vigor'}}, -- regen
-    {Group='snare', Spells={'Ensnare', 'Snare', 'Tangling Weeds'}, Options={Gem=function(lvl) return lvl <= 60 and 2 or nil end, opt='USESNARE', debuff=true}},
-    {Group='dispel', Spells={'Nature\'s Balance', --[[emu cutoff]] 'Cancel Magic'}, Options={opt='USEDISPEL', debuff=true}},
+    { Group = 'blades',  Spells = { 'Arcing Blades', 'Vociferous Blades', 'Call of Lightning', 'Sylvan Call' },                                                                            Options = { Gem = function(
+        lvl) return lvl <= 70 and 11 or nil end, selfbuff = true } },                                                                                                                   -- Howling Blades
+    { Group = 'ds',      Spells = { 'Shield of Needlespikes', 'Shield of Shadethorns' } },                                                                                              -- DS
+    { Group = 'rune',    Spells = { 'Shalowain\'s Crucible Cloak', 'Luclin\'s Darkfire Cloak' },                                                                                           Options = { selfbuff = true, emu = false } }, -- self rune + debuff proc
+    { Group = 'regen',   Spells = { 'Dusksage Stalker\'s Vigor' } },                                                                                                                    -- regen
+    { Group = 'snare',   Spells = { 'Ensnare', 'Snare', 'Tangling Weeds' },                                                                                                                Options = { Gem = function(
+        lvl) return lvl <= 60 and 2 or nil end, opt = 'USESNARE', debuff = true } },
+    { Group = 'dispel',  Spells = { 'Nature\'s Balance', --[[emu cutoff]] 'Cancel Magic' },                                                                                                Options = { opt = 'USEDISPEL', debuff = true } },
     -- Maelstrom of Blades, 4x 1h slash
     -- Jolting Emberquartz, add proc decrease hate
     -- Cloud of Guardian Fernflies, big ds
     -- Therapeutic Balm, cure/heal
     -- Devastating Spate, dd proc?
-    {Group='heal', Spells={'Sylvan Water', 'Sylvan Light', 'Healing', 'Light Healing', 'Minor Healing', 'Salve'}, Options={opt='USEHEALS', Gem=function(lvl) return (lvl <= 60 and 7) or (lvl <= 70 and 10) or nil end, heal=true, regular=true}},
-    {Group='joltspell', Spells={'Cinder Jolt'}, Options={Gem=function(lvl) return lvl <= 70 and 12 or nil end, fade=true}}
+    { Group = 'heal',    Spells = { 'Sylvan Water', 'Sylvan Light', 'Healing', 'Light Healing', 'Minor Healing', 'Salve' },                                                                Options = { opt = 'USEHEALS', Gem = function(
+        lvl) return (lvl <= 60 and 7) or (lvl <= 70 and 10) or nil end, heal = true, regular = true } },
+    { Group = 'joltspell', Spells = { 'Cinder Jolt' },                                                                                                                                     Options = { Gem = function(
+        lvl) return lvl <= 70 and 12 or nil end, fade = true } }
 }
 
-Ranger.compositeNames = {['Ecliptic Fusillade']=true, ['Composite Fusillade']=true, ['Dissident Fusillade']=true, ['Dichotomic Fusillade']=true}
-Ranger.allDPSSpellGroups = {'firenuke1', 'focused', 'aoearrow', 'healtot2', 'heart', 'firenuke2', 'dot', 'healtot', 'shots', 'dotds', 'coldnuke1', 'composite', 
-    'alliance', 'opener', 'firenuke3', 'coldnuke2', 'barrage', 'snare', 'rain'}
+Ranger.compositeNames = { ['Ecliptic Fusillade'] = true, ['Composite Fusillade'] = true, ['Dissident Fusillade'] = true,
+    ['Dichotomic Fusillade'] = true }
+Ranger.allDPSSpellGroups = { 'firenuke1', 'focused', 'aoearrow', 'healtot2', 'heart', 'firenuke2', 'dot', 'healtot',
+    'shots', 'dotds', 'coldnuke1', 'composite',
+    'alliance', 'opener', 'firenuke3', 'coldnuke2', 'barrage', 'snare', 'rain' }
 
 function Ranger:initSpellRotations()
     self:initBYOSCustom()
@@ -191,143 +215,143 @@ function Ranger:initSpellRotations()
     -- if state.emu then
     --     table.insert(self.combat_heal_spells, self.spells.heal)
     -- else
-        table.insert(self.combat_heal_spells, self.spells.healtot)
-        table.insert(self.combat_heal_spells, self.spells.healtot2) -- replacing in main spell lineup with self rune buff
+    table.insert(self.combat_heal_spells, self.spells.healtot)
+    table.insert(self.combat_heal_spells, self.spells.healtot2)     -- replacing in main spell lineup with self rune buff
     -- end
 end
 
 Ranger.Abilities = {
     -- DPS
     { -- inc dmg from fire+ice nukes, 1min CD
-        Type='AA',
-        Name='Elemental Arrow',
-        Options={dps=true}
+        Type = 'AA',
+        Name = 'Elemental Arrow',
+        Options = { dps = true }
     },
     { -- 4x arrows, 12s CD, timer 6
-        Type='Disc',
-        Group='focused',
-        Names={'Focused Blizzard of Blades'},
-        Options={dps=true}
+        Type = 'Disc',
+        Group = 'focused',
+        Names = { 'Focused Blizzard of Blades' },
+        Options = { dps = true }
     },
     { -- 4x melee attacks + group HoT, 10min CD, timer 19
-        Type='Disc',
-        Group='reflexive',
-        Names={'Reflexive Rimespurs'},
-        Options={dps=true}
+        Type = 'Disc',
+        Group = 'reflexive',
+        Names = { 'Reflexive Rimespurs' },
+        Options = { dps = true }
     },
     -- table.insert(mashDiscs, self:addAA('Tempest of Blades')) -- frontal cone melee flurry, 12s CD
     { -- agro reducer kick, timer 9, procs synergy, Jolting Roundhouse Kicks
-        Type='Disc',
-        Group='jolting',
-        Names={'Jolting Drop Kicks', 'Jolting Roundhouse Kicks', 'Jolting Snapkicks'},
-        Options={dps=true}
+        Type = 'Disc',
+        Group = 'jolting',
+        Names = { 'Jolting Drop Kicks', 'Jolting Roundhouse Kicks', 'Jolting Snapkicks' },
+        Options = { dps = true }
     },
     {
-        Type='Skill',
-        Name='Kick',
-        Options={dps=true, condition=conditions.withinMeleeDistance}
+        Type = 'Skill',
+        Name = 'Kick',
+        Options = { dps = true, condition = conditions.withinMeleeDistance }
     },
 
     -- Burns
     { -- 7.5min CD
-        Type='AA',
-        Name='Spire of the Pathfinders',
-        Options={first=true, emu=false}
+        Type = 'AA',
+        Name = 'Spire of the Pathfinders',
+        Options = { first = true, emu = false }
     },
     { -- 7.5min CD
-        Type='AA',
-        Name='Fundament: First Spire of the Pathfinders',
-        Options={first=true, emu=true}
+        Type = 'AA',
+        Name = 'Fundament: First Spire of the Pathfinders',
+        Options = { first = true, emu = true }
     },
     {
-        Type='AA',
-        Name='Auspice of the Hunter',
-        Options={alias='AUSPICE', opt='USEGROUPBURNS', first=true}
+        Type = 'AA',
+        Name = 'Auspice of the Hunter',
+        Options = { alias = 'AUSPICE', opt = 'USEGROUPBURNS', first = true }
     },
     { -- base dmg, atk, overhaste, 10min CD
-        Type='AA',
-        Name='Group Guardian of the Forest',
-        Options={alias='GUARDIAN', opt='USEGROUPBURNS', first=true}
+        Type = 'AA',
+        Name = 'Group Guardian of the Forest',
+        Options = { alias = 'GUARDIAN', opt = 'USEGROUPBURNS', first = true }
     },
     { -- swarm pets, 15min CD
-        Type='AA',
-        Name='Pack Hunt',
-        Options={first=true}
+        Type = 'AA',
+        Name = 'Pack Hunt',
+        Options = { first = true }
     },
     { -- melee dmg burn, 10min CD
-        Type='AA',
-        Name='Empowered Blades',
-        Options={first=true}
+        Type = 'AA',
+        Name = 'Empowered Blades',
+        Options = { first = true }
     },
     { -- base dmg, atk, overhaste, 6min CD
-        Type='AA',
-        Name='Guardian of the Forest',
-        Options={first=true}
+        Type = 'AA',
+        Name = 'Guardian of the Forest',
+        Options = { first = true }
     },
     { -- base dmg, accuracy, atk, crit dmg, 5min CD
-        Type='AA',
-        Name='Outrider\'s Accuracy',
-        Options={first=true}
+        Type = 'AA',
+        Name = 'Outrider\'s Accuracy',
+        Options = { first = true }
     },
     { -- 100% wep proc chance, 8min CD
-        Type='AA',
-        Name='Imbued Ferocity',
-        Options={first=true}
+        Type = 'AA',
+        Name = 'Imbued Ferocity',
+        Options = { first = true }
     },
     { -- silent casting
-        Type='AA',
-        Name='Silent Strikes',
-        Options={first=true}
+        Type = 'AA',
+        Name = 'Silent Strikes',
+        Options = { first = true }
     },
     { -- does what?, 20min CD
-        Type='AA',
-        Name='Scarlet Cheetah\'s Fang',
-        Options={first=true}
+        Type = 'AA',
+        Name = 'Scarlet Cheetah\'s Fang',
+        Options = { first = true }
     },
     --table.insert(self.burnAbilities, common.getBestDisc({'Warder\'s Wrath'}))
     {
-        Type='AA',
-        Name='Poison Arrows',
-        Options={first=true, nodmz=true} -- opt='USEPOISONARROW'
+        Type = 'AA',
+        Name = 'Poison Arrows',
+        Options = { first = true, nodmz = true } -- opt='USEPOISONARROW'
     },
     {
-        Type='AA',
-        Name='Volatile Arrow',
-        Options={first=true}
+        Type = 'AA',
+        Name = 'Volatile Arrow',
+        Options = { first = true }
     },
     { -- melee dmg buff, 19.5min CD, timer 2, Arbor Stalker's Discipline
-        Type='Disc',
-        Group='meleedmgbuff',
-        Names={'Fernstalker\'s Discipline', 'Dusksage Stalker\'s Discipline'},
-        Options={first=true}
+        Type = 'Disc',
+        Group = 'meleedmgbuff',
+        Names = { 'Fernstalker\'s Discipline', 'Dusksage Stalker\'s Discipline' },
+        Options = { first = true }
     },
     {
-        Type='Disc',
-        Group='pureshot',
-        Names={'Pureshot Discipline'},
-        Options={rangedburn=true}
+        Type = 'Disc',
+        Group = 'pureshot',
+        Names = { 'Pureshot Discipline' },
+        Options = { rangedburn = true }
     },
 
     -- Buffs
     {
-        Type='AA',
-        Name='Outrider\'s Evasion',
-        Options={selfbuff=true}
+        Type = 'AA',
+        Name = 'Outrider\'s Evasion',
+        Options = { selfbuff = true }
     },
     { -- 10m cd, 4min buff procs 100% parry below 50% HP
-        Type='AA',
-        Name='Bulwark of the Brownies',
-        Options={selfbuff=true}
+        Type = 'AA',
+        Name = 'Bulwark of the Brownies',
+        Options = { selfbuff = true }
     },
     { -- 5min cd, 3min buff procs hate reduction below 50% HP
-        Type='AA',
-        Name='Chameleon\'s Gift',
-        Options={selfbuff=true}
+        Type = 'AA',
+        Name = 'Chameleon\'s Gift',
+        Options = { selfbuff = true }
     },
     { -- 20min cd, large rune
-        Type='AA',
-        Name='Protection of the Spirit Wolf',
-        Options={key='protection'}
+        Type = 'AA',
+        Name = 'Protection of the Spirit Wolf',
+        Options = { key = 'protection' }
     },
     --Slot 1: 	Devastating Barrage
     --Slot 2: 	Steeled by the Hunt
@@ -335,9 +359,9 @@ Ranger.Abilities = {
     --Slot 4: 	Eyes of the Senshali
     --Slot 5: 	Moonthorn Coat
     {
-        Type='AA',
-        Name='Wildstalker\'s Unity (Azia)',
-        Options={selfbuff=true, opt='USEUNITYAZIA', CheckFor='Devastating Barrage', emu=false}
+        Type = 'AA',
+        Name = 'Wildstalker\'s Unity (Azia)',
+        Options = { selfbuff = true, opt = 'USEUNITYAZIA', CheckFor = 'Devastating Barrage', emu = false }
     },
     --Slot 1: 	Vociferous Blades
     --Slot 2: 	Steeled by the Hunt
@@ -345,55 +369,58 @@ Ranger.Abilities = {
     --Slot 4: 	Eyes of the Senshali
     --Slot 5: 	Moonthorn Coat
     {
-        Type='AA',
-        Name='Wildstalker\'s Unity (Beza)',
-        Options={selfbuff=true, opt='USEUNITYBEZA', CheckFor='Vociferous Blades', emu=false}
+        Type = 'AA',
+        Name = 'Wildstalker\'s Unity (Beza)',
+        Options = { selfbuff = true, opt = 'USEUNITYBEZA', CheckFor = 'Vociferous Blades', emu = false }
     },
     {
-        Type='Disc',
-        Group='trueshot',
-        Names={'Trueshot Discipline'},
-        Options={emu=true, first=true}
+        Type = 'Disc',
+        Group = 'trueshot',
+        Names = { 'Trueshot Discipline' },
+        Options = { emu = true, first = true }
     },
     {
-        Type='AA',
-        Name='Poison Arrows',
-        Options={opt='USEPOISONARROW', nodmz=true, selfbuff=true}
+        Type = 'AA',
+        Name = 'Poison Arrows',
+        Options = { opt = 'USEPOISONARROW', nodmz = true, selfbuff = true }
     },
     {
-        Type='AA',
-        Name='Flaming Arrows',
-        Options={opt='USEFIREARROW', nodmz=true, selfbuff=true}
+        Type = 'AA',
+        Name = 'Flaming Arrows',
+        Options = { opt = 'USEFIREARROW', nodmz = true, selfbuff = true }
     },
 
     -- Debuffs
     {
-        Type='AA',
-        Name='Entropy of Nature',
-        Options={opt='USEDISPEL', debuff=true}
+        Type = 'AA',
+        Name = 'Entropy of Nature',
+        Options = { opt = 'USEDISPEL', debuff = true }
     },
     {
-        Type='AA',
-        Name='Entrap',
-        Options={opt='USESNARE', debuff=true}
+        Type = 'AA',
+        Name = 'Entrap',
+        Options = { opt = 'USESNARE', debuff = true }
     },
 
     -- Defensives
     {
-        Type='Disc',
-        Group='weaponshield',
-        Names={'Weapon Shield Discipline'},
-        Options={opt='USEWS', defensive=true, condition=function() return mq.TLO.Target.Named() end}
+        Type = 'Disc',
+        Group = 'weaponshield',
+        Names = { 'Weapon Shield Discipline' },
+        Options = { opt = 'USEWS', defensive = true, condition = function() return mq.TLO.Target.Named() end }
     },
     { -- 7min cd, 85% avoidance, 10% absorb
-        Type='AA',
-        Name='Outrider\'s Evasion',
-        Options={defensive=true}
+        Type = 'AA',
+        Name = 'Outrider\'s Evasion',
+        Options = { defensive = true }
     },
     {
-        Type='AA',
-        Name='Cover Tracks',
-        Options={fade=true, opt='USEFADE', postcast=function() mq.delay(1000) mq.cmd('/makemevis') end}
+        Type = 'AA',
+        Name = 'Cover Tracks',
+        Options = { fade = true, opt = 'USEFADE', postcast = function()
+            mq.delay(1000)
+            mq.cmd('/makemevis')
+        end }
     },
 }
 
@@ -406,14 +433,14 @@ local function getRangedCombatPosition(radius)
     if not rangedTimer:expired() then return false end
     rangedTimer:reset()
     local assistMobID = state.assistMobID
-    local mob_x = mq.TLO.Spawn('id '..assistMobID).X()
-    local mob_y = mq.TLO.Spawn('id '..assistMobID).Y()
-    local mob_z = mq.TLO.Spawn('id '..assistMobID).Z()
-    local degrees = mq.TLO.Spawn('id '..assistMobID).Heading.Degrees()
+    local mob_x = mq.TLO.Spawn('id ' .. assistMobID).X()
+    local mob_y = mq.TLO.Spawn('id ' .. assistMobID).Y()
+    local mob_z = mq.TLO.Spawn('id ' .. assistMobID).Z()
+    local degrees = mq.TLO.Spawn('id ' .. assistMobID).Heading.Degrees()
     if not mob_x or not mob_y or not mob_z or not degrees then return false end
     local my_heading = degrees
     local base_radian = 10
-    for i=1,36 do
+    for i = 1, 36 do
         local x_move = math.cos(math.rad(helpers.convertHeading(base_radian * i + my_heading)))
         local y_move = math.sin(math.rad(helpers.convertHeading(base_radian * i + my_heading)))
         local x_off = mob_x + radius * x_move
@@ -422,7 +449,8 @@ local function getRangedCombatPosition(radius)
         if mq.TLO.Navigation.PathLength(string.format('loc yxz %d %d %d', y_off, x_off, z_off))() < 150 then
             if mq.TLO.LineOfSight(string.format('%d,%d,%d:%d,%d,%d', y_off, x_off, z_off, mob_y, mob_x, mob_z))() then
                 if mq.TLO.EverQuest.ValidLoc(string.format('%d %d %d', x_off, y_off, z_off))() then
-                    local xtars = mq.TLO.SpawnCount(string.format('npc xtarhater loc %d %d %d radius 75', y_off, x_off, z_off))()
+                    local xtars = mq.TLO.SpawnCount(string.format('npc xtarhater loc %d %d %d radius 75', y_off, x_off,
+                        z_off))()
                     local allmobs = mq.TLO.SpawnCount(string.format('npc loc %d %d %d radius 75', y_off, x_off, z_off))()
                     if allmobs - xtars == 0 then
                         logger.info('Found a valid location at %d %d %d', y_off, x_off, z_off)
@@ -475,7 +503,7 @@ local function attackRanged()
         if mq.TLO.Target.LineOfSight() then
             local maxRangeTo = mq.TLO.Target.MaxRangeTo() or 0
             --mq.cmdf('/squelch /stick hold moveback behind %s uw', math.min(maxRangeTo*.75, 25))
-            mq.cmdf('/squelch /stick snaproll moveback behind %s uw', math.min(maxRangeTo*.75, 25))
+            mq.cmdf('/squelch /stick snaproll moveback behind %s uw', math.min(maxRangeTo * .75, 25))
         else
             assist.checkLOS()
         end
@@ -504,28 +532,28 @@ end
     2. focused shot -- strongest arrow spell
     3. dicho -- strong arrow spell
     4. wildfire spam
-]]--
+]] --
 local function findNextSpell()
     local tothp = mq.TLO.Me.TargetOfTarget.PctHPs()
     if tothp and mq.TLO.Target() and mq.TLO.Target.Type() == 'NPC' and mq.TLO.Me.TargetOfTarget() and tothp < 65 then
-        for _,spell in ipairs(Ranger.combat_heal_spells) do
+        for _, spell in ipairs(Ranger.combat_heal_spells) do
             if spell:isReady() == abilities.IsReady.SHOULD_CAST then
                 return spell
             end
         end
     end
     local isNamed = common.isNamedMob(mq.TLO.Zone.ShortName(), mq.TLO.Target.CleanName())
-    for _,spell in ipairs(Ranger.dot_spells) do
+    for _, spell in ipairs(Ranger.dot_spells) do
         if spell.Name ~= Ranger.spells.dot.Name or Ranger:isEnabled('USEDOTS')
-                or (state.burnActive and isNamed)
-                or (config.get('BURNALWAYS') and isNamed) then
+            or (state.burnActive and isNamed)
+            or (config.get('BURNALWAYS') and isNamed) then
             if spell:isReady() == abilities.IsReady.SHOULD_CAST then
                 return spell
             end
         end
     end
     if Ranger:isEnabled('USEARROWSPELLS') then
-        for _,spell in ipairs(Ranger.arrow_spells) do
+        for _, spell in ipairs(Ranger.arrow_spells) do
             if not Ranger.spells.composite or spell.Name ~= Ranger.spells.composite.Name or Ranger:isEnabled('USECOMPOSITE') then
                 if spell:isReady() == abilities.IsReady.SHOULD_CAST then
                     return spell
@@ -534,7 +562,7 @@ local function findNextSpell()
         end
     end
     if Ranger:isEnabled('USENUKES') then
-        for _,spell in ipairs(Ranger.dd_spells) do
+        for _, spell in ipairs(Ranger.dd_spells) do
             if spell:isReady() == abilities.IsReady.SHOULD_CAST then
                 return spell
             end
@@ -552,10 +580,10 @@ function Ranger:cast()
                 snared_id = mq.TLO.Target.ID()
                 return true
             end
-            for _,clicky in ipairs(self.castClickies) do
+            for _, clicky in ipairs(self.castClickies) do
                 if clicky.enabled then
                     if (clicky.DurationTotalSeconds > 0 and mq.TLO.Target.Buff(clicky.CheckFor)()) or
-                            (clicky.MyCastTime >= 0 and mq.TLO.Me.Moving()) then
+                        (clicky.MyCastTime >= 0 and mq.TLO.Me.Moving()) then
                         movement.stop()
                         if clicky:use() then return end
                     end
@@ -586,14 +614,14 @@ end
     13. silent strikes
     14. bulwark of the brownies
     15. scarlet cheetah fang
-]]--
+]] --
 function Ranger:burnClass()
     if mq.TLO.Me.Combat() then
-        for _,disc in ipairs(self.burnAbilities) do
+        for _, disc in ipairs(self.burnAbilities) do
             disc:use()
         end
     elseif mq.TLO.Me.AutoFire() then
-        for _,disc in ipairs(self.rangedBurnAbilities) do
+        for _, disc in ipairs(self.rangedBurnAbilities) do
             disc:use()
         end
     end
@@ -620,7 +648,7 @@ end
 
 local function missing_unity_buffs(name)
     local spell = mq.TLO.Spell(name)
-    for i=1,spell.NumEffects() do
+    for i = 1, spell.NumEffects() do
         local trigger_spell = spell.Trigger(i)
         if not mq.TLO.Me.Buff(trigger_spell.Name())() then return true end
     end
@@ -631,7 +659,7 @@ local function spawn_missing_cachedbuff(spawn, name)
     local spell = mq.TLO.Spell(name)
     -- skip 470 for now
     if spell.HasSPA(374)() then
-        for i=1,spell.NumEffects() do
+        for i = 1, spell.NumEffects() do
             local trigger_spell = spell.Trigger(i)
             if not spawn.CachedBuff(trigger_spell.Name())() and spell.StacksSpawn(spawn.ID())() then return true end
         end
@@ -644,7 +672,7 @@ end
 local function target_missing_buff(name)
     local spell = mq.TLO.Spell(name)
     if spell.HasSPA(374)() then
-        for i=1,spell.NumEffects() do
+        for i = 1, spell.NumEffects() do
             local trigger_spell = spell.Trigger(i)
             if not mq.TLO.Target.Buff(trigger_spell.Name())() and spell.StacksTarget() then return true end
         end

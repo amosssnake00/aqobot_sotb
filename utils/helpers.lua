@@ -5,8 +5,8 @@ function helpers.split(input, sep)
     if sep == nil then
         sep = "|"
     end
-    local t={}
-    for str in string.gmatch(input, "([^"..sep.."]+)") do
+    local t = {}
+    for str in string.gmatch(input, "([^" .. sep .. "]+)") do
         table.insert(t, str)
     end
     return t
@@ -16,8 +16,8 @@ function helpers.splitSet(input, sep)
     if sep == nil then
         sep = "|"
     end
-    local t={}
-    for str in string.gmatch(input, "([^"..sep.."]+)") do
+    local t = {}
+    for str in string.gmatch(input, "([^" .. sep .. "]+)") do
         t[str] = true
     end
     return t
@@ -49,7 +49,7 @@ MQ degrees start from 0 on the top and go cw
        |
        |
       180
-]]--
+]] --
 ---Convert an MQ heading degrees value to a "regular" degrees value.
 ---@param heading number @The MQ heading degrees value to convert.
 ---@return number @The regular heading degrees value.

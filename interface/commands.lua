@@ -30,26 +30,26 @@ end
 
 local function printMDTable(columns, rows, keys, valueFormatter)
     local tbl = ''
-    for _,col in ipairs(columns) do
+    for _, col in ipairs(columns) do
         tbl = tbl .. '|' .. col
     end
     tbl = tbl .. '|\n'
-    for _,_ in ipairs(columns) do
+    for _, _ in ipairs(columns) do
         tbl = tbl .. '|---'
     end
     tbl = tbl .. '|\n'
     if type(rows) == 'function' then
         tbl = rows(tbl)
     else
-        for _,row in ipairs(rows) do
+        for _, row in ipairs(rows) do
             if keys then
-                for i,key in ipairs(keys) do
+                for i, key in ipairs(keys) do
                     tbl = tbl .. '|' .. row[key]
                 end
             elseif valueFormatter then
                 tbl = tbl .. (valueFormatter(row) or '')
             else
-                for i,val in ipairs(row) do
+                for i, val in ipairs(row) do
                     tbl = tbl .. '|' .. val
                 end
             end
@@ -61,25 +61,26 @@ local function printMDTable(columns, rows, keys, valueFormatter)
 end
 
 local function printMD()
-    
+
 end
 
 ---Display help information for the script.
 local function showHelp()
-    local prefix = '\n- /'..state.class..' '
+    local prefix = '\n- /' .. state.class .. ' '
     local output = logger.logLine('AQO Bot 1.0\n')
     output = output .. '\ayCommands:\aw'
-    for _,command in ipairs(constants.commandHelp) do
+    for _, command in ipairs(constants.commandHelp) do
         output = output .. prefix .. command.command .. ' -- ' .. command.tip
     end
     -- printMDTable({'Command', 'Description'}, constants.commandHelp, {'command', 'tip'})
-    output = output .. '\n- /nowcast [name] alias <targetID> -- Tells the named character or yourself to cast a spell on the specified target ID.'
-    for _,category in ipairs(config.categories()) do
+    output = output ..
+    '\n- /nowcast [name] alias <targetID> -- Tells the named character or yourself to cast a spell on the specified target ID.'
+    for _, category in ipairs(config.categories()) do
         output = output .. '\n\ay' .. category .. ' configuration:\aw'
-        for _,key in ipairs(config.getByCategory(category)) do
+        for _, key in ipairs(config.getByCategory(category)) do
             local cfg = config[key]
             if type(cfg) == 'table' and (not cfg.classes or cfg.classes[state.class]) then
-                output = output .. prefix .. key .. ' <' .. type(cfg.value) .. '> -- '..cfg.tip
+                output = output .. prefix .. key .. ' <' .. type(cfg.value) .. '> -- ' .. cfg.tip
             end
         end
         -- printMDTable({'Command', 'Description'}, config.getByCategory(category), nil, function(key)
@@ -90,11 +91,11 @@ local function showHelp()
         -- end)
     end
     output = output .. '\n\ayClass Configuration\aw'
-    for key,value in pairs(class.options) do
+    for key, value in pairs(class.options) do
         local valueType = type(value.value)
         if valueType == 'string' or valueType == 'number' or valueType == 'boolean' then
             output = output .. prefix .. key .. ' <' .. valueType .. '>'
-            if value.tip then output = output .. ' -- '..value.tip end
+            if value.tip then output = output .. ' -- ' .. value.tip end
         end
     end
     -- printMDTable({'Command', 'Description'}, function(tbl)
@@ -109,7 +110,7 @@ local function showHelp()
     -- end)
     output = output .. '\n\ayGear Check:\aw /tell <name> gear <slotname> -- Slot Names: ' .. constants.slotList
     output = output .. '\n\ayBuff Begging:\aw /tell <name> <alias> -- Aliases: '
-    for alias,_ in pairs(class.requestAliases) do
+    for alias, _ in pairs(class.requestAliases) do
         output = output .. alias .. ', '
     end
     output = (output .. '\ax'):gsub('cls', state.class)
@@ -120,7 +121,7 @@ end
 ---Process binding commands.
 ---@vararg string @The input given to the bind command.
 function commands.commandHandler(...)
-    local args = {...}
+    local args = { ... }
     if not args[1] then
         showHelp()
         return
@@ -146,13 +147,13 @@ function commands.commandHandler(...)
         loot.sellStuff()
     elseif opt == 'BURNNOW' then
         if new_value then
-        -- if constants.burns[new_value] then
+            -- if constants.burns[new_value] then
             state.burn_type = new_value
         elseif not new_value then
             state.burn_type = nil
         end
         state.burnNow = true
-        logger.info('\arActivating Burns (on demand%s)\ax', state.burn_type and ' - '..state.burn_type or '')
+        logger.info('\arActivating Burns (on demand%s)\ax', state.burn_type and ' - ' .. state.burn_type or '')
     elseif opt == 'PREBURN' then
         if class.preburn then class:preburn() end
     elseif opt == 'PAUSE' then
@@ -188,7 +189,7 @@ function commands.commandHandler(...)
     elseif opt == 'RESETCAMP' then
         camp.setCamp(true)
     elseif opt == 'CAMPCUSTOM' then
-        camp.setCampCustom(args[2], args[3], args[4], args[5], args[6])    
+        camp.setCampCustom(args[2], args[3], args[4], args[5], args[6])
     elseif opt == 'RETURN' then
         camp.returnToCamp(true)
     elseif opt == 'CAMPRADIUS' or opt == 'RADIUS' or opt == 'PULLARC' then
@@ -200,7 +201,7 @@ function commands.commandHandler(...)
     elseif configName then
         config.getOrSetOption(opt, config.get(configName), new_value, configName)
         local pullSettings = config.getByCategory('Pull')
-        for _,v in ipairs(pullSettings) do if v == opt then pull.clearPullVars('configupdate') end end
+        for _, v in ipairs(pullSettings) do if v == opt then pull.clearPullVars('configupdate') end end
     elseif opt == 'IGNORE' then
         local zone = mq.TLO.Zone.ShortName()
         if new_value then
@@ -221,21 +222,26 @@ function commands.commandHandler(...)
         local clickyType = new_value
         local itemName = mq.TLO.Cursor()
         local nextIndex = 3
-        local clicky = {name=itemName, clickyType=clickyType, enabled=true}
+        local clicky = { name = itemName, clickyType = clickyType, enabled = true }
         if not itemName then
             clicky.name = args[3]
             nextIndex = 4
         end
-        for i=nextIndex,#args do
+        for i = nextIndex, #args do
             local match = args[i]:gmatch('[^/]+')
             local first = match()
             local secondstring = match()
             if first and secondstring then
                 local second
-                if tonumber(secondstring) then second = tonumber(secondstring)
-                elseif secondstring == 'true' then second = true
-                elseif secondstring == 'false' then second = false
-                else second = secondstring end
+                if tonumber(secondstring) then
+                    second = tonumber(secondstring)
+                elseif secondstring == 'true' then
+                    second = true
+                elseif secondstring == 'false' then
+                    second = false
+                else
+                    second = secondstring
+                end
                 clicky[first] = second
             end
         end
@@ -245,7 +251,9 @@ function commands.commandHandler(...)
             class:addClicky(clicky)
             class:saveSettings()
         else
-            logger.info('addclicky Usage:\n\tPlace clicky item on cursor\n\t/%s addclicky category\n\tCategories: burn, mash, heal, buff', state.class)
+            logger.info(
+            'addclicky Usage:\n\tPlace clicky item on cursor\n\t/%s addclicky category\n\tCategories: burn, mash, heal, buff',
+                state.class)
         end
     elseif opt == 'REMOVECLICKY' then
         local itemName = mq.TLO.Cursor()
@@ -282,20 +290,21 @@ function commands.commandHandler(...)
         end
     elseif opt == 'LISTCLICKIES' then
         local clickies = ''
-        for clickyName,clicky in pairs(class.clickies) do
-            clickies = clickies .. '\n- ' .. clickyName .. ' (' .. clicky.clickyType .. ') Enabled='..tostring(clicky.enabled)
+        for clickyName, clicky in pairs(class.clickies) do
+            clickies = clickies ..
+            '\n- ' .. clickyName .. ' (' .. clicky.clickyType .. ') Enabled=' .. tostring(clicky.enabled)
         end
         logger.info('Clickies: %s', clickies)
     elseif opt == 'BUFFALIASES' then
         local aliases = 'Buff Aliases:\n'
-        for _,buffline in ipairs(constants.bufflines) do
+        for _, buffline in ipairs(constants.bufflines) do
             aliases = aliases .. '- \ay' .. buffline.key .. '\ax\n'
         end
         logger.info(aliases)
     elseif opt == 'WANTBUFF' then
         local buffalias = args[2] and args[2]:upper() or nil
         local toggle = args[3] and args[3]:lower() or nil
-        for _,buffline in ipairs(constants.bufflines) do
+        for _, buffline in ipairs(constants.bufflines) do
             if buffline.key == buffalias then
                 if not toggle or constants.booleans[toggle] == nil then
                     logger.info('Want Buff: \ag%s\ax [\ay%s\ax]', buffalias, class.desiredBuffs[buffalias])
@@ -307,7 +316,7 @@ function commands.commandHandler(...)
     elseif opt == 'OFFERBUFF' then
         local buffalias = args[2] and args[2]:upper() or nil
         local toggle = args[3] and args[3]:lower() or nil
-        for _,buffline in ipairs(constants.bufflines) do
+        for _, buffline in ipairs(constants.bufflines) do
             if buffline.key == buffalias then
                 if not toggle or constants.booleans[toggle] == nil then
                     logger.info('Offer Buff: \ag%s\ax [\ay%s\ax]', buffalias, class.availableBuffs[buffalias])
@@ -326,7 +335,7 @@ function commands.commandHandler(...)
         mq.cmd('/keypress TOGGLE_TRIBUTEBENEFITWIN')
     elseif opt == 'BARK' then
         local repeatstring = ''
-        for i=2,#args do
+        for i = 2, #args do
             repeatstring = repeatstring .. ' ' .. args[i]
         end
         mq.cmdf('/dgga /say %s', repeatstring)
@@ -335,7 +344,7 @@ function commands.commandHandler(...)
     elseif opt == 'UPDATE' then
         os.execute('start https://github.com/aquietone/aqobot/archive/refs/heads/emu.zip')
     elseif opt == 'DOCS' then
-        os.execute('start https://aquietone.github.io/docs/aqobot/classes/'..state.class)
+        os.execute('start https://aquietone.github.io/docs/aqobot/classes/' .. state.class)
     elseif opt == 'WIKI' then
         os.execute('start https://www.lazaruseq.com/Wiki/index.php/Main_Page')
     elseif opt == 'BAZ' then
@@ -355,11 +364,11 @@ function commands.commandHandler(...)
         state.tankMobID = mq.TLO.Target.ID()
         tank.callAssist()
     elseif opt == 'BLOCKSPELLS' then
-        for _,spellid in ipairs(constants.BLOCKSPELLS) do
+        for _, spellid in ipairs(constants.BLOCKSPELLS) do
             mq.cmdf('/blockspell add me %s', spellid)
             mq.delay(1)
         end
-        for _,spellid in ipairs(constants.BLOCKPETSPELLS) do
+        for _, spellid in ipairs(constants.BLOCKPETSPELLS) do
             mq.cmdf('/blockspell add pet %s', spellid)
             mq.delay(1)
         end
@@ -381,7 +390,7 @@ function commands.commandHandler(...)
         if heading then
             mq.cmdf('/multiline ; /nav stop; /stick off; /afollow off;')
             mq.delay(100)
-            mq.cmdf('/face fast heading %s', heading*-1)
+            mq.cmdf('/face fast heading %s', heading * -1)
             mq.delay(500)
             mq.cmd('/nomodkey /keypress forward hold')
             mq.delay(3000)
@@ -397,8 +406,8 @@ function commands.commandHandler(...)
         config.getOrSetOption('MODE', config.get('MODE'), newmode, 'MODE')
         camp.setCamp()
     elseif opt == 'TIMERS' then
-        local header = {script = 'aqo', server = mq.TLO.EverQuest.Server()}
-        actor.actor:send(header, {id='commands', })
+        local header = { script = 'aqo', server = mq.TLO.EverQuest.Server() }
+        actor.actor:send(header, { id = 'commands', })
     elseif opt == 'GETTINGSTARTED' then
         state.ShowGettingStarted = true
     else
@@ -455,7 +464,7 @@ function commands.classSettingsHandler(opt, new_value)
 end
 
 function commands.nowcastHandler(...)
-    class:nowCast({...})
+    class:nowCast({ ... })
 end
 
 function commands.callback(message)

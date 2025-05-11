@@ -20,7 +20,7 @@ end
 function TLO.init(_class)
     class = _class
 
-    for k,v in pairs(config) do
+    for k, v in pairs(config) do
         if type(v) == 'table' and v.tlo and v.tlotype then
             --if v.emu == nil or (v.emu and state.emu) or (v.emu == false and not state.emu) then
             if v.emu == nil or v.emu == state.emu then
@@ -29,7 +29,7 @@ function TLO.init(_class)
         end
     end
 
-    for k,v in pairs(class.options) do
+    for k, v in pairs(class.options) do
         if v.tlo and v.tlotype then
             tlomembers[v.tlo] = function() return v.tlotype, v.value end
         end

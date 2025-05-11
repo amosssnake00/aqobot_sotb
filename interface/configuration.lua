@@ -4,7 +4,8 @@ local logger = require('utils.logger')
 local modes = require('mode')
 
 local config = {
-    SETTINGS_FILE = ('%s/aqo/%s_%s_%s.lua'):format(mq.configDir, mq.TLO.EverQuest.Server(), mq.TLO.Me.CleanName(), mq.TLO.Me.Class.ShortName()),
+    SETTINGS_FILE = ('%s/aqo/%s_%s_%s.lua'):format(mq.configDir, mq.TLO.EverQuest.Server(), mq.TLO.Me.CleanName(),
+        mq.TLO.Me.Class.ShortName()),
     SETTINGS_FILE_OLD = ('%s/aqobot_%s_%s.lua'):format(mq.configDir, mq.TLO.EverQuest.Server(), mq.TLO.Me.CleanName()),
 
     -- General settings
@@ -253,7 +254,8 @@ local config = {
     -- Burn settings
     BURNALWAYS = {
         value = false,
-        tip = 'Burn routine is always entered and burn abilities are used as available. Its not great, it doesn\'t attempt to line up CDs or anything',
+        tip =
+        'Burn routine is always entered and burn abilities are used as available. Its not great, it doesn\'t attempt to line up CDs or anything',
         label = 'Burn Always',
         type = 'checkbox',
         tlo = 'BurnAlways',
@@ -269,7 +271,8 @@ local config = {
     },
     BURNALLNAMED = {
         value = false,
-        tip = 'Enter burn routine when ${Target.Named} is true. Kinda sucks with ToL zones since so many akhevan trash mobs return true',
+        tip =
+        'Enter burn routine when ${Target.Named} is true. Kinda sucks with ToL zones since so many akhevan trash mobs return true',
         label = 'Burn Named',
         type = 'checkbox',
         tlo = 'BurnAllNamed',
@@ -396,7 +399,8 @@ local config = {
     },
     MEDCOMBAT = {
         value = false,
-        tip = 'Toggle whether to med during combat. If on, character will still heal, tank, cc, debuff and buff, just not assist.',
+        tip =
+        'Toggle whether to med during combat. If on, character will still heal, tank, cc, debuff and buff, just not assist.',
         label = 'Med In Combat',
         type = 'checkbox',
         tlo = 'MedCombat',
@@ -631,7 +635,7 @@ end
 
 function config.getAll()
     local configMap = {}
-    for key,cfg in pairs(config) do
+    for key, cfg in pairs(config) do
         if type(config[key]) == 'table' then
             configMap[key] = cfg.value
         end
@@ -639,21 +643,21 @@ function config.getAll()
     return configMap
 end
 
-local categories = {'Assist', 'Camp', 'Burn', 'Heal', 'Pull', 'Tank', 'Rest', 'Loot', 'Debug'}
+local categories = { 'Assist', 'Camp', 'Burn', 'Heal', 'Pull', 'Tank', 'Rest', 'Loot', 'Debug' }
 function config.categories()
     return categories
 end
 
 local configByCategory = {
-    Assist={'MODE','ASSIST','AUTOASSISTAT','ASSISTNAMES','SWITCHWITHMA','STICKCOMMAND','RESISTSTOPCOUNT','NUKEMANAMIN','DOTMANAMIN'},
-    Camp={'CAMPRADIUS','CAMPRETURN','CHASETARGET','CHASEDISTANCE','CHASESTOPDISTANCE','CHASEPAUSED'},
-    Burn={'BURNALWAYS','BURNALLNAMED','BURNCOUNT','BURNPCT','USEGLYPH','USEINTENSITY'},
-    Pull={'PULLRADIUS','PULLPATH','PULLLOW','PULLHIGH','PULLMINLEVEL','PULLMAXLEVEL','PULLARC','GROUPWATCHWHO','GROUPSTAYCLOSE','PULLWITH'},
-    Heal={'HEALPCT','PANICHEALPCT','HOTHEALPCT','GROUPHEALPCT','GROUPHEALMIN','XTARGETHEAL','REZGROUP','REZRAID','REZINCOMBAT','PRIORITYTARGET','INTERRUPTFULLHP','INTERRUPTFORHEALS', 'ANNOUNCEHEALS','ANNOUNCEDEATHS'},
-    Tank={'MAINTANK','OFFTANK'},
-    Rest={'MEDCOMBAT','RECOVERPCT','MEDHPSTART','MEDHPSTOP','MEDMANASTART','MEDMANASTOP','MEDENDSTART','MEDENDSTOP','MANASTONESTART','MANASTONESTARTHP','MANASTONESTOPHP','MANASTONETIME'},
-    Loot={'LOOTMOBS','LOOTCOMBAT'},
-    Debug={'TIMESTAMPS','OPACITY'},
+    Assist = { 'MODE', 'ASSIST', 'AUTOASSISTAT', 'ASSISTNAMES', 'SWITCHWITHMA', 'STICKCOMMAND', 'RESISTSTOPCOUNT', 'NUKEMANAMIN', 'DOTMANAMIN' },
+    Camp = { 'CAMPRADIUS', 'CAMPRETURN', 'CHASETARGET', 'CHASEDISTANCE', 'CHASESTOPDISTANCE', 'CHASEPAUSED' },
+    Burn = { 'BURNALWAYS', 'BURNALLNAMED', 'BURNCOUNT', 'BURNPCT', 'USEGLYPH', 'USEINTENSITY' },
+    Pull = { 'PULLRADIUS', 'PULLPATH', 'PULLLOW', 'PULLHIGH', 'PULLMINLEVEL', 'PULLMAXLEVEL', 'PULLARC', 'GROUPWATCHWHO', 'GROUPSTAYCLOSE', 'PULLWITH' },
+    Heal = { 'HEALPCT', 'PANICHEALPCT', 'HOTHEALPCT', 'GROUPHEALPCT', 'GROUPHEALMIN', 'XTARGETHEAL', 'REZGROUP', 'REZRAID', 'REZINCOMBAT', 'PRIORITYTARGET', 'INTERRUPTFULLHP', 'INTERRUPTFORHEALS', 'ANNOUNCEHEALS', 'ANNOUNCEDEATHS' },
+    Tank = { 'MAINTANK', 'OFFTANK' },
+    Rest = { 'MEDCOMBAT', 'RECOVERPCT', 'MEDHPSTART', 'MEDHPSTOP', 'MEDMANASTART', 'MEDMANASTOP', 'MEDENDSTART', 'MEDENDSTOP', 'MANASTONESTART', 'MANASTONESTARTHP', 'MANASTONESTOPHP', 'MANASTONETIME' },
+    Loot = { 'LOOTMOBS', 'LOOTCOMBAT' },
+    Debug = { 'TIMESTAMPS', 'OPACITY' },
 }
 function config.getByCategory(category)
     return configByCategory[category]
@@ -667,7 +671,10 @@ end
 function config.getOrSetOption(name, current_value, new_value, key)
     if config[key] == nil then return end
     if new_value then
-        if config[key].options and not config[key].options[new_value] then logger.info('\arInvalid option for \ay%s\ax: \ay%s\ax', key, new_value) return end
+        if config[key].options and not config[key].options[new_value] then
+            logger.info('\arInvalid option for \ay%s\ax: \ay%s\ax', key, new_value)
+            return
+        end
         if type(current_value) == 'number' then
             config[key].value = tonumber(new_value) or current_value
         elseif type(current_value) == 'boolean' then
@@ -687,7 +694,12 @@ end
 ---@return boolean @Returns true if the file exists, false otherwise.
 function config.fileExists(file_name)
     local f = io.open(file_name, "r")
-    if f ~= nil then io.close(f) return true else return false end
+    if f ~= nil then
+        io.close(f)
+        return true
+    else
+        return false
+    end
 end
 
 ---Load common settings from settings file
@@ -707,8 +719,8 @@ function config.loadSettings()
     end
     local settings = assert(loadfile(settingsFile))()
     if not settings or not settings.common then return settings, false end
-    for setting,value in pairs(settings.common) do
-        if config[setting] then config[setting].value = value end -- printf('loaded config %s value %s', setting, value) 
+    for setting, value in pairs(settings.common) do
+        if config[setting] then config[setting].value = value end -- printf('loaded config %s value %s', setting, value)
     end
     modes.currentMode = modes.fromString(config.MODE.value)
     logger.timestamps = config.TIMESTAMPS and config.TIMESTAMPS.value or false

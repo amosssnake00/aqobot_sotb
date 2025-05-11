@@ -83,7 +83,7 @@ end
 function events.eventNewSpellMemmed(line, spell)
     logger.info('New spell scribed: %s. Reinitializing spell lines', spell)
     class:initSpellLines()
-    
+
     -- TODO: several other init functions setup tables based on available spell lines, and should also be re-initialized.
 end
 
@@ -119,7 +119,8 @@ function events.eventResist(line, spell_name)
     local target = mq.TLO.Target.CleanName()
     if target then
         state.resists[spell_name] = (state.resists[spell_name] or 0) + 1
-        logger.info('\at%s\ax resisted spell \ag%s\ax, resist count = \ay%s\ax', target, spell_name, state.resists[spell_name])
+        logger.info('\at%s\ax resisted spell \ag%s\ax, resist count = \ay%s\ax', target, spell_name,
+            state.resists[spell_name])
     end
 end
 
@@ -140,7 +141,8 @@ function events.eventGear(line, requester, requested)
     requested = requested:lower()
     local slot = requested:gsub('gear ', '')
     if slot == 'listslots' then
-        mq.cmd('/gu earrings, rings, leftear, rightear, leftfinger, rightfinger, face, head, neck, shoulder, chest, feet, arms, leftwrist, rightwrist, wrists, charm, powersource, mainhand, offhand, ranged, ammo, legs, waist, hands')
+        mq.cmd(
+        '/gu earrings, rings, leftear, rightear, leftfinger, rightfinger, face, head, neck, shoulder, chest, feet, arms, leftwrist, rightwrist, wrists, charm, powersource, mainhand, offhand, ranged, ammo, legs, waist, hands')
     elseif slot == 'earrings' then
         local leftear = mq.TLO.Me.Inventory('leftear')
         local rightear = mq.TLO.Me.Inventory('rightear')
@@ -148,11 +150,13 @@ function events.eventGear(line, requester, requested)
     elseif slot == 'rings' then
         local leftfinger = mq.TLO.Me.Inventory('leftfinger')
         local rightfinger = mq.TLO.Me.Inventory('rightfinger')
-        mq.cmdf('/gu leftfinger: %s, rightfinger: %s', leftfinger.ItemLink('CLICKABLE')(), rightfinger.ItemLink('CLICKABLE')())
+        mq.cmdf('/gu leftfinger: %s, rightfinger: %s', leftfinger.ItemLink('CLICKABLE')(),
+            rightfinger.ItemLink('CLICKABLE')())
     elseif slot == 'wrists' then
         local leftwrist = mq.TLO.Me.Inventory('leftwrist')
         local rightwrist = mq.TLO.Me.Inventory('rightwrist')
-        mq.cmdf('/gu leftwrist: %s, rightwrist: %s', leftwrist.ItemLink('CLICKABLE')(), rightwrist.ItemLink('CLICKABLE')())
+        mq.cmdf('/gu leftwrist: %s, rightwrist: %s', leftwrist.ItemLink('CLICKABLE')(),
+            rightwrist.ItemLink('CLICKABLE')())
     else
         if mq.TLO.Me.Inventory(slot)() then
             mq.cmdf('/gu %s: %s', slot, mq.TLO.Me.Inventory(slot).ItemLink('CLICKABLE')())
@@ -161,7 +165,8 @@ function events.eventGear(line, requester, requested)
 end
 
 local function validateRequester(requester)
-    return mq.TLO.Group.Member(requester)() or mq.TLO.Raid.Member(requester)() or mq.TLO.Spawn('='..requester).Guild() == mq.TLO.Me.Guild()
+    return mq.TLO.Group.Member(requester)() or mq.TLO.Raid.Member(requester)() or
+    mq.TLO.Spawn('=' .. requester).Guild() == mq.TLO.Me.Guild()
 end
 
 function events.eventRequest(line, requester, requested)
@@ -173,37 +178,39 @@ function events.eventRequest(line, requester, requested)
         local tranquil = false
         local mgb = false
         if requested:find('^TRANQUIL') then
-            requested = requested:gsub('TRANQUIL','')
+            requested = requested:gsub('TRANQUIL', '')
             tranquil = true
         end
         if requested:find('^MGB') then
-            requested = requested:gsub('MGB','')
+            requested = requested:gsub('MGB', '')
             mgb = true
         end
-        if requested:find(' '..mq.TLO.Me.CleanName():upper()..'$') then
-            requested = requested:gsub(' '..mq.TLO.Me.CleanName():upper(),'')
+        if requested:find(' ' .. mq.TLO.Me.CleanName():upper() .. '$') then
+            requested = requested:gsub(' ' .. mq.TLO.Me.CleanName():upper(), '')
         end
         if requested:find(' PET$') then
             requested = requested:gsub(' PET', '')
-            requester = mq.TLO.Spawn('pc '..requester).Pet.CleanName()
+            requester = mq.TLO.Spawn('pc ' .. requester).Pet.CleanName()
             logger.info('Pet Name for request: ', requester)
         end
         if requested == 'LIST BUFFS' then
             local buffList = ''
-            for alias,ability in pairs(class.requestAliases) do
+            for alias, ability in pairs(class.requestAliases) do
                 buffList = ('%s | %s : %s'):format(buffList, alias, ability.Name)
             end
             mq.cmdf('/t %s %s', requester, buffList)
             return
         end
         if requested == 'ARMPET' and state.class == 'MAG' then
-            table.insert(class.requests, {requester=requester, requested='ARMPET', expiration=timer:new(15000)})
+            table.insert(class.requests, { requester = requester, requested = 'ARMPET', expiration = timer:new(15000) })
             return
         end
         local requestedAbility = class:getAbilityForAlias(requested)
         if requestedAbility then
             local expiration = timer:new(15000)
-            table.insert(class.requests, {requester=requester, requested=requestedAbility, expiration=expiration, tranquil=tranquil, mgb=mgb})
+            table.insert(class.requests,
+                { requester = requester, requested = requestedAbility, expiration = expiration, tranquil = tranquil, mgb =
+                mgb })
         end
     end
 end

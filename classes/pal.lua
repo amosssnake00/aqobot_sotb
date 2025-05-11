@@ -183,8 +183,14 @@ Paladin.SpellLines = {
     {
         Group = 'undeadnuke',
         Spells = { 'Last Rites', 'Expulse Undead', 'Ward Undead' },
-        Options = { Gem = function(lvl) return lvl <= 60 and 3 or nil end, opt = 'USENUKES', condition = function() return
-            mq.TLO.Target.Body() == 'Undead' end }
+        Options = {
+            Gem = function(lvl) return lvl <= 60 and 3 or nil end,
+            opt = 'USENUKES',
+            condition = function()
+                return
+                    mq.TLO.Target.Body() == 'Undead'
+            end
+        }
     },
     {
         Group = 'rgc',
@@ -203,8 +209,12 @@ Paladin.SpellLines = {
     },
     { Group = 'rez', Spells = { 'Reviviscence', 'Resurrection' }, Options = { rez = true } },
 }
-Paladin.compositeNames = { ['Ecliptic Force'] = true, ['Composite Force'] = true, ['Dissident Force'] = true,
-    ['Dichotomic Force'] = true }
+Paladin.compositeNames = {
+    ['Ecliptic Force'] = true,
+    ['Composite Force'] = true,
+    ['Dissident Force'] = true,
+    ['Dichotomic Force'] = true
+}
 Paladin.allDPSSpellGroups = { 'stun1', 'stun2', 'stun3', 'stunaoenuke', 'stunaoe', 'twincast' }
 
 --[[ AA's to sort out
@@ -270,8 +280,15 @@ Paladin.Abilities = {
     { -- pbae stun/agro, 5m cd, timer 30
         Type = 'AA',
         Name = 'Beacon of the Righteous',
-        Options = { alias = 'BEACON', aetank = true, threshold = 3, condition = function() return mq.TLO.Me.PctAggro() <
-            100 end }
+        Options = {
+            alias = 'BEACON',
+            aetank = true,
+            threshold = 3,
+            condition = function()
+                return mq.TLO.Me.PctAggro() <
+                    100
+            end
+        }
     },
     { -- pbae stun/agro, 5m cd, timer 36
         Type = 'AA',

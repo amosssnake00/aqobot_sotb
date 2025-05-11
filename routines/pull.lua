@@ -425,8 +425,8 @@ local function pullNavToMob(pull_spawn, announce_pull)
     if announce_pull then
         logger.info('Pulling \at%s\ax (\at%s\ax)', pull_spawn.CleanName(), pull_spawn.ID())
     end
-       -- TODO: find proper pullability range and check for that - safety margin
-    if ((helpers.distance(mq.TLO.Me.X(), mq.TLO.Me.Y(), mob_x, mob_y) > 100) and config.get('PULLWITH') == 'melee') or (config.get('PULLWITH') ~= 'melee' and ( not pull_spawn.LineOfSight() or pull_spawn.Distance3D() > 200))  then
+    -- TODO: find proper pullability range and check for that - safety margin
+    if ((helpers.distance(mq.TLO.Me.X(), mq.TLO.Me.Y(), mob_x, mob_y) > 100) and config.get('PULLWITH') == 'melee') or (config.get('PULLWITH') ~= 'melee' and (not pull_spawn.LineOfSight() or pull_spawn.Distance3D() > 200)) then
         logger.debug(logger.flags.routines.pull, 'Moving to pull target (\at%s\ax)', state.pullMobID)
         -- TODO: set timeout as parameter
         movement.navToSpawn('id ' .. state.pullMobID, 'dist=5', 1000)

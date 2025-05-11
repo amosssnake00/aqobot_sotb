@@ -200,8 +200,14 @@ Warrior.Abilities = {
         Type = 'Disc',
         Group = 'defensive',
         Names = { 'Climactic Stand', 'Resolute Stand', 'Stonewall Discipline', 'Defensive Discipline' },
-        Options = { opt = 'USEDEFENSIVE', first = true, overwritedisc = function() return not state.emu and
-            Warrior.defense and Warrior.defense.Name or nil end }
+        Options = {
+            opt = 'USEDEFENSIVE',
+            first = true,
+            overwritedisc = function()
+                return not state.emu and
+                    Warrior.defense and Warrior.defense.Name or nil
+            end
+        }
     },
     {
         Type = 'Disc',
@@ -311,14 +317,24 @@ Warrior.Abilities = {
     {
         Type = 'Skill',
         Name = 'Bash',
-        Options = { dps = true, condition = function() return mq.TLO.Me.Inventory('offhand').Type() == 'Shield' and
-            conditions.withinMeleeDistance() end }
+        Options = {
+            dps = true,
+            condition = function()
+                return mq.TLO.Me.Inventory('offhand').Type() == 'Shield' and
+                    conditions.withinMeleeDistance()
+            end
+        }
     },
     {
         Type = 'Skill',
         Name = 'Kick',
-        Options = { dps = true, condition = function() return mq.TLO.Me.Inventory('offhand').Type() ~= 'Shield' and
-            conditions.withinMeleeDistance() end }
+        Options = {
+            dps = true,
+            condition = function()
+                return mq.TLO.Me.Inventory('offhand').Type() ~= 'Shield' and
+                    conditions.withinMeleeDistance()
+            end
+        }
     },
     {
         Type = 'Disc',
@@ -352,8 +368,15 @@ Warrior.Abilities = {
         Type = 'Disc',
         Group = 'strike',
         Names = { 'Decisive Strike', 'Exploitive Strike' },
-        Options = { dps = true, usebelowpct = 20, condition = function(ability) return conditions.targetHPBelow(ability) and
-            conditions.withinMeleeDistance(ability) end, emu = false }
+        Options = {
+            dps = true,
+            usebelowpct = 20,
+            condition = function(ability)
+                return conditions.targetHPBelow(ability) and
+                    conditions.withinMeleeDistance(ability)
+            end,
+            emu = false
+        }
     },
     --table.insert(self.burnAbilities, common.getBestDisc({'Brightfield\'s Onslaught Discipline', 'Brutal Onslaught Discipline', 'Savage Onslaught Discipline'})) -- 15min cd, timer 6, 270% crit chance, 160% crit dmg, crippling blows, increase min dmg
     { -- 4min cd, timer 2, increased offensive capabilities
@@ -373,15 +396,33 @@ Warrior.Abilities = {
         Type = 'Disc',
         Group = 'endregen',
         Names = { 'Breather' },
-        Options = { recover = true, combat = false, endurance = true, threshold = 20, condition = function(ability) return
-            mq.TLO.Me.PctEndurance() <= config.get('RECOVERPCT') and
-            (ability.combat or mq.TLO.Me.CombatState() ~= 'COMBAT') end }
+        Options = {
+            recover = true,
+            combat = false,
+            endurance = true,
+            threshold = 20,
+            condition = function(ability)
+                return
+                    mq.TLO.Me.PctEndurance() <= config.get('RECOVERPCT') and
+                    (ability.combat or mq.TLO.Me.CombatState() ~= 'COMBAT')
+            end
+        }
     },
     {
         Type = 'AA',
         Name = 'Battle Leap',
-        Options = { key = 'leap', combatbuff = true, opt = 'USEBATTLELEAP', maxdistance = 30, delay = 500, combat = false, condition = function(
-            ability) return false end }
+        Options = {
+            key = 'leap',
+            combatbuff = true,
+            opt = 'USEBATTLELEAP',
+            maxdistance = 30,
+            delay = 500,
+            combat = false,
+            condition = function(
+                ability)
+                return false
+            end
+        }
     },
     {
         Type = 'Disc',

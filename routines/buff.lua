@@ -20,7 +20,8 @@ function buff.needsBuff(spell, buffTarget)
         mq.delay(1000, function() return mq.TLO.Target.BuffsPopulated() end)
         buffTarget = mq.TLO.Target
     end
-    return not buffTarget.Buff(spell.Name)() and mq.TLO.Spell(spell.Name).StacksSpawn(buffTarget.ID())() and (buffTarget.Distance3D() or 300) < 100
+    return not buffTarget.Buff(spell.Name)() and mq.TLO.Spell(spell.Name).StacksSpawn(buffTarget.ID())() and
+    (buffTarget.Distance3D() or 300) < 100
 end
 
 local function haveBuff(buffName)
@@ -29,7 +30,7 @@ end
 
 local function summonItem(buff, base)
     if ((buff.summonMinimum or 1) < 0 or mq.TLO.FindItemCount(buff.SummonID)() < (buff.summonMinimum or 1)) and not mq.TLO.Me.Moving()
-            and (not buff.ReagentID or mq.TLO.FindItemCount(buff.ReagentID)() >= buff.ReagentCount) then
+        and (not buff.ReagentID or mq.TLO.FindItemCount(buff.ReagentID)() >= buff.ReagentCount) then
         if abilities.use(buff, base) then
             state.queuedAction = function() mq.cmd('/autoinv') end
             state.queuedActionTimer:reset()
@@ -47,7 +48,7 @@ local function buffCombat(base)
     common.checkCombatBuffs()
     -- typically instant disc buffs like war field champion, etc. or summoning arrows
     if assist.isFighting() then
-        for _,buff in ipairs(base.combatBuffs) do
+        for _, buff in ipairs(base.combatBuffs) do
             if base:isAbilityEnabled(buff.opt) then
                 if buff.SummonID then
                     summonItem(buff)
@@ -63,17 +64,18 @@ local function buffCombat(base)
 end
 
 local function buffAuras(base)
-    for _,buff in ipairs(base.auras) do
+    for _, buff in ipairs(base.auras) do
         local buffName = buff.Name
         if state.subscription ~= 'GOLD' then buffName = buff.Name:gsub(' Rk%..*', '') end
         -- if not mq.TLO.Me.Aura(1)() then
         if not mq.TLO.Me.Song(buff.CheckFor)() and not mq.TLO.Me.Song(buffName)() then
-        -- if not mq.TLO.Me.Aura(buff.CheckFor)() and not mq.TLO.Me.Song(buffName)() then
+            -- if not mq.TLO.Me.Aura(buff.CheckFor)() and not mq.TLO.Me.Song(buffName)() then
             -- mq.cmdf('/removeaura %s', mq.TLO.Me.Aura(1)())
             -- mq.delay(1)
             if abilities.use(buff, base, true) then
                 -- some goofy emu servers have longer cast times than standard songs on bard auras.. hacky little workaround?
-                if state.class == 'BRD' and (buff.MyCastTime or 0) > 3000 then mq.delay(500+buff.MyCastTime, function() return not mq.TLO.Me.Casting() end) end
+                if state.class == 'BRD' and (buff.MyCastTime or 0) > 3000 then mq.delay(500 + buff.MyCastTime,
+                        function() return not mq.TLO.Me.Casting() end) end
                 return true
             end
         end
@@ -82,7 +84,7 @@ end
 
 local function buffSelf(base)
     local result = false
-    for _,buff in ipairs(base.selfBuffs) do
+    for _, buff in ipairs(base.selfBuffs) do
         local buffName = buff.Name or buff.CastName -- TODO: buff name may not match AA or item name
         if state.subscription ~= 'GOLD' then buffName = buff.Name:gsub(' Rk%..*', '') end
         if buff.SummonID then
@@ -97,8 +99,8 @@ local function buffSelf(base)
                 canCast = abilities.canUseSpell(spell, buff)
             end
             if (not buff.opt or base:isEnabled(buff.opt)) and (buff.enabled == nil or buff.enabled) and (canCast == abilities.IsReady.CAN_CAST or canCast == abilities.IsReady.NOT_MEMMED) and not haveBuff(buffName) and not haveBuff(buff.CheckFor)
-                    and mq.TLO.Spell(buff.CheckFor or buff.Name).Stacks() and (not buff.nodmz or not constants.DMZ[mq.TLO.Zone.ID()])
-                    and (not buff.skipifbuff or not mq.TLO.Me.Buff(buff.skipifbuff)()) then
+                and mq.TLO.Spell(buff.CheckFor or buff.Name).Stacks() and (not buff.nodmz or not constants.DMZ[mq.TLO.Zone.ID()])
+                and (not buff.skipifbuff or not mq.TLO.Me.Buff(buff.skipifbuff)()) then
                 if buff.TargetType == 'Single' then mq.TLO.Me.DoTarget() end
                 result = abilities.use(buff, base, true)
                 if result then
@@ -106,7 +108,10 @@ local function buffSelf(base)
                         state.giveUpTimer = timer:new(5000)
                         state.queuedAction = function()
                             if mq.TLO.Me.Casting() or (buff.RemoveFamiliar and mq.TLO.Pet.ID() == 0) then
-                                if state.giveUpTimer:expired() then state.giveUpTimer = nil return nil end
+                                if state.giveUpTimer:expired() then
+                                    state.giveUpTimer = nil
+                                    return nil
+                                end
                                 return state.queuedAction
                             else
                                 mq.delay(1000, function() return mq.TLO.Me.Buff(buff.RemoveBuff)() end)
@@ -136,11 +141,11 @@ end
 -- buff group members, not necessarily your own characters
 local function buffSingle(base)
     local groupSize = mq.TLO.Group.Members() or 0
-    for i=1,groupSize do
+    for i = 1, groupSize do
         local member = mq.TLO.Group.Member(i)
         local memberClass = member.Class.ShortName()
         local memberDistance = member.Distance3D() or 300
-        for _,buff in ipairs(base.singleBuffs) do
+        for _, buff in ipairs(base.singleBuffs) do
             local canCast = abilities.IsReady.CAN_CAST
             if buff.CastType == abilities.Types.Spell then
                 local spell = mq.TLO.Spell(buff.Name)
@@ -168,12 +173,12 @@ local function buffActors(base, combat)
     for name, charState in pairs(state.actors) do
         local wantBuffs = charState.wantBuffs
         if wantBuffs then
-            for _,aBuff in ipairs(wantBuffs) do
+            for _, aBuff in ipairs(wantBuffs) do
                 if availableBuffs[aBuff] then
                     local theBuff = base:getAbilityForAlias(aBuff)
                     if not combat or theBuff.combatbuffothers then
                         -- logger.info('Can cast buff %s for %s', availableBuffs[aBuff], name)
-                        local spawn = mq.TLO.Spawn('pc ='..name..' radius 150')
+                        local spawn = mq.TLO.Spawn('pc =' .. name .. ' radius 150')
                         if spawn() then
                             spawn.DoTarget()
                             mq.delay(1000, function() return mq.TLO.Target.BuffsPopulated() end)
@@ -207,7 +212,7 @@ local function buffPet(base)
             common.processList(base.petBuffs, base, true)
             return
         end
-        for _,buff in ipairs(base.petBuffs) do
+        for _, buff in ipairs(base.petBuffs) do
             local tempName = buff.Name
             if state.subscription ~= 'GOLD' then tempName = tempName:gsub(' Rk%..*', '') end
             if (buff.enabled == nil or buff.enabled) and not mq.TLO.Pet.Buff(tempName)() and not mq.TLO.Pet.Buff(buff.CheckFor)() and mq.TLO.Spell(buff.CheckFor or buff.Name).StacksPet() and (not buff.skipifbuff or not mq.TLO.Pet.Buff(buff.skipifbuff)()) then
@@ -220,7 +225,7 @@ end
 local checkClickiesLoadedTimer = timer:new(300000)
 local function checkClickiesLoaded(base)
     if checkClickiesLoadedTimer:expired() then
-        for clickyName,clicky in pairs(base.clickies) do
+        for clickyName, clicky in pairs(base.clickies) do
             if clicky.clickyType == 'begbuff' then
                 if not base[clicky.alias] then
                     base:addClicky(clicky)
@@ -229,7 +234,7 @@ local function checkClickiesLoaded(base)
                 local t = base:getTableForClicky(clicky.clickyType)
                 if t then
                     local found = false
-                    for _,clicky in ipairs(t) do
+                    for _, clicky in ipairs(t) do
                         if clicky.CastName == clickyName then
                             found = true
                             break

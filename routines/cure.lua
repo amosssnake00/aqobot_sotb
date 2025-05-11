@@ -44,7 +44,7 @@ end
 function cure.groupCure(spell)
     local anyoneNeedsCure = false
     if not mq.TLO.Group.GroupSize() then return cure.selfCure(spell) end
-    for i=0,mq.TLO.Group.GroupSize()-1 do
+    for i = 0, mq.TLO.Group.GroupSize() - 1 do
         local member = mq.TLO.Group.Member(i)
         if needsCure(spell, member) then
             anyoneNeedsCure = true
@@ -60,7 +60,7 @@ local function cureEnabled(options, key)
 end
 
 local function getCure(cures, cureType, cureCounters, options, inGroup)
-    for _,cureAbility in ipairs(cures) do
+    for _, cureAbility in ipairs(cures) do
         if ((cureCounters and cureAbility[cureType]) or (cureCounters and cureAbility.all) or cureAbility.ignoreCounters) and cureEnabled(options, cureAbility.opt) and (inGroup or not cureAbility.group) then
             if cureAbility.CastType == abilities.Types.Spell then
                 if mq.TLO.Me.SpellReady(cureAbility.Name)() then
@@ -83,7 +83,7 @@ function cure:doCures(base)
             local inGroup = mq.TLO.Group.Member(name)()
             local distance = mq.TLO.Spawn(('pc =%s'):format(name)).Distance3D() or 300
             if distance <= 100 then
-                for _,buff in ipairs(buffs) do
+                for _, buff in ipairs(buffs) do
                     --local originalTarget = mq.TLO.Target.ID()
                     local cureAbility = getCure(base.cures, buff.CounterType, buff.CounterNumber, base.options, inGroup)
                     if cureAbility then

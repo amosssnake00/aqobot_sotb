@@ -23,13 +23,13 @@ local status = require('status')
 
 ui.setConsole(CONSOLE)
 
-local class = require('classes.'..mq.TLO.Me.Class.ShortName():lower())
+local class = require('classes.' .. mq.TLO.Me.Class.ShortName():lower())
 
 local aqo = {}
 
-local routines = {'assist','buff','camp','conditions','cure','debuff','events','heal','mez','pull','tank'}
-for _,routine in ipairs(routines) do
-    aqo[routine] = require('routines.'..routine)
+local routines = { 'assist', 'buff', 'camp', 'conditions', 'cure', 'debuff', 'events', 'heal', 'mez', 'pull', 'tank' }
+for _, routine in ipairs(routines) do
+    aqo[routine] = require('routines.' .. routine)
     aqo[routine].init(class)
 end
 
@@ -104,7 +104,7 @@ local function checkTarget()
         elseif clearTargetTimer.start_time ~= 0 then
             clearTargetTimer:reset(0)
         end
-    -- elseif targetType == 'Pet' or targetType == 'PC' then
+        -- elseif targetType == 'Pet' or targetType == 'PC' then
     elseif isPC then
         state.assistMobID = 0
         state.tankMobID = 0
@@ -164,8 +164,12 @@ local lootMyCorpseTimer = timer:new(2000)
 local reloadTimer = timer:new(60000)
 local function doLooting()
     if true then return end --the fuck you are looting the corpse unrezzed...again!
-    local myCorpse = mq.TLO.Spawn('pccorpse '..mq.TLO.Me.CleanName()..'\'s corpse radius 100')
-    if mq.TLO.SpawnCount('pccorpse '..mq.TLO.Me.CleanName()..'\'s corpse radius 100')() > 1 and reloadTimer:expired() then mq.cmd('/reload') mq.delay(5000) reloadTimer:reset() end
+    local myCorpse = mq.TLO.Spawn('pccorpse ' .. mq.TLO.Me.CleanName() .. '\'s corpse radius 100')
+    if mq.TLO.SpawnCount('pccorpse ' .. mq.TLO.Me.CleanName() .. '\'s corpse radius 100')() > 1 and reloadTimer:expired() then
+        mq.cmd('/reload')
+        mq.delay(5000)
+        reloadTimer:reset()
+    end
     -- if not mq.TLO.Me.Combat() and mq.TLO.Me.CombatState() ~= 'COMBAT' and myCorpse() and lootMyCorpseTimer:expired() then
     if myCorpse() and not mq.TLO.Me.Combat() and lootMyCorpseTimer:expired() then
         lootMyCorpseTimer:reset()
@@ -226,7 +230,10 @@ local function main()
         buffSafetyCheck()
         if not state.paused and common.inControl() then
             if not handleStates(class) then
-                if state.reacquireTargetID then mq.cmdf('/mqtar id %s', state.reacquireTargetID) state.reacquireTargetID = nil end
+                if state.reacquireTargetID then
+                    mq.cmdf('/mqtar id %s', state.reacquireTargetID)
+                    state.reacquireTargetID = nil
+                end
                 aqo.camp.cleanTargets()
                 checkTarget()
                 resetClearTargets()
@@ -246,7 +253,8 @@ local function main()
                     local pet_target_id = mq.TLO.Pet.Target.ID() or 0
                     if mq.TLO.Pet.ID() > 0 and pet_target_id > 0 then mq.cmd('/pet back') end
                     aqo.camp.mobRadar()
-                    if (mode:isTankMode() and state.mobCount > 0) or (mode:isAssistMode() and aqo.assist.shouldAssist()) or mode:getName() == 'huntertank' then mq.cmd('/makemevis') end
+                    if (mode:isTankMode() and state.mobCount > 0) or (mode:isAssistMode() and aqo.assist.shouldAssist()) or mode:getName() == 'huntertank' then
+                        mq.cmd('/makemevis') end
                     aqo.camp.checkCamp()
                     common.checkChase()
                     common.rest()

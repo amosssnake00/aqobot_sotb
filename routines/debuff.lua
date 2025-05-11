@@ -23,18 +23,23 @@ function debuff.shouldUseDebuff(ability)
     elseif ability.opt == 'USESLOWAOE' or ability.opt == 'USESLOW' then
         return mq.TLO.Target() and not mq.TLO.Target.Slowed() and not debuff.SLOW_IMMUNES[mq.TLO.Target.CleanName()]
     elseif ability.opt == 'USESNARE' then
-        return mq.TLO.Target() and not mq.TLO.Target.Snared() and not debuff.SNARE_IMMUNES[mq.TLO.Target.CleanName()] and (mq.TLO.Target.PctHPs() or 100) < 40
+        return mq.TLO.Target() and not mq.TLO.Target.Snared() and not debuff.SNARE_IMMUNES[mq.TLO.Target.CleanName()] and
+        (mq.TLO.Target.PctHPs() or 100) < 40
     else
-        return (not ability.condition and not mq.TLO.Target.Buff(ability.CheckFor or ability.Name)() and mq.TLO.Spell(ability.CheckFor or ability.Name).StacksTarget()) or (ability.condition and ability.condition())
+        return (not ability.condition and not mq.TLO.Target.Buff(ability.CheckFor or ability.Name)() and mq.TLO.Spell(ability.CheckFor or ability.Name).StacksTarget()) or
+        (ability.condition and ability.condition())
     end
 end
 
 function debuff.findNextDebuff(opt, targetID)
-    for _,ability in ipairs(class.debuffs) do
+    for _, ability in ipairs(class.debuffs) do
         local resistCount = state.resists[ability.Name] or 0
         local resistStopCount = config.get('RESISTSTOPCOUNT')
         if ability:canUse() == abilities.IsReady.CAN_CAST then
-            if targetID then mq.TLO.Spawn('id '..targetID).DoTarget() mq.delay(1000, function() return mq.TLO.Target.BuffsPopulated() end) end
+            if targetID then
+                mq.TLO.Spawn('id ' .. targetID).DoTarget()
+                mq.delay(1000, function() return mq.TLO.Target.BuffsPopulated() end)
+            end
             if (resistStopCount == 0 or resistCount < resistStopCount) and ability.opt == opt and debuff.shouldUseDebuff(ability) then
                 if abilities.use(ability) then return true end
             end
@@ -42,10 +47,11 @@ function debuff.findNextDebuff(opt, targetID)
     end
 end
 
-local debuffTypeMap = {Dispel='USEDISPEL',DebuffAOE='USEDEBUFFAOE',Debuff='USEDEBUFF',SlowAOE='USESLOWAOE',Slow='USESLOW',Cripple='USECRIPPLE',Snare='USESNARE'}
+local debuffTypeMap = { Dispel = 'USEDISPEL', DebuffAOE = 'USEDEBUFFAOE', Debuff = 'USEDEBUFF', SlowAOE = 'USESLOWAOE', Slow =
+'USESLOW', Cripple = 'USECRIPPLE', Snare = 'USESNARE' }
 function debuff.castDebuffs()
     -- if mq.TLO.Target.Type() ~= 'NPC' or not mq.TLO.Target.Aggressive() then return end
-    for _,debuffType in ipairs(class.debuffOrder) do
+    for _, debuffType in ipairs(class.debuffOrder) do
         if class:isEnabled(debuffTypeMap[debuffType]) then
             if debuff.findNextDebuff(debuffTypeMap[debuffType]) then
                 if debuffType == 'SlowAOE' or debuffType == 'Slow' then
@@ -60,7 +66,7 @@ function debuff.castDebuffs()
 end
 
 function debuff.debuffOthers()
-    for id,mobdata in pairs(state.targets) do
+    for id, mobdata in pairs(state.targets) do
         if id ~= state.assistMobID then
             if not mobdata.slowed then
                 -- mq.TLO.Spawn('id '..id).DoTarget()
@@ -93,10 +99,12 @@ end
 
 function debuff.setupEvents()
     if class.options.USESLOW or class.options.USESLOWAOE then
-        mq.event('event_debuffSlowImmune', 'Your target is immune to changes in its attack speed#*#', debuff.eventSlowImmune)
+        mq.event('event_debuffSlowImmune', 'Your target is immune to changes in its attack speed#*#',
+            debuff.eventSlowImmune)
     end
     if class.options.USESNARE then
-        mq.event('event_debuffRunspeedImmune', 'Your target is immune to changes in its run speed#*#', debuff.eventSnareImmune)
+        mq.event('event_debuffRunspeedImmune', 'Your target is immune to changes in its run speed#*#',
+            debuff.eventSnareImmune)
         mq.event('event_debuffSnareImmune', 'Your target is immune to snare spells#*#', debuff.eventSnareImmune)
     end
 end

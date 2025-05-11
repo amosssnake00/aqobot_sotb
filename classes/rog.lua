@@ -26,7 +26,7 @@ local Rogue = class:new()
     common.getBestDisc({'Poisonous Alliance Effect'}) -- inc poison dmg taken
 
     self:addAA('Rake\'s Rampage') -- ae attack
-    
+
     -- Main Burn
     self:addAA('Rogue\'s Fury') -- inc all skills dmg modifiers, min dmg, chance to hit
     common.getBestDisc({'Frenzied Stabbing Discipline'}) -- more backstabs
@@ -49,10 +49,10 @@ local Rogue = class:new()
     -- Mana Poison
     -- Draconic Poison
 
-    
+
 ]]
 function Rogue:init()
-    self.classOrder = {'assist', 'aggro', 'mash', 'burn', 'recover', 'buff', 'rest', 'rez'}
+    self.classOrder = { 'assist', 'aggro', 'mash', 'burn', 'recover', 'buff', 'rest', 'rez' }
     self:initBase('ROG')
 
     self:initClassOptions()
@@ -71,41 +71,42 @@ end
 
 Rogue.Abilities = {
     { -- lazarus specific clicky pickpocket
-        Type='Item',
-        Name='Forgotten Mugger\'s Sap',
-        Options={dps=true, condition=function() return (mq.TLO.Target.Distance() or 100) < 50 and mq.TLO.Target.Body() == 'Humanoid' end, emu=true}
+        Type = 'Item',
+        Name = 'Forgotten Mugger\'s Sap',
+        Options = { dps = true, condition = function() return (mq.TLO.Target.Distance() or 100) < 50 and
+            mq.TLO.Target.Body() == 'Humanoid' end, emu = true }
     },
     {
-        Type='Skill',
-        Name='Kick',
-        Options={dps=true, condition=conditions.withinMeleeDistance}
+        Type = 'Skill',
+        Name = 'Kick',
+        Options = { dps = true, condition = conditions.withinMeleeDistance }
     },
     {
-        Type='Skill',
-        Name='Backstab',
-        Options={dps=true, condition=conditions.withinMeleeDistance}
+        Type = 'Skill',
+        Name = 'Backstab',
+        Options = { dps = true, condition = conditions.withinMeleeDistance }
     },
     {
-        Type='AA',
-        Name='Twisted Shank',
-        Options={dps=true, condition=conditions.withinMeleeDistance}
+        Type = 'AA',
+        Name = 'Twisted Shank',
+        Options = { dps = true, condition = conditions.withinMeleeDistance }
     },
     {
-        Type='Disc',
-        Group='assault',
-        Names={'Assault'},
-        Options={dps=true, condition=conditions.withinMeleeDistance}
+        Type = 'Disc',
+        Group = 'assault',
+        Names = { 'Assault' },
+        Options = { dps = true, condition = conditions.withinMeleeDistance }
     },
     {
-        Type='AA',
-        Name='Ligament Slice',
-        Options={first=true, condition=conditions.withinMeleeDistance}
+        Type = 'AA',
+        Name = 'Ligament Slice',
+        Options = { first = true, condition = conditions.withinMeleeDistance }
     },
 
     {
-        Type='AA',
-        Name='Rogue\'s Fury',
-        Options={first=true}
+        Type = 'AA',
+        Name = 'Rogue\'s Fury',
+        Options = { first = true }
     },
     -- { -- shares timer with kinesthetics, 15m cd
     --     Type='Disc',
@@ -120,75 +121,75 @@ Rogue.Abilities = {
     --     Options={first=true}
     -- },
     {
-        Type='Disc',
-        Group='pinpoint',
-        Names={'Pinpoint Vulnerability'},
-        Options={first=true}
+        Type = 'Disc',
+        Group = 'pinpoint',
+        Names = { 'Pinpoint Vulnerability' },
+        Options = { first = true }
     },
     {
-        Type='Disc',
-        Group='stabbing',
-        Names={'Frenzied Stabbing Discipline'},
-        Options={first=true}
+        Type = 'Disc',
+        Group = 'stabbing',
+        Names = { 'Frenzied Stabbing Discipline' },
+        Options = { first = true }
     },
     {
-        Type='Disc',
-        Group='twisted',
-        Names={'Twisted Chance Discipline'},
-        Options={first=true}
+        Type = 'Disc',
+        Group = 'twisted',
+        Names = { 'Twisted Chance Discipline' },
+        Options = { first = true }
     },
     { -- shares timer with duelist, 5m cd
-        Type='Disc',
-        Group='kinesthetics',
-        Names={'Kinesthetics Discipline'},
-        Options={first=true}
+        Type = 'Disc',
+        Group = 'kinesthetics',
+        Names = { 'Kinesthetics Discipline' },
+        Options = { first = true }
     },
     {
-        Type='AA',
-        Name='Fundament: Third Spire of the Rake',
-        Options={first=true, emu=true}
+        Type = 'AA',
+        Name = 'Fundament: Third Spire of the Rake',
+        Options = { first = true, emu = true }
     },
     {
-        Type='AA',
-        Name='Dirty Fighting',
-        Options={first=true}
+        Type = 'AA',
+        Name = 'Dirty Fighting',
+        Options = { first = true }
     },
 
     {
-        Type='Item',
-        Name='Nightshade, Blade of Ancient Entropy',
-        Options={opt='USEEPIC', first=true, epicburn=true, emu=true} -- combatbuff=true, 
+        Type = 'Item',
+        Name = 'Nightshade, Blade of Ancient Entropy',
+        Options = { opt = 'USEEPIC', first = true, epicburn = true, emu = true } -- combatbuff=true,
     },
     {
-        Type='Item',
-        Name='Nightshade, Blade of Entropy',
-        Options={opt='USEEPIC', first=true, epicburn=true} -- combatbuff=true, 
+        Type = 'Item',
+        Name = 'Nightshade, Blade of Entropy',
+        Options = { opt = 'USEEPIC', first = true, epicburn = true } -- combatbuff=true,
     },
     {
-        Type='Item',
-        Name='Fatestealer',
-        Options={CheckFor='Assassin\'s Taint', combatbuff=true}
+        Type = 'Item',
+        Name = 'Fatestealer',
+        Options = { CheckFor = 'Assassin\'s Taint', combatbuff = true }
     },
     {
-        Type='AA',
-        Name='Envenomed Blades',
-        Options={combatbuff=true}
+        Type = 'AA',
+        Name = 'Envenomed Blades',
+        Options = { combatbuff = true }
     },
     {
-        Type='Disc',
-        Group='eyes',
-        Names={'Brigand\'s Gaze', 'Thief\'s Eyes'},
-        Options={combatbuff=true}
+        Type = 'Disc',
+        Group = 'eyes',
+        Names = { 'Brigand\'s Gaze', 'Thief\'s Eyes' },
+        Options = { combatbuff = true }
     },
     {
-        Type='AA',
-        Name='Sleight of Hand',
-        Options={selfbuff=true}
+        Type = 'AA',
+        Name = 'Sleight of Hand',
+        Options = { selfbuff = true }
     },
     {
-        Type='Item',
-        Name='Faded Gloves of the Shadows',
-        Options={CheckFor='Strike Poison', selfbuff=true}
+        Type = 'Item',
+        Name = 'Faded Gloves of the Shadows',
+        Options = { CheckFor = 'Strike Poison', selfbuff = true }
     },
 }
 

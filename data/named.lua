@@ -1,5 +1,5 @@
 return {
-    --[[ Lazarus HC Zones ]]--
+    --[[ Lazarus HC Zones ]] --
     ['oot'] = {
         ['Dixl Drool'] = true,
         ['Gornit'] = true,
@@ -47,7 +47,7 @@ return {
         ['Martar IceBear'] = true,
     },
 
-    --[[ Laurion's Song ]]--
+    --[[ Laurion's Song ]] --
 
     ['ankexfen'] = {
         [''] = true,
@@ -71,7 +71,7 @@ return {
         [''] = true,
     },
 
-    --[[ Night of Shadows ]]--
+    --[[ Night of Shadows ]] --
 
     ['firefallpass'] = {
         ['Bedrock Burrower'] = true,
@@ -135,9 +135,9 @@ return {
         ['Variegated Monstera'] = true,
     },
 
-    --[[ Terror of Luclin ]]--
+    --[[ Terror of Luclin ]] --
 
-    ['vexthaltwo'] = { -- Vex Thal Two
+    ['vexthaltwo'] = {       -- Vex Thal Two
         ['Thox Xakra'] = true,
         ['Kaas Thox Xi Ans Dyek'] = true,
         ['Diabo Xi Xin Thall'] = true,
@@ -206,9 +206,9 @@ return {
         ['Centi Thall'] = true,
     },
 
-    --[[ CLAWS OF VEESHAN ]]--
+    --[[ CLAWS OF VEESHAN ]] --
 
-    ['cobaltscartwo'] = { -- Cobalt Scar
+    ['cobaltscartwo'] = {    -- Cobalt Scar
         ['Delmare Undertow'] = true,
         ['Desirae Fanfare'] = true,
         ['Kirezelbough'] = true,
@@ -278,9 +278,9 @@ return {
         ['#Milas An`Rev'] = true,
     },
 
-    --[[ Torment of Velious ]]--
+    --[[ Torment of Velious ]] --
 
-    ['eastwastestwo'] = { -- The Eastern Wastes
+    ['eastwastestwo'] = {      -- The Eastern Wastes
         ['a returned dracoliche'] = true,
         ['Bolman'] = true,
         ['Cadcane the Unmourned'] = true,
@@ -362,9 +362,9 @@ return {
         ['Vkjen Thunderslayer'] = true,
     },
 
-    --[[ The Burning Lands ]]--
+    --[[ The Burning Lands ]] --
 
-    ['stratos'] = { -- Stratos: Zephyr\'s Flight
+    ['stratos'] = {           -- Stratos: Zephyr\'s Flight
         ['Cloud Iron Lance'] = true,
         ['Daring Cloud Spear'] = true,
         ['Dawnbreeze'] = true,
@@ -549,9 +549,9 @@ return {
         ['Travenro the Skygazer'] = true,
     },
 
-    --[[--- Empires of Kunark ---]]--
+    --[[--- Empires of Kunark ---]] --
 
-    ['lceanium'] = { -- Lceanium
+    ['lceanium'] = {                -- Lceanium
         ['The Blazing Hen'] = true,
         ['Darg Hillock'] = true,
         ['Dread Drikat'] = true,

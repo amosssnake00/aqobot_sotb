@@ -861,7 +861,7 @@ Necromancer.SpellLines = {
             'Unliving Murderer',     -- [[NEC/85 - Mana: 800 - Cast: 6s - Recast 1,5s - Duration: 0s - Resist: n/a - Target: Self- Effects: Consumes: Bone Chips x 1 1: Summon Pet: PCPetNecS17L085Spec2Snw ]]
             'Dark Assassin',         -- [[NEC/70 - Mana: 800 - Cast: 16s - Recast 1,5s - Duration: 0s - Resist: n/a - Target: Self- Effects: Consumes: Bone Chips x 1 1: Summon Pet: PCPetNecS14L070Spec2Snw ]]
             'Child of Bertoxxulous', -- [[NEC/65 - Mana: 800 - Cast: 16s - Recast 1,5s - Duration: 0s - Resist: n/a - Target: Self- Effects: Consumes: Bone Chips x 1 1: Summon Pet: PCPetNecS13L065Spec2Snw ]]
-            'Legacy of Zek', 
+            'Legacy of Zek',
             'Emissary of Thule',     -- [[NEC/59 - Mana: 650 - Cast: 16s - Recast 1,5s - Duration: 0s - Resist: n/a - Target: Self- Effects: Consumes: Bone Chips x 1 1: Summon Pet: PCPetNecS12L059Spec2Snw ]]
             'Servant of Bones',      -- [[NEC/56 - Mana: 525 - Cast: 15s - Recast 1,5s - Duration: 0s - Resist: n/a - Target: Self- Effects: Consumes: Bone Chips x 1 1: Summon Pet: PCPetNecS12L056Skel2Char ]]
             'Minion of Shadows',     -- [[NEC/53 - Mana: 525 - Cast: 14s - Recast 1,5s - Duration: 0s - Resist: n/a - Target: Self- Effects: Consumes: Bone Chips x 1 1: Summon Pet: PCPetNecS11L053Skel2Char ]]

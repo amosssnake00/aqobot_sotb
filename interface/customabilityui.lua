@@ -31,7 +31,7 @@ function CustomAbilityUI:render(class)
             end
             imgui.SameLine()
             if imgui.Button('Remove') and self.selectedOptionIdx > 0 then
-                
+
             end
             imgui.SameLine()
             if imgui.Button('Edit') and self.selectedOptionIdx > 0 then
@@ -41,9 +41,9 @@ function CustomAbilityUI:render(class)
             end
             imgui.Separator()
             if imgui.BeginListBox('##CustomOptionList', ImVec2(130, -1)) then
-                for i,option in ipairs(class.customOptions) do
+                for i, option in ipairs(class.customOptions) do
                     if imgui.Selectable(option.Key, self.selectedOptionIdx == i) then
-                        if  self.selectedOptionIdx ~= i then
+                        if self.selectedOptionIdx ~= i then
                             self.showEdit, self.showView = false, true
                             self.selectedOptionIdx = i
                         end
@@ -78,7 +78,7 @@ function CustomAbilityUI:render(class)
             end
             imgui.SameLine()
             if imgui.Button('Remove') and self.selectedAbilityIdx > 0 then
-                
+
             end
             imgui.SameLine()
             if imgui.Button('Edit') and self.selectedAbilityIdx > 0 then
@@ -88,9 +88,9 @@ function CustomAbilityUI:render(class)
             end
             imgui.Separator()
             if imgui.BeginListBox('##CustomAbilityList', ImVec2(130, -1)) then
-                for i,ability in ipairs(class.customAbilities) do
+                for i, ability in ipairs(class.customAbilities) do
                     if imgui.Selectable(ability.Group or ability.Key or ability.Name, self.selectedAbilityIdx == i) then
-                        if  self.selectedAbilityIdx ~= i then
+                        if self.selectedAbilityIdx ~= i then
                             self.showEdit, self.showView = false, true
                             self.selectedAbilityIdx = i
                         end
@@ -114,31 +114,32 @@ function CustomAbilityUI:render(class)
     end
 end
 
-local abilityLists = {'dps', 'aedps', 'tanking', 'aetank', 'heal', 'burn', 'tankburn', 'first', 'second', 'third', 'epicburn', 'selfbuff', 'singlebuff', 'aurabuff', 'petbuff', 'combatbuff', 'recover', 'cure', 'debuff'}
+local abilityLists = { 'dps', 'aedps', 'tanking', 'aetank', 'heal', 'burn', 'tankburn', 'first', 'second', 'third',
+    'epicburn', 'selfbuff', 'singlebuff', 'aurabuff', 'petbuff', 'combatbuff', 'recover', 'cure', 'debuff' }
 local flags = {
-    {'aggro', 'threshold'},
-    {'combat', 'ooc', 'minhp', 'mana', 'endurance'},
-    {'pet', 'self', 'regular', 'panic', 'group'},
-    {'classes', 'CheckFor', 'skipifbuff', 'usebelowpct', 'maxdistance', 'tot', 'nodmz', 'summonMinimum'}
+    { 'aggro',   'threshold' },
+    { 'combat',  'ooc',      'minhp',      'mana',        'endurance' },
+    { 'pet',     'self',     'regular',    'panic',       'group' },
+    { 'classes', 'CheckFor', 'skipifbuff', 'usebelowpct', 'maxdistance', 'tot', 'nodmz', 'summonMinimum' }
 }
 local actions = {
     'precast', 'postcast', 'RemoveBuff', 'stand', 'swap',
 }
 function CustomAbilityUI:renderAbilityViewer(class)
     local ability = class.customAbilities[self.selectedAbilityIdx]
-    if imgui.BeginChild('abilityviewer', ImVec2(-1,-1), ImGuiChildFlags.Border, ImGuiChildFlags.None) then
+    if imgui.BeginChild('abilityviewer', ImVec2(-1, -1), ImGuiChildFlags.Border, ImGuiChildFlags.None) then
         if ability.Options.CastType == 'Spell' then
             CustomAbilityUI:renderSpellHeader(ability)
         elseif ability.Options.CastType == 'AA' then
             CustomAbilityUI:renderAAHeader(ability)
         elseif ability.Options.CastType == 'Disc' then
             CustomAbilityUI:renderDiscHeader(ability)
-        -- Item, Skill
+            -- Item, Skill
         end
         imgui.Separator()
         if imgui.CollapsingHeader('Ability Lists') then
             local idx = 1
-            for i,listName in ipairs(abilityLists) do
+            for i, listName in ipairs(abilityLists) do
                 if ability.Options[listName] then
                     imgui.Text('%s: %s', idx, listName)
                     idx = idx + 1
@@ -154,9 +155,9 @@ function CustomAbilityUI:renderAbilityViewer(class)
                 imgui.Text('Condition: %s', ability.Options.conditionstring)
                 imgui.Separator()
             end
-            for i,flagGroup in ipairs(flags) do
+            for i, flagGroup in ipairs(flags) do
                 local idx = 1
-                for _,flagName in ipairs(flagGroup) do
+                for _, flagName in ipairs(flagGroup) do
                     if ability.Options[flagName] then
                         if type(ability.Options[flagName]) == 'boolean' then
                             imgui.Text('%s: %s', idx, flagName)
@@ -168,10 +169,9 @@ function CustomAbilityUI:renderAbilityViewer(class)
                 end
                 if idx > 1 and i < #flags then imgui.Separator() end
             end
-
         end
         if imgui.CollapsingHeader('Actions') then
-            for _,action in ipairs(actions) do
+            for _, action in ipairs(actions) do
                 if ability.Options[action] then
                     imgui.Text('%s: %s', ability.Options[action])
                 end
@@ -184,7 +184,7 @@ end
 function CustomAbilityUI:renderSpellHeader(ability)
     imgui.Text('Group: %s', ability.Group)
     ImGui.Text('Type: %s', ability.Options.CastType)
-    for i,spellName in ipairs(ability.Spells) do
+    for i, spellName in ipairs(ability.Spells) do
         imgui.Text('%s: %s', i, spellName)
     end
 end
@@ -197,13 +197,13 @@ end
 function CustomAbilityUI:renderDiscHeader(ability)
     imgui.Text('Group: %s', ability.Group)
     ImGui.Text('Type: %s', ability.Options.CastType)
-    for i,discName in ipairs(ability.Names) do
+    for i, discName in ipairs(ability.Names) do
         imgui.Text('%s: %s', i, discName)
     end
 end
 
 function CustomAbilityUI:renderAbilityEditor(class)
-    if imgui.BeginChild('abilityeditor', ImVec2(-1,-1), ImGuiChildFlags.Border, ImGuiChildFlags.None) then
+    if imgui.BeginChild('abilityeditor', ImVec2(-1, -1), ImGuiChildFlags.Border, ImGuiChildFlags.None) then
         AbilityInput.CastType = imgui.Combo('CastType', AbilityInput.CastType, 'Spell\0AA\0Disc\0Item\0Skill\0')
         if AbilityInput.CastType == 1 or AbilityInput.CastType == 3 then
             AbilityInput.Group = imgui.InputText('Group', AbilityInput.Group)
@@ -220,7 +220,7 @@ function CustomAbilityUI:renderAbilityEditor(class)
         imgui.Separator()
         if imgui.CollapsingHeader('Ability Lists') then
             local idx = 1
-            for i,listName in ipairs(abilityLists) do
+            for i, listName in ipairs(abilityLists) do
                 if AbilityInput.Options[listName] then
                     AbilityInput.Options[listName] = imgui.Checkbox(listName, AbilityInput.Options[listName])
                     idx = idx + 1
@@ -292,11 +292,13 @@ end
 
 function CustomAbilityUI:toAbilityInput(ability)
     self:resetAbilityInput()
-    AbilityInput.CastType = (ability.Options.CastType == 'Spell' and 1) or (ability.Options.CastType == 'AA' and 2) or (ability.Options.CastType == 'Disc' and 3) or (ability.Options.CastType == 'Item' and 4) or (ability.Options.CastType == 'Skill' and 5)
+    AbilityInput.CastType = (ability.Options.CastType == 'Spell' and 1) or (ability.Options.CastType == 'AA' and 2) or
+    (ability.Options.CastType == 'Disc' and 3) or (ability.Options.CastType == 'Item' and 4) or
+    (ability.Options.CastType == 'Skill' and 5)
     AbilityInput.Name = ability.Name
     AbilityInput.Group = ability.Group
     AbilityInput.Key = ability.Options.Key
-    for k,v in pairs(ability.Options) do
+    for k, v in pairs(ability.Options) do
         AbilityInput.Options[k] = v
     end
 end
@@ -315,7 +317,7 @@ function CustomAbilityUI:resetAbilityInput()
         CastType = 1,
         Group = '',
         Key = '',
-        Options={},
+        Options = {},
         threshold = 0,
         pet = 0,
         CheckFor = '',
@@ -329,13 +331,13 @@ end
 
 function CustomAbilityUI:renderOptionViewer(class)
     local option = class.customOptions[self.selectedOptionIdx]
-    if imgui.BeginChild('optionviewer', ImVec2(-1,-1), ImGuiChildFlags.Border, ImGuiChildFlags.None) then
+    if imgui.BeginChild('optionviewer', ImVec2(-1, -1), ImGuiChildFlags.Border, ImGuiChildFlags.None) then
         imgui.Text('Key: %s', option.Key)
         imgui.Text('Label: %s', option.Label)
         imgui.Text('Default: %s', option.Default)
         if option.Options then
             imgui.Text('Options:')
-            for i,opt in ipairs(option.Options) do
+            for i, opt in ipairs(option.Options) do
                 imgui.Text('%s: %s', i, opt)
             end
         else
@@ -351,10 +353,10 @@ function CustomAbilityUI:renderOptionViewer(class)
 end
 
 function CustomAbilityUI:renderOptionEditor(class)
-    if imgui.BeginChild('optioneditor', ImVec2(-1,-1), ImGuiChildFlags.Border, ImGuiChildFlags.None) then
+    if imgui.BeginChild('optioneditor', ImVec2(-1, -1), ImGuiChildFlags.Border, ImGuiChildFlags.None) then
         OptionInput.Key = imgui.InputText('Key', OptionInput.Key)
         OptionInput.Label = imgui.InputText('Label', OptionInput.Label)
-        OptionInput.Default = imgui.InputText('Default',OptionInput.Default)
+        OptionInput.Default = imgui.InputText('Default', OptionInput.Default)
         --imgui.Text('Options: %s', option.)
         -- if option.Options then
         --     imgui.Text('Options:')
@@ -383,13 +385,15 @@ function CustomAbilityUI:toOptionInput(option)
         TLO = option.TLO,
     }
     if option.options then
-        for _,opt in ipairs(option.options) do
+        for _, opt in ipairs(option.options) do
             OptionInput.Options = OptionInput.Options or {}
             table.insert(OptionInput.Options, opt)
         end
     end
-    OptionInput.InputType = (option.InputType == 'checkbox' and 1) or (option.OptionType == 'inputint' and 2) or (option.OptionType == 'inputtext' and 3)
-    OptionInput.TLOType = (option.TLOType == 'bool' and 1) or (option.OptionType == 'int' and 2) or (option.OptionType == 'string' and 3)
+    OptionInput.InputType = (option.InputType == 'checkbox' and 1) or (option.OptionType == 'inputint' and 2) or
+    (option.OptionType == 'inputtext' and 3)
+    OptionInput.TLOType = (option.TLOType == 'bool' and 1) or (option.OptionType == 'int' and 2) or
+    (option.OptionType == 'string' and 3)
 end
 
 function CustomAbilityUI:toOption(optionInput)

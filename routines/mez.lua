@@ -13,8 +13,8 @@ function mez.init() end
 ---Scan mobs in camp and reset mez timers to current time
 function mez.initMezTimers(mez_spell)
     camp.mobRadar()
-    for id,_ in pairs(state.targets) do
-        local mob = mq.TLO.Spawn('id '..id)
+    for id, _ in pairs(state.targets) do
+        local mob = mq.TLO.Spawn('id ' .. id)
         if mob() and not state.mezImmunes[mob.CleanName()] then
             mob.DoTarget()
             mq.delay(1000, function() return mq.TLO.Target.BuffsPopulated() end)
@@ -44,11 +44,13 @@ end
 ---@param mez_spell table @The name of the single target mez spell to cast.
 function mez.doSingle(mez_spell)
     if state.mobCount <= 1 or not mez_spell or not mq.TLO.Me.Gem(mez_spell.CastName)() then return end
-    for id,mobdata in pairs(state.targets) do
-        logger.debug(logger.flags.routines.mez, '[%s] meztimer: %s, currentTime: %s, timerExpired: %s', id, mobdata.meztimer and mobdata.meztimer.start_time or 0, mq.gettime(), mobdata.meztimer and mobdata.meztimer:expired() or true)
+    for id, mobdata in pairs(state.targets) do
+        logger.debug(logger.flags.routines.mez, '[%s] meztimer: %s, currentTime: %s, timerExpired: %s', id,
+            mobdata.meztimer and mobdata.meztimer.start_time or 0, mq.gettime(),
+            mobdata.meztimer and mobdata.meztimer:expired() or true)
         -- if id ~= state.assistMobID and (mobdata['meztimer'].start_time == 0 or mobdata['meztimer']:expired()) then
         if id ~= state.assistMobID and (not mobdata.meztimer or mobdata.meztimer:expired()) and not mobdata.dontmez then
-            local mob = mq.TLO.Spawn('id '..id)
+            local mob = mq.TLO.Spawn('id ' .. id)
             if mob() and not state.mezImmunes[mob.CleanName()] then
                 local spellData = mq.TLO.Spell(mez_spell.CastName)
                 local maxLevel = spellData.Max(1)() or mq.TLO.Me.Level()
@@ -75,7 +77,7 @@ function mez.doSingle(mez_spell)
                         if mq.TLO.Target.Mezzed() then
                             logger.info('Mezzed >>> %s (%s) <<<', mob.Name(), mob.ID())
                             logger.debug(logger.flags.routines.mez, 'STMEZ setting meztimer mob_id %d', id)
-                            mobdata.meztimer = timer:new(mez_spell.DurationTotalSeconds*1000 - 10000)
+                            mobdata.meztimer = timer:new(mez_spell.DurationTotalSeconds * 1000 - 10000)
                         end
                         state.mezTargetID = 0
                         state.mezTargetName = nil
@@ -94,7 +96,7 @@ end
 
 function mez.eventMezBreak(line, mob, breaker)
     logger.info('\at%s\ax mez broken by \at%s\ax', mob, breaker)
-    for id,mobdata in pairs(state.targets) do
+    for id, mobdata in pairs(state.targets) do
         if mobdata.Name == mob and mobdata.meztimer then
             mobdata.meztimer:reset(0)
         end

@@ -50,7 +50,7 @@ function casting.cast(spell, targetID, interruptCheck)
         end
     end
 
-    local target = mq.TLO.Spawn('id '..targetID)
+    local target = mq.TLO.Spawn('id ' .. targetID)
     if target() then
         local targetName = target.CleanName() or mq.TLO.Target.CleanName()
         if mq.TLO.Me.Invis() then
@@ -93,7 +93,7 @@ function casting.cast(spell, targetID, interruptCheck)
         if not spell.SpellType:find('Beneficial') then
             if not (spell.CastType == abilities.Types.Disc and spell.TargetType == 'Self') then
                 if not (spell.TargetType == 'PB AE' or spell.TargetType == 'Self') then
-                    if not mq.TLO.Spawn('id '..targetID).LineOfSight() then
+                    if not mq.TLO.Spawn('id ' .. targetID).LineOfSight() then
                         logger.info('SkipCast-LOS %s %s', spell.SpellName, targetName)
                         return casting.CastReturn.CAST_CANNOTSEE
                     end
@@ -418,7 +418,7 @@ function casting.checkReady(spell)
 end
 
 function casting.inRange(spell, targetID)
-    local targetSpawn = mq.TLO.Spawn('id '..targetID)
+    local targetSpawn = mq.TLO.Spawn('id ' .. targetID)
     if targetSpawn() then
         local targetDistance = targetSpawn.Distance() or 300
         return targetDistance <= spell.MyRange
@@ -436,7 +436,7 @@ function casting.trueTarget(targetID, allowClear)
 
     if mq.TLO.Target.ID() == targetID then return true end
 
-    local targetSpawn = mq.TLO.Spawn('id '..targetID)
+    local targetSpawn = mq.TLO.Spawn('id ' .. targetID)
     if targetSpawn() then
         targetSpawn.DoTarget()
         if mq.TLO.Me.AutoFire() then mq.cmd('/autofire') end

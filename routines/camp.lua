@@ -234,7 +234,7 @@ function camp.setCampCustom(X, Y, Z, Heading, ZoneID)
     local mode = mode.currentMode
     if mode:isCampMode() then
         mq.cmd('/squelch /maploc remove')
-        camp.Active = true 
+        camp.Active = true
         camp.X = tonumber(X)
         camp.Y = tonumber(Y)
         camp.Z = tonumber(Z)

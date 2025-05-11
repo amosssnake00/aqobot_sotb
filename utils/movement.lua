@@ -22,11 +22,11 @@ local function navCommand(command, options, timeout)
 end
 
 local function setOptions(baseOptions, additionalOptions)
-    return additionalOptions and baseOptions..' '..additionalOptions or baseOptions
+    return additionalOptions and baseOptions .. ' ' .. additionalOptions or baseOptions
 end
 
 function movement.navToSpawn(spawnSearch, options, timeout)
-    local input = 'spawn '..spawnSearch
+    local input = 'spawn ' .. spawnSearch
     navCommand(input, setOptions(spawnNavOptions, options), timeout)
 end
 
@@ -40,7 +40,7 @@ function movement.navToTarget(options, timeout)
 end
 
 function movement.navToID(id, options, timeout)
-    local input = 'id '..id
+    local input = 'id ' .. id
     navCommand(input, setOptions(defaultNavOptions, options), timeout)
 end
 

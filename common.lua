@@ -35,17 +35,17 @@ local function getSpell(spellName)
     local rankname = spell.RankName()
     if not mq.TLO.Me.Book(rankname)() then return nil end
     if state.ActAsLevel and spell.Level() > state.ActAsLevel then return nil end
-    return {ID=spell.ID(), Name=rankname, Ref=spell, Level=spell.Level(), BaseName=spell.BaseName()}
+    return { ID = spell.ID(), Name = rankname, Ref = spell, Level = spell.Level(), BaseName = spell.BaseName() }
 end
 
 function common.getBestSpell(spells, options, spellGroup)
     local currentBest = nil
-    for i,spellName in ipairs(spells) do
+    for i, spellName in ipairs(spells) do
         local bestSpell = getSpell(spellName)
         if bestSpell then
             if not options then options = {} end
             options.SpellGroup = spellGroup
-            for key,value in pairs(options) do
+            for key, value in pairs(options) do
                 bestSpell[key] = value
             end
             if not options.searchbylevel then
@@ -71,8 +71,8 @@ function common.getAA(aaName, options)
     local aaData = mq.TLO.Me.AltAbility(aaName)
     if aaData() and aaData.Spell() then
         if not options then options = {} end
-        local spellData = {ID=aaData.ID(), Name=aaData.Name()}
-        for key,value in pairs(options) do
+        local spellData = { ID = aaData.ID(), Name = aaData.Name() }
+        for key, value in pairs(options) do
             spellData[key] = value
         end
         logger.info('Found AA: %s (%s)', spellData.Name, aaData.Spell.Link())
@@ -85,7 +85,7 @@ local function getDisc(discName)
     local disc = mq.TLO.Spell(discName)
     local rankName = disc.RankName()
     if not rankName or not mq.TLO.Me.CombatAbility(rankName)() then return nil end
-    return {ID=disc.ID(), Name=rankName, Ref=disc, Level=disc.Level()}
+    return { ID = disc.ID(), Name = rankName, Ref = disc, Level = disc.Level() }
 end
 
 ---Lookup the ID for a given disc.
@@ -93,12 +93,12 @@ end
 ---@param options table|nil @A table of options relating to the disc, such as the setting name controlling use of the disc
 ---@return table|nil @Returns a table containing the disc name with rank, disc ID and the provided option name.
 function common.getBestDisc(discs, options)
-    for _,discName in ipairs(discs) do
+    for _, discName in ipairs(discs) do
         local bestDisc = getDisc(discName)
         if bestDisc then
             logger.info('Found Disc: %s (%s)', bestDisc.Ref.Link(), bestDisc.Level)
             if not options then options = {} end
-            for key,value in pairs(options) do
+            for key, value in pairs(options) do
                 bestDisc[key] = value
             end
             return abilities.Disc:new(bestDisc)
@@ -110,11 +110,11 @@ end
 
 function common.getItem(itemName, options)
     if not itemName then return nil end
-    local itemRef = mq.TLO.FindItem('='..itemName)
+    local itemRef = mq.TLO.FindItem('=' .. itemName)
     if itemRef() and itemRef.Clicky() then
         if not options then options = {} end
-        local spellData = {ID=itemRef.ID(), Name=itemRef.Name()}
-        for key,value in pairs(options) do
+        local spellData = { ID = itemRef.ID(), Name = itemRef.Name() }
+        for key, value in pairs(options) do
             spellData[key] = value
         end
         logger.info('Found Item: %s', itemRef.ItemLink('CLICKABLE'))
@@ -126,8 +126,8 @@ end
 function common.getSkill(name, options)
     if not mq.TLO.Me.Ability(name)() or not mq.TLO.Me.Skill(name)() or mq.TLO.Me.Skill(name)() == 0 then return nil end
     if not options then options = {} end
-    local spellData = {Name=name}
-    for key,value in pairs(options) do
+    local spellData = { Name = name }
+    for key, value in pairs(options) do
         spellData[key] = value
     end
     logger.info('Found Skill: %s', name)
@@ -148,7 +148,7 @@ end
 ---@return boolean @Returns true if at least 1 hostile auto hater spawn on XTarget, otherwise false.
 function common.hostileXTargets()
     if mq.TLO.Me.XTarget() == 0 then return false end
-    for i=1,20 do
+    for i = 1, 20 do
         if mq.TLO.Me.XTarget(i).TargetType() == 'Auto Hater' and mq.TLO.Me.XTarget(i).Type() == 'NPC' then
             return true
         end
@@ -158,20 +158,22 @@ end
 
 function common.clearToBuff()
     -- return mq.TLO.Me.CombatState() ~= 'COMBAT' and not common.hostileXTargets() and not common.amIDead() and not state.forceEngage
-    return mq.TLO.Me.CombatState() ~= 'COMBAT' and not mq.TLO.Spawn('npc radius '..config.get('CAMPRADIUS')).Aggressive() and not common.amIDead() and not state.forceEngage
+    return mq.TLO.Me.CombatState() ~= 'COMBAT' and not mq.TLO.Spawn('npc radius ' .. config.get('CAMPRADIUS'))
+    .Aggressive() and not common.amIDead() and not state.forceEngage
 end
 
 ---Determine whether currently in control of the character, i.e. not CC'd, stunned, mezzed, etc.
 ---@return boolean @Returns true if not under any loss of control effects, false otherwise.
 function common.inControl()
     return not (mq.TLO.Me.Dead() or mq.TLO.Me.Charmed() or
-            mq.TLO.Me.Stunned() or mq.TLO.Me.Silenced() or
-            mq.TLO.Me.Mezzed() or mq.TLO.Me.Invulnerable() or mq.TLO.Me.Hovering())
+        mq.TLO.Me.Stunned() or mq.TLO.Me.Silenced() or
+        mq.TLO.Me.Mezzed() or mq.TLO.Me.Invulnerable() or mq.TLO.Me.Hovering())
 end
 
 function common.isBlockingWindowOpen()
     -- check blocking windows -- BigBankWnd, MerchantWnd, GiveWnd, TradeWnd
-    return mq.TLO.Window('BigBankWnd').Open() or mq.TLO.Window('MerchantWnd').Open() or mq.TLO.Window('GiveWnd').Open() or mq.TLO.Window('TradeWnd').Open() or mq.TLO.Window('LootWnd').Open()
+    return mq.TLO.Window('BigBankWnd').Open() or mq.TLO.Window('MerchantWnd').Open() or mq.TLO.Window('GiveWnd').Open() or
+    mq.TLO.Window('TradeWnd').Open() or mq.TLO.Window('LootWnd').Open()
 end
 
 -- Movement Functions
@@ -184,11 +186,13 @@ function common.checkChase()
     --checkChaseTimer:reset()
     if mq.TLO.Stick.Active() or mq.TLO.Me.Combat() or (mq.TLO.Me.AutoFire() and mq.TLO.Target.Type() == 'NPC') or (state.class ~= 'BRD' and mq.TLO.Me.Casting()) or mq.TLO.Window('SpellBookWnd').Open() then
         if logger.flags.common.chase then
-            logger.debug(logger.flags.common.chase, 'Not chasing due to one of: Stick.Active=%s, Me.Combat=%s, Me.AutoFire=%s, Me.Casting=%s', mq.TLO.Stick.Active(), mq.TLO.Me.Combat(), mq.TLO.Me.AutoFire, mq.TLO.Me.Casting())
+            logger.debug(logger.flags.common.chase,
+                'Not chasing due to one of: Stick.Active=%s, Me.Combat=%s, Me.AutoFire=%s, Me.Casting=%s',
+                mq.TLO.Stick.Active(), mq.TLO.Me.Combat(), mq.TLO.Me.AutoFire, mq.TLO.Me.Casting())
         end
         return
     end
-    local chase_spawn = mq.TLO.Spawn('pc ='..config.get('CHASETARGET'))
+    local chase_spawn = mq.TLO.Spawn('pc =' .. config.get('CHASETARGET'))
     local me_x = mq.TLO.Me.X()
     local me_y = mq.TLO.Me.Y()
     local chase_x = chase_spawn.X()
@@ -197,10 +201,10 @@ function common.checkChase()
         logger.debug(logger.flags.common.chase, 'Not chasing due to invalid chase spawn X=%s,Y=%s', chase_x, chase_y)
         return
     end
-    if helpers.distance(me_x, me_y, chase_x, chase_y) > (config.get('CHASEDISTANCE')^2) then
+    if helpers.distance(me_x, me_y, chase_x, chase_y) > (config.get('CHASEDISTANCE') ^ 2) then
         if mq.TLO.Me.Sitting() then mq.cmd('/stand') end
-        if not movement.navToSpawn('pc ='..config.get('CHASETARGET'), 'dist='..config.get('CHASESTOPDISTANCE')) then
-            local chaseSpawn = mq.TLO.Spawn('pc '..config.get('CHASETARGET'))
+        if not movement.navToSpawn('pc =' .. config.get('CHASETARGET'), 'dist=' .. config.get('CHASESTOPDISTANCE')) then
+            local chaseSpawn = mq.TLO.Spawn('pc ' .. config.get('CHASETARGET'))
             if not mq.TLO.Navigation.Active() and chaseSpawn.LineOfSight() then
                 mq.cmdf('/moveto id %s', chaseSpawn.ID())
                 mq.delay(1000)
@@ -268,7 +272,7 @@ function common.checkCombatBuffs()
         local charm = mq.TLO.Me.Inventory('Charm')
         local charmSpell = charm.Clicky.Spell()
         if charmSpell and charmSpell:lower():find('geomantra') then
-            abilities.use(abilities.Item:new({Name=charm(), ID=charm.ID()}))
+            abilities.use(abilities.Item:new({ Name = charm(), ID = charm.ID() }))
         end
     end
 end
@@ -277,27 +281,34 @@ end
 function common.checkItemBuffs()
     if familiar and familiar > 0 and not mq.TLO.Me.Buff('Familiar:')() then
         local familiarItem = mq.TLO.FindItem(familiar)
-        abilities.use(abilities.Item:new({Name=familiarItem(), ID=familiarItem.ID()}))
-        mq.delay(500+familiarItem.CastTime())
+        abilities.use(abilities.Item:new({ Name = familiarItem(), ID = familiarItem.ID() }))
+        mq.delay(500 + familiarItem.CastTime())
         mq.cmdf('/removebuff %s', familiarItem.Clicky())
     end
     if illusion and illusion > 0 and not mq.TLO.Me.Buff('Illusion Benefit')() then
         local illusionItem = mq.TLO.FindItem(illusion)
-        abilities.use(abilities.Item:new({Name=illusionItem(), ID=illusionItem.ID()}))
-        mq.delay(500+illusionItem.CastTime())
+        abilities.use(abilities.Item:new({ Name = illusionItem(), ID = illusionItem.ID() }))
+        mq.delay(500 + illusionItem.CastTime())
         mq.cmd('/removebuff illusion:')
     end
     if mount and mount > 0 and not mq.TLO.Me.Buff('Mount Blessing')() and mq.TLO.Me.CanMount() then
         local mountItem = mq.TLO.FindItem(mount)
         -- TODO: ignore stat mount of no blessing
-        abilities.use(abilities.Item:new({Name=mountItem(), ID=mountItem.ID()}))
-        mq.delay(500+mountItem.CastTime())
+        abilities.use(abilities.Item:new({ Name = mountItem(), ID = mountItem.ID() }))
+        mq.delay(500 + mountItem.CastTime())
         mq.cmdf('/removebuff %s', mountItem.Clicky())
     end
 end
 
-local modrods = {['Summoned: Dazzling Modulation Shard']=true,['Sickle of Umbral Modulation']=true,['Wand of Restless Modulation']=true,
-                ['Summoned: Large Modulation Shard']=true, ['Summoned: Medium Modulation Shard']=true, ['Summoned: Small Modulation Shard']=true, ['Azure Mind Crystal']=true}
+local modrods = {
+    ['Summoned: Dazzling Modulation Shard'] = true,
+    ['Sickle of Umbral Modulation'] = true,
+    ['Wand of Restless Modulation'] = true,
+    ['Summoned: Large Modulation Shard'] = true,
+    ['Summoned: Medium Modulation Shard'] = true,
+    ['Summoned: Small Modulation Shard'] = true,
+    ['Azure Mind Crystal'] = true
+}
 ---Attempt to click mod rods if mana is below 75%.
 function common.checkMana()
     -- modrods
@@ -312,28 +323,28 @@ function common.checkMana()
             mq.delay(50)
         end
         -- Find ModRods in check_mana since they poof when out of charges, can't just find once at startup.
-        for item,_ in pairs(modrods) do
+        for item, _ in pairs(modrods) do
             local modrod = mq.TLO.FindItem(item)
             local hp_amount = modrod.Spell.Base(1)()
-            if modrod() and hp_amount and math.abs(hp_amount)*2 < mq.TLO.Me.CurrentHPs() then
-                abilities.use(abilities.Item:new({Name=modrod(), ID=modrod.ID()}))
+            if modrod() and hp_amount and math.abs(hp_amount) * 2 < mq.TLO.Me.CurrentHPs() then
+                abilities.use(abilities.Item:new({ Name = modrod(), ID = modrod.ID() }))
             end
         end
         -- use feather for self if not grouped (group.LowMana is null if not grouped)
         if feather() and not group_mana and not mq.TLO.Me.Song(feather.Spell.Name())() then
-            abilities.use(abilities.Item:new({Name=feather(), ID=feather.ID()}))
+            abilities.use(abilities.Item:new({ Name = feather(), ID = feather.ID() }))
         end
     end
     -- use feather for group if > 2 members are below 70% mana
     if feather() and group_mana and group_mana > 2 and not mq.TLO.Me.Song(feather.Spell.Name())() then
-        abilities.use(abilities.Item:new({Name=feather(), ID=feather.ID()}))
+        abilities.use(abilities.Item:new({ Name = feather(), ID = feather.ID() }))
     end
 
     local zonesn = mq.TLO.Zone.ShortName()
     if zonesn ~= 'poknowledge' and zonesn ~= 'thevoida' and mq.TLO.Me.MaxMana() > 0 then
         local manastone = mq.TLO.FindItem('Manastone')
         if manastone() and mq.TLO.Me.PctMana() < config.get('MANASTONESTART') and mq.TLO.Me.PctHPs() > config.get('MANASTONESTARTHP') then
-            local manastoneTimer = timer:new((config.get('MANASTONETIME') or 0)*1000)
+            local manastoneTimer = timer:new((config.get('MANASTONETIME') or 0) * 1000)
             while mq.TLO.Me.PctHPs() > config.get('MANASTONESTOPHP') and not manastoneTimer:expired() do
                 mq.cmd('/useitem manastone')
                 mq.delay(1)
@@ -361,8 +372,8 @@ function common.rest()
             if not mq.TLO.Target() then mq.TLO.Me.DoTarget() end
         end
         if not mq.TLO.Me.Sitting() and not mq.TLO.Me.Moving() and not mq.TLO.Me.Casting() and not state.casting and state.medding then
-                --and not mq.TLO.Me.Combat() and not mq.TLO.Me.AutoFire() and
-                --mq.TLO.SpawnCount(string.format('xtarhater radius %d zradius 50', config.get('CAMPRADIUS')))() == 0 then
+            --and not mq.TLO.Me.Combat() and not mq.TLO.Me.AutoFire() and
+            --mq.TLO.SpawnCount(string.format('xtarhater radius %d zradius 50', config.get('CAMPRADIUS')))() == 0 then
             mq.cmd('/sit')
             state.sitTimer:reset()
         end
@@ -402,7 +413,7 @@ function common.checkCursor()
 end
 
 function common.processList(aList, class, returnOnFirstUse)
-    for _,entry in ipairs(aList) do
+    for _, entry in ipairs(aList) do
         if abilities.use(entry, class) then
             mq.delay(entry.delay or 200)
             if returnOnFirstUse then return true end
@@ -412,8 +423,8 @@ end
 
 --Shamelessly stolen from Rekka and E3Next
 function common.amIDead()
-    for i=1,10 do
-        local slot = mq.TLO.Me.Inventory('pack'..i)
+    for i = 1, 10 do
+        local slot = mq.TLO.Me.Inventory('pack' .. i)
         if slot() then
             return false
         end

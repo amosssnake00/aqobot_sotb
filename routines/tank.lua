@@ -30,8 +30,8 @@ function tank.callback(message)
 end
 
 function tank.broadcastTankMob()
-    local header = {script = 'aqo'}
-    local tankingMessage = {id='tanking', tankMobID=state.tankMobID, tankID=mq.TLO.Me.ID()}
+    local header = { script = 'aqo' }
+    local tankingMessage = { id = 'tanking', tankMobID = state.tankMobID, tankID = mq.TLO.Me.ID() }
     actor.actor:send(header, tankingMessage)
 end
 
@@ -55,15 +55,15 @@ function tank.findMobToTank()
         if state.actors then
             local offtankIDs = {}
             local numTanks = 0
-            for _,charData in pairs(state.actors) do
+            for _, charData in pairs(state.actors) do
                 if charData.missingAggro then
                     numTanks = numTanks + 1
-                    for _,mobID in ipairs(charData.missingAggro) do
+                    for _, mobID in ipairs(charData.missingAggro) do
                         offtankIDs[mobID] = (offtankIDs[mobID] or 0) + 1
                     end
                 end
             end
-            for id,count in pairs(offtankIDs) do
+            for id, count in pairs(offtankIDs) do
                 if count == numTanks then
                     logger.debug(logger.flags.routines.tank, 'No tank has aggro on mob (%s), offtanking', id)
                     state.tankMobID = id
@@ -78,18 +78,21 @@ function tank.findMobToTank()
     local lowesthpid = 0
     local firstid = 0
     local firstname = nil
-    for id,_ in pairs(state.targets) do
+    for id, _ in pairs(state.targets) do
         -- loop through for named, highest level, unmezzed, lowest hp
         local mob = mq.TLO.Spawn(id)
         if mob.Aggressive() then -- this seems to fix attacking swarm pets. Side effects: unknown?
             local name = mob.CleanName() or ''
-            if firstid == 0 then firstid = mob.ID() firstname = name end
+            if firstid == 0 then
+                firstid = mob.ID()
+                firstname = name
+            end
             if mob.Named() then
                 logger.debug(logger.flags.routines.tank, 'Selecting Named mob to tank next (%s)', mob.ID())
                 state.tankMobID = mob.ID()
                 return true
-            else--if not mob.Mezzed() then -- TODO: mez check requires targeting
-                if firstname and firstname:find('scarab') and not name:find('scarab')  then
+            else --if not mob.Mezzed() then -- TODO: mez check requires targeting
+                if firstname and firstname:find('scarab') and not name:find('scarab') then
                     firstid = mob.ID()
                     firstname = mob.CleanName()
                 end
@@ -131,17 +134,17 @@ local function tankMobInRange(tank_spawn)
     local camp_radius = config.get('CAMPRADIUS')
     if mode.currentMode:isReturnToCampMode() and camp.Active then
         local dist = helpers.distance(camp.X, camp.Y, mob_x, mob_y)
-        if dist < camp_radius^2 then
+        if dist < camp_radius ^ 2 then
             return true
         else
             local targethp = tank_spawn.PctHPs()
-            if targethp and targethp < 95 and dist < camp_radius+campBuffer then
+            if targethp and targethp < 95 and dist < camp_radius + campBuffer then
                 return true
             end
             return false
         end
     else
-        if helpers.distance(mq.TLO.Me.X(), mq.TLO.Me.Y(), mob_x, mob_y) < camp_radius^2 then
+        if helpers.distance(mq.TLO.Me.X(), mq.TLO.Me.Y(), mob_x, mob_y) < camp_radius ^ 2 then
             return true
         else
             return false

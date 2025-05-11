@@ -229,7 +229,7 @@ Magician.SpellLines = {
             'Firebolt of Tallon',                           -- [[MAG/61 - Mana: 515 - Cast: 7s - Recast 1,5s  - Duration: 0s - Resist: Fire  - Target: Line of Sight - Effects: 1: Decrease Current HP by 2100 ]]
             'Seeking Flame of Seukor',                      -- [[MAG/59 - Mana: 413 - Cast: 6,5s - Recast 1,5s  - Duration: 0s - Resist: Fire  - Target: Line of Sight - Effects: 1: Decrease Current HP by 1607 ]]
             'Char',                                         -- [[MAG/52 - Mana: 291 - Cast: 6s - Recast 1,5s  - Duration: 0s - Resist: Fire  - Target: Single - Effects: 1: Decrease Current HP by 974 ]]
-        --[[   'Cinder Bolt', ]]                                  -- [[MAG/33 - Mana: 165 - Cast: 4s - Recast 1,5s  - Duration: 0s - Resist: Fire  - Target: Line of Sight - Effects: 1: Decrease Current HP by 510 ]]
+            --[[   'Cinder Bolt', ]]                        -- [[MAG/33 - Mana: 165 - Cast: 4s - Recast 1,5s  - Duration: 0s - Resist: Fire  - Target: Line of Sight - Effects: 1: Decrease Current HP by 510 ]]
             'Blaze',                                        -- [[MAG/31 - Mana: 136 - Cast: 4s - Recast 1,5s  - Duration: 0s - Resist: Fire  - Target: Single - Effects: 1: Decrease Current HP by 418 ]]
             'Bolt of Flame',                                -- [[MAG/18 - Mana: 102 - Cast: 3s - Recast 1,5s  - Duration: 0s - Resist: Fire  - Target: Line of Sight - Effects: 1: Decrease Current HP by 297 ]]
             'Shock of Flame',                               -- [[MAG/15 - Mana: 48 - Cast: 2,5s - Recast 1,5s  - Duration: 0s - Resist: Fire  - Target: Single - Effects: 1: Decrease Current HP by 122 ]]
@@ -237,8 +237,15 @@ Magician.SpellLines = {
             'Burn',                                         -- [[MAG/4 - Mana: 7 - Cast: 1,5s - Recast 1,5s  - Duration: 0s - Resist: Fire  - Target: Single - Effects: 1: Decrease Current HP by 14 ]]
             'Burst of Flame',                               -- [[DRU/1 SHM/1 MAG/1 - Mana: 4 - Cast: 1,5s - Recast 1,5s  - Duration: 0s - Resist: Fire  - Target: Single - Effects: 1: Decrease Current HP by 5 ]] ]]
         },
-        Options = { opt = 'USEFIRENUKES', Gems = { 1, function(lvl) return not Magician:isEnabled('USEAOE') and 2 or nil end }, precast = function() if mq.TLO.FindItem('Bifold Focus of the Evil Eye')() and mq.TLO.Me.ItemReady('Bifold Focus of the Evil Eye')() then
-                mq.cmd('/useitem "Bifold Focus of the Evil Eye"') end end }
+        Options = {
+            opt = 'USEFIRENUKES',
+            Gems = { 1, function(lvl) return not Magician:isEnabled('USEAOE') and 2 or nil end },
+            precast = function()
+                if mq.TLO.FindItem('Bifold Focus of the Evil Eye')() and mq.TLO.Me.ItemReady('Bifold Focus of the Evil Eye')() then
+                    mq.cmd('/useitem "Bifold Focus of the Evil Eye"')
+                end
+            end
+        }
     },
     { -- Main AE nuke. Slot 1
         Group = 'beam',
@@ -314,8 +321,18 @@ Magician.SpellLines = {
             'Summon: Molten Orb',                    -- [[MAG/69 - Mana: 1550 - Cast: 4,5s - Recast 1,5s  - Duration: 0s - Resist: n/a - Target: Self - Effects: 1: Summon: [Item 77678] x 1 ]]
             'Summon: Lava Orb',                      -- [[MAG/61 - Mana: 1275 - Cast: 4,5s - Recast 1,5s  - Duration: 0s - Resist: n/a - Target: Self - Effects: 1: Summon: [Item 77681] x 1 ]]
         },
-        Options = { Gem = 7, summonMinimum = 1, nodmz = true, pause = true, alias = 'NUKEORB', selfbuff = true, condition = function() return not
-            mq.TLO.FindItem('Glyphwielder\'s Eternal Bracer')() end }
+        Options = {
+            Gem = 7,
+            summonMinimum = 1,
+            nodmz = true,
+            pause = true,
+            alias = 'NUKEORB',
+            selfbuff = true,
+            condition = function()
+                return not
+                    mq.TLO.FindItem('Glyphwielder\'s Eternal Bracer')()
+            end
+        }
     },
     { -- Large DS 10 minutes. Slot 8
         Group = 'veilds',
@@ -410,8 +427,13 @@ Magician.SpellLines = {
             'Shield of Consequence', --[[emu cutoff]] -- [[NEC/102 WIZ/102 MAG/102 ENC/102 - Mana: 977 - Cast: 4,5s - Recast 1,5s  - Duration: 90m+ - Resist: n/a - Target: Self - Effects: 1: Absorb Spell Damage: 60% over 12000, Total: 146668 2: Absorb Melee Damage: 75% over 12000, Total: 112304 ]]
             'Elemental Aura',                         -- [[MAG/66 - Mana: 455 - Cast: 12s - Recast 1,5s  - Duration: 90m+ - Resist: n/a - Target: Self - Effects: 1: Increase Max HP by 390 2: Increase AC by 10 to 14, Based on Class 3: Stacking: Block new spell if slot 1 is 'HP Buff' and < 1390 6: Increase Magic Resist by 40 ]]
         },
-        Options = { selfbuff = true, condition = function() return not mq.TLO.FindItem(
-            'Glyphwielder\'s Sleeves of the Summoner')() end }
+        Options = {
+            selfbuff = true,
+            condition = function()
+                return not mq.TLO.FindItem(
+                    'Glyphwielder\'s Sleeves of the Summoner')()
+            end
+        }
     },
     {
         Group = 'minion',
@@ -598,9 +620,14 @@ Magician.SpellLines = {
             'Burnout II',                   -- [[not found - Mana: not found - Cast: not found - Recast not found - Duration: not found - Resist: not found - Target: not found- Effects: not found ]]
             'Burnout',                      -- [[MAG/11 - Mana: 35 - Cast: 6,5s - Recast 1,5s  - Duration: 60m+ - Resist: n/a - Target: Pet - Effects: 3: Increase STR by 15 4: Increase Melee Haste by 15% 6: Increase AC by 2 to 2, Based on Class ]]
         },
-        Options = { petbuff = true, condition = function() return not mq.TLO.FindItem(
-            'Glyphwielder\'s Leggings of the Summoner')() and
-            not mq.TLO.FindItem('Glyphwielder\'s Ascendant Leggings of the Summoner')() end }
+        Options = {
+            petbuff = true,
+            condition = function()
+                return not mq.TLO.FindItem(
+                        'Glyphwielder\'s Leggings of the Summoner')() and
+                    not mq.TLO.FindItem('Glyphwielder\'s Ascendant Leggings of the Summoner')()
+            end
+        }
     },
     -- having some issues?
     -- {
@@ -726,8 +753,17 @@ Magician.SpellLines = {
             'Pyrilen Skin',   -- [[MAG/68 - Mana: 300 - Cast: 3s - Recast 13s T9 - Duration: 12s+ - Resist: n/a - Target: Single - Effects: Max Hits: 4 Incoming Hit Successes 12: Increase Damage Shield by 420 ]]
             'Burning Aura',   -- [[MAG/68 - Mana: 300 - Cast: 3s - Recast 1,5s  - Duration: 3m+ - Resist: n/a - Target: Single - Effects: Max Hits: 48 Defensive Proc Casts 1: Add Defensive Proc: Burning Vengeance with 400% Rate Mod ]]
         },
-        Options = { opt = 'USETEMPDS', alias = 'TEMPDS', combatbuffothers = true, singlebuff = true, classes = { WAR = true, SHD = true, PAL = true }, Gem = function(
-            lvl) return lvl <= 70 and 9 or nil end }
+        Options = {
+            opt = 'USETEMPDS',
+            alias = 'TEMPDS',
+            combatbuffothers = true,
+            singlebuff = true,
+            classes = { WAR = true, SHD = true, PAL = true },
+            Gem = function(
+                lvl)
+                return lvl <= 70 and 9 or nil
+            end
+        }
     },
     -- Chance to increase spell power of next nuke
     {
@@ -904,8 +940,14 @@ Magician.SpellLines = {
             'Rain of Lava',                  -- [[MAG/35 - Mana: 250 - Cast: 5,5s - Recast 12s T3 - Duration: 0s - Resist: Fire  - Target: Target AE (4) - Effects: AE Waves: 3 1: Decrease Current HP by 172 ]]
             'Rain of Fire',                  -- [[MAG/17 - Mana: 125 - Cast: 3,5s - Recast 12s T3 - Duration: 0s - Resist: Fire  - Target: Target AE (4) - Effects: AE Waves: 3 1: Decrease Current HP by 75 ]]
         },
-        Options = { opt = 'USEAOE', threshold = 2, Gem = function(lvl) return (lvl == 70 and 2) or (lvl <= 60 and 4) or
-            nil end }
+        Options = {
+            opt = 'USEAOE',
+            threshold = 2,
+            Gem = function(lvl)
+                return (lvl == 70 and 2) or (lvl <= 60 and 4) or
+                    nil
+            end
+        }
     },
     -- targeted AE magic rain
     {
@@ -920,8 +962,14 @@ Magician.SpellLines = {
             'Rain of Spikes',                     -- [[MAG/26 - Mana: 162 - Cast: 4,5s - Recast 12s T7 - Duration: 0s - Resist: Magic  - Target: Target AE (4) - Effects: AE Waves: 3 1: Decrease Current HP by 91 ]]
             'Rain of Blades',                     -- [[MAG/10 - Mana: 62 - Cast: 2,75s - Recast 12s T7 - Duration: 0s - Resist: Magic  - Target: Target AE (4) - Effects: AE Waves: 3 1: Decrease Current HP by 26 ]]
         },
-        Options = { opt = 'USEAOE', threshold = 2, Gem = function(lvl) return (lvl == 70 and 10) or (lvl <= 60 and 5) or
-            nil end }
+        Options = {
+            opt = 'USEAOE',
+            threshold = 2,
+            Gem = function(lvl)
+                return (lvl == 70 and 10) or (lvl <= 60 and 5) or
+                    nil
+            end
+        }
     },
     {
         Group = 'pbaefire',

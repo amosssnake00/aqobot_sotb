@@ -20,7 +20,7 @@ local stateGUIOpen, shouldDrawStateGUI = false, false
 local spellRotationUIOpen, shouldDrawSpellRotationUI = false, false
 local abilityGUIOpen, shouldDrawAbilityGUI = false, false
 local clickyManagerOpen, shouldDrawClickyManager = false, false
-local helpGUIOpen, shouldDrawHelpGUI= false, false
+local helpGUIOpen, shouldDrawHelpGUI = false, false
 local buffGUIOpen, showBuffGUI = false, false
 
 -- UI constants
@@ -73,16 +73,17 @@ local function drawConfigurationForCategory(configs)
     local _, yAvail = ImGui.GetContentRegionAvail()
 
     local maxLabelWidth = 0
-    for _,cfgKey in ipairs(configs) do
+    for _, cfgKey in ipairs(configs) do
         local labelSize = ImGui.CalcTextSize(config[cfgKey].label)
         if labelSize > maxLabelWidth then maxLabelWidth = labelSize end
     end
-    for _,cfgKey in ipairs(configs) do
+    for _, cfgKey in ipairs(configs) do
         local cfg = config[cfgKey]
         if (cfg.emu == nil or (cfg.emu and state.emu) or (cfg.emu == false and not state.emu)) and
-                (cfg.classes == nil or cfg.classes[state.class]) then
+            (cfg.classes == nil or cfg.classes[state.class]) then
             if cfg.type == 'combobox' then
-                config.set(cfgKey, widgets.ComboBox(cfg.label, cfg.value, cfg.options, true, cfg.tip, item_width, xOffset, yOffset))
+                config.set(cfgKey,
+                    widgets.ComboBox(cfg.label, cfg.value, cfg.options, true, cfg.tip, item_width, xOffset, yOffset))
                 xOffset, yOffset, maxY = ui.getNextXY(y, yAvail, xOffset, yOffset, maxY, maxLabelWidth)
             elseif cfg.type == 'inputtext' then
                 config.set(cfgKey, widgets.InputText(cfg.label, cfg.value, cfg.tip, item_width, xOffset, yOffset))
@@ -93,10 +94,10 @@ local function drawConfigurationForCategory(configs)
             end
         end
     end
-    for _,cfgKey in ipairs(configs) do
+    for _, cfgKey in ipairs(configs) do
         local cfg = config[cfgKey]
         if (cfg.emu == nil or (cfg.emu and state.emu) or (cfg.emu == false and not state.emu)) and
-                (cfg.classes == nil or cfg.classes[state.class]) then
+            (cfg.classes == nil or cfg.classes[state.class]) then
             if cfg.type == 'checkbox' then
                 config.set(cfgKey, widgets.CheckBox(cfg.label, cfg.value, cfg.tip, xOffset, yOffset))
                 xOffset, yOffset, maxY = ui.getNextXY(y, yAvail, xOffset, yOffset, maxY, maxLabelWidth)
@@ -107,17 +108,17 @@ end
 
 -- Combine Assist and Camp categories
 local assistTabConfigs = {
-    'ASSIST','AUTOASSISTAT','ASSISTNAMES','SWITCHWITHMA','CAMPRADIUS','CAMPRETURN',
-    'STICKCOMMAND','CHASETARGET','CHASEDISTANCE','CHASESTOPDISTANCE','CHASEPAUSED','RESISTSTOPCOUNT',
-    'NUKEMANAMIN','DOTMANAMIN','MAINTANK','OFFTANK','LOOTMOBS','LOOTCOMBAT',
+    'ASSIST', 'AUTOASSISTAT', 'ASSISTNAMES', 'SWITCHWITHMA', 'CAMPRADIUS', 'CAMPRETURN',
+    'STICKCOMMAND', 'CHASETARGET', 'CHASEDISTANCE', 'CHASESTOPDISTANCE', 'CHASEPAUSED', 'RESISTSTOPCOUNT',
+    'NUKEMANAMIN', 'DOTMANAMIN', 'MAINTANK', 'OFFTANK', 'LOOTMOBS', 'LOOTCOMBAT',
 }
 local function drawAssistTab()
-    local x,_ = ImGui.GetContentRegionAvail() - 10
-    if ImGui.Button('Reset Camp', x/2, BUTTON_HEIGHT) then
+    local x, _ = ImGui.GetContentRegionAvail() - 10
+    if ImGui.Button('Reset Camp', x / 2, BUTTON_HEIGHT) then
         camp.setCamp(true)
     end
     ImGui.SameLine()
-    if ImGui.Button('Return to Camp', x/2, BUTTON_HEIGHT) then
+    if ImGui.Button('Return to Camp', x / 2, BUTTON_HEIGHT) then
         camp.returnToCamp(true)
     end
     local current_camp_radius = config.get('CAMPRADIUS')
@@ -153,16 +154,20 @@ local function drawSkillsTab()
     local maxY = yOffset
     local _, yAvail = ImGui.GetContentRegionAvail()
     local maxLabelWidth = 0
-    for _,key in ipairs(class.options) do
+    for _, key in ipairs(class.options) do
         local labelSize = ImGui.CalcTextSize(class.options[key].label)
         if labelSize > maxLabelWidth then maxLabelWidth = labelSize end
     end
-    for _,key in ipairs(class.options) do
+    for _, key in ipairs(class.options) do
         if key ~= 'USEGLYPH' and key ~= 'USEINTENSITY' then
             local option = class.options[key]
             if option.type == 'combobox' then
-                local newValue = widgets.ComboBox(option.label, option.value, option.options, true, option.tip, item_width, xOffset, yOffset)
-                if newValue ~= option.value then option.value = newValue state.spellSetLoaded = nil end
+                local newValue = widgets.ComboBox(option.label, option.value, option.options, true, option.tip,
+                    item_width, xOffset, yOffset)
+                if newValue ~= option.value then
+                    option.value = newValue
+                    state.spellSetLoaded = nil
+                end
                 xOffset, yOffset, maxY = ui.getNextXY(y, yAvail, xOffset, yOffset, maxY, maxLabelWidth)
             elseif option.type == 'inputint' then
                 class:set(key, widgets.InputInt(option.label, option.value, option.tip, item_width, xOffset, yOffset))
@@ -170,21 +175,27 @@ local function drawSkillsTab()
             end
         end
     end
-    for _,key in ipairs(class.options) do
+    for _, key in ipairs(class.options) do
         if key ~= 'USEGLYPH' and key ~= 'USEINTENSITY' then
             local option = class.options[key]
             if option.type == 'checkbox' then
                 local newValue = widgets.CheckBox(option.label, option.value, option.tip, xOffset, yOffset)
                 if newValue and option.exclusive then class.options[option.exclusive].value = false end
-                if newValue ~= option.value then option.value = newValue state.spellSetLoaded = nil end
+                if newValue ~= option.value then
+                    option.value = newValue
+                    state.spellSetLoaded = nil
+                end
                 xOffset, yOffset, maxY = ui.getNextXY(y, yAvail, xOffset, yOffset, maxY, maxLabelWidth)
             end
         end
     end
     local xAvail = ImGui.GetContentRegionAvail()
     x, y = ImGui.GetWindowSize()
-    if x < xOffset + X_COLUMN_OFFSET or xAvail > 20 then x = math.max(MINIMUM_WIDTH, xOffset + X_COLUMN_OFFSET) ImGui.SetWindowSize(x, y) end
-    if y < maxY or y > maxY+35 then ImGui.SetWindowSize(x, maxY+35) end
+    if x < xOffset + X_COLUMN_OFFSET or xAvail > 20 then
+        x = math.max(MINIMUM_WIDTH, xOffset + X_COLUMN_OFFSET)
+        ImGui.SetWindowSize(x, y)
+    end
+    if y < maxY or y > maxY + 35 then ImGui.SetWindowSize(x, maxY + 35) end
 end
 
 local function drawHealTab()
@@ -192,7 +203,7 @@ local function drawHealTab()
 end
 
 local function drawBurnTab()
-    local x,_ = ImGui.GetContentRegionAvail()
+    local x, _ = ImGui.GetContentRegionAvail()
     local buttonWidth = (x / 3) - 6
     if ImGui.Button('Burn Now', buttonWidth, BUTTON_HEIGHT) then
         mq.cmdf('/%s burnnow', state.class)
@@ -211,7 +222,7 @@ end
 
 -- TODO: enable polygon pull, add 3 points to enter, when 3+ entered, add one point (until 10) - do center calc when polygon changes
 local function drawPullTab()
-    local x,_ = ImGui.GetContentRegionAvail()
+    local x, _ = ImGui.GetContentRegionAvail()
     local buttonWidth = (x / 2) - 4
     if ImGui.Button('Add Ignore', buttonWidth, BUTTON_HEIGHT) then
         mq.cmdf('/%s ignore', state.class)
@@ -240,7 +251,7 @@ local function drawDebugComboBox()
     if ImGui.BeginCombo('##debugoptions', 'Console Flags...') then
         for category, subcategories in pairs(logger.flags) do
             for subcategory, enabled in pairs(subcategories) do
-                logger.flags[category][subcategory] = ImGui.Checkbox(category..' - '..subcategory, enabled)
+                logger.flags[category][subcategory] = ImGui.Checkbox(category .. ' - ' .. subcategory, enabled)
             end
         end
         ImGui.EndCombo()
@@ -249,13 +260,13 @@ local function drawDebugComboBox()
 end
 
 local function drawDebugTab()
-    local x,_ = ImGui.GetContentRegionAvail()
+    local x, _ = ImGui.GetContentRegionAvail()
     local buttonWidth = (x / 2) - 4
-    if ImGui.Button(icons.FA_REFRESH..' Restart AQO', buttonWidth, BUTTON_HEIGHT) then
+    if ImGui.Button(icons.FA_REFRESH .. ' Restart AQO', buttonWidth, BUTTON_HEIGHT) then
         mq.cmd('/multiline ; /lua stop aqo ; /timed 10 /lua run aqo')
     end
     ImGui.SameLine()
-    if ImGui.Button(icons.FA_DOWNLOAD..' Update AQO', buttonWidth, BUTTON_HEIGHT) then
+    if ImGui.Button(icons.FA_DOWNLOAD .. ' Update AQO', buttonWidth, BUTTON_HEIGHT) then
         os.execute('start https://github.com/aquietone/aqobot/archive/refs/heads/emu.zip')
     end
     if ImGui.Button('View State Inspector', buttonWidth, BUTTON_HEIGHT) then
@@ -265,7 +276,8 @@ local function drawDebugTab()
     if ImGui.Button('View Loot', buttonWidth, BUTTON_HEIGHT) then
         guiLoot.openGUI = not guiLoot.openGUI
     end
-    config.DELAYFORLAG.value = widgets.SliderInt('Delay for Lag', config.DELAYFORLAG.value, 'Set the amount of delay to account for lag in various places', 0, 1000, item_width)
+    config.DELAYFORLAG.value = widgets.SliderInt('Delay for Lag', config.DELAYFORLAG.value,
+        'Set the amount of delay to account for lag in various places', 0, 1000, item_width)
     ImGui.TextColored(YELLOW, 'Mode:')
     ImGui.SameLine()
     ImGui.SetCursorPosX(150)
@@ -289,7 +301,7 @@ local function drawDebugTab()
     end
     if not state.forceEngage then
         if ImGui.Button('Force Engage') then
-            state.forceEngage = {ID=mq.TLO.Target.ID(), Name=mq.TLO.Target.CleanName()}
+            state.forceEngage = { ID = mq.TLO.Target.ID(), Name = mq.TLO.Target.CleanName() }
             state.assistMobID = mq.TLO.Target.ID()
         end
     else
@@ -312,7 +324,8 @@ end
 local function drawConsole()
     drawDebugComboBox()
     ImGui.SameLine()
-    config.TIMESTAMPS.value = widgets.CheckBox('Timestamps', config.TIMESTAMPS.value, 'Toggle timestamps on log messages', ImGui.GetCursorPosX(), ImGui.GetCursorPosY()-5)
+    config.TIMESTAMPS.value = widgets.CheckBox('Timestamps', config.TIMESTAMPS.value, 'Toggle timestamps on log messages',
+        ImGui.GetCursorPosX(), ImGui.GetCursorPosY() - 5)
     logger.timestamps = config.TIMESTAMPS.value
     ImGui.SameLine()
     if ImGui.Button('Clear') then
@@ -326,26 +339,29 @@ local function drawConsole()
 end
 
 local function drawDisplayTab()
-    config.THEME.value = widgets.ComboBox('Theme', config.THEME.value, constants.uiThemes, true, 'Pick a UI color scheme', item_width)
-    config.OPACITY.value = widgets.SliderInt('Opacity', config.OPACITY.value, 'Set the window opacity', 0, 100, item_width)
-    config.STARTMINIMIZED.value = widgets.CheckBox(config.STARTMINIMIZED.label, config.STARTMINIMIZED.value, config.STARTMINIMIZED.tip)
+    config.THEME.value = widgets.ComboBox('Theme', config.THEME.value, constants.uiThemes, true, 'Pick a UI color scheme',
+        item_width)
+    config.OPACITY.value = widgets.SliderInt('Opacity', config.OPACITY.value, 'Set the window opacity', 0, 100,
+        item_width)
+    config.STARTMINIMIZED.value = widgets.CheckBox(config.STARTMINIMIZED.label, config.STARTMINIMIZED.value,
+        config.STARTMINIMIZED.tip)
 end
 
 local uiTabs = {
-    {label=icons.MD_CHAT..' Console', draw=drawConsole},
-    {label=icons.MD_SETTINGS..' General', draw=drawAssistTab, color=GREY},
-    {label=icons.FA_LIST_UL..' Skills', draw=drawSkillsTab, color=GOLD},
-    {label=icons.FA_HEART..' Heal', draw=drawHealTab, color=LIGHT_BLUE},
-    {label=icons.FA_FIRE..' Burn', draw=drawBurnTab, color=ORANGE},
-    {label=icons.FA_BICYCLE..' Pull', draw=drawPullTab, color=GREEN},
-    {label=icons.FA_BATTERY_QUARTER..' Rest', draw=drawRestTab, color=RED},
-    {label=icons.FA_PICTURE_O..' Display', draw=drawDisplayTab, color=GREY},
-    {label=icons.FA_CODE..' Debug', draw=drawDebugTab, color=YELLOW},
+    { label = icons.MD_CHAT .. ' Console',     draw = drawConsole },
+    { label = icons.MD_SETTINGS .. ' General', draw = drawAssistTab, color = GREY },
+    { label = icons.FA_LIST_UL .. ' Skills',   draw = drawSkillsTab, color = GOLD },
+    { label = icons.FA_HEART .. ' Heal',       draw = drawHealTab,  color = LIGHT_BLUE },
+    { label = icons.FA_FIRE .. ' Burn',        draw = drawBurnTab,  color = ORANGE },
+    { label = icons.FA_BICYCLE .. ' Pull',     draw = drawPullTab,  color = GREEN },
+    { label = icons.FA_BATTERY_QUARTER .. ' Rest', draw = drawRestTab, color = RED },
+    { label = icons.FA_PICTURE_O .. ' Display', draw = drawDisplayTab, color = GREY },
+    { label = icons.FA_CODE .. ' Debug',       draw = drawDebugTab, color = YELLOW },
     -- {label='Custom', draw=function() customAbilities:render(class) end, color=LIGHT_BLUE},
 }
 local function drawBody()
     if ImGui.BeginTabBar('##tabbar', ImGuiTabBarFlags.None) then
-        for _,tab in ipairs(uiTabs) do
+        for _, tab in ipairs(uiTabs) do
             if tab.color then ImGui.PushStyleColor(ImGuiCol.Text, tab.color) end
             if ImGui.BeginTabItem(tab.label) then
                 if tab.color then ImGui.PopStyleColor() end
@@ -370,7 +386,7 @@ local function drawHeader()
     end
     ImGui.SameLine()
     local x, y = ImGui.GetContentRegionAvail()
-    local buttonWidth = (x / 2) - 37--22
+    local buttonWidth = (x / 2) - 37 --22
     if state.paused then
         if ImGui.Button(icons.FA_PLAY, buttonWidth, BUTTON_HEIGHT) then
             camp.setCamp()
@@ -409,7 +425,7 @@ local function drawHeader()
     end
     ImGui.Text('Bot Status: ')
     ImGui.SameLine()
-    ImGui.SetCursorPosX(buttonWidth+42)
+    ImGui.SetCursorPosX(buttonWidth + 42)
     local status = 'Running'
     local statusColor = GREEN
     if state.paused then
@@ -429,8 +445,9 @@ local function drawHeader()
     ImGui.TextColored(statusColor, status)
     local current_mode = config.get('MODE')
     ImGui.PushItemWidth(item_width)
-    mid_x = buttonWidth+42
-    config.MODE.value = widgets.ComboBoxLeftText('Mode', 'Mode', config.get('MODE'), mode.mode_names, false, config.MODE.tip, item_width, nil, nil, mid_x)
+    mid_x = buttonWidth + 42
+    config.MODE.value = widgets.ComboBoxLeftText('Mode', 'Mode', config.get('MODE'), mode.mode_names, false,
+        config.MODE.tip, item_width, nil, nil, mid_x)
     mode.currentMode = mode.fromString(config.get('MODE'))
     mid_x = 140
     ImGui.PopItemWidth()
@@ -441,8 +458,8 @@ end
 
 local function pushStyle(theme)
     local t = constants.uiThemes[theme]
-    t.windowbg.w = 1*(config.OPACITY.value/100)
-    t.bg.w = 1*(config.OPACITY.value/100)
+    t.windowbg.w = 1 * (config.OPACITY.value / 100)
+    t.bg.w = 1 * (config.OPACITY.value / 100)
     ImGui.PushStyleColor(ImGuiCol.WindowBg, t.windowbg)
     ImGui.PushStyleColor(ImGuiCol.TitleBg, t.bg)
     ImGui.PushStyleColor(ImGuiCol.TitleBgActive, t.active)
@@ -471,8 +488,9 @@ local function popStyles()
     ImGui.PopStyleVar(1)
 end
 
-local TABLE_FLAGS = bit32.bor(ImGuiTableFlags.ScrollY,ImGuiTableFlags.RowBg,ImGuiTableFlags.BordersOuter,ImGuiTableFlags.BordersV,ImGuiTableFlags.SizingStretchSame,ImGuiTableFlags.Sortable,
-                                ImGuiTableFlags.Hideable, ImGuiTableFlags.Resizable, ImGuiTableFlags.Reorderable)
+local TABLE_FLAGS = bit32.bor(ImGuiTableFlags.ScrollY, ImGuiTableFlags.RowBg, ImGuiTableFlags.BordersOuter,
+    ImGuiTableFlags.BordersV, ImGuiTableFlags.SizingStretchSame, ImGuiTableFlags.Sortable,
+    ImGuiTableFlags.Hideable, ImGuiTableFlags.Resizable, ImGuiTableFlags.Reorderable)
 
 local debugFilter = ''
 
@@ -496,7 +514,7 @@ local function drawNestedTableTree(table)
 end
 
 local function matchFilters(k, filters)
-    for filter,_ in pairs(filters) do
+    for filter, _ in pairs(filters) do
         if k:lower():find(filter) then return true end
     end
 end
@@ -537,15 +555,16 @@ local selected_left = nil
 local selected_right = nil
 local function drawSpellRotationUI()
     if spellRotationUIOpen then
-        spellRotationUIOpen, shouldDrawSpellRotationUI = ImGui.Begin(('DPS Spell Rotation Customizer##AQOBOTUI%s'):format(state.class), spellRotationUIOpen)
+        spellRotationUIOpen, shouldDrawSpellRotationUI = ImGui.Begin(
+        ('DPS Spell Rotation Customizer##AQOBOTUI%s'):format(state.class), spellRotationUIOpen)
         if shouldDrawSpellRotationUI then
             ImGui.Text('Custom Rotation')
             ImGui.SameLine()
             ImGui.SetCursorPosX(280)
             ImGui.Text('Available Spells')
             if not class.customRotation then class.customRotation = {} end
-            if ImGui.BeginListBox('##AssignedSpells', ImVec2(200,-1)) then
-                for i,spell in ipairs(class.customRotation) do
+            if ImGui.BeginListBox('##AssignedSpells', ImVec2(200, -1)) then
+                for i, spell in ipairs(class.customRotation) do
                     if ImGui.Selectable(('%s: %s'):format(i, spell.Name), selected_left == i) then
                         selected_left = i
                     end
@@ -561,7 +580,8 @@ local function drawSpellRotationUI()
                         if payload ~= nil then
                             local j = payload.Data;
                             -- swap the keys in the button set
-                            class.customRotation[i], class.customRotation[j] = class.customRotation[j], class.customRotation[i]
+                            class.customRotation[i], class.customRotation[j] = class.customRotation[j],
+                                class.customRotation[i]
                         end
                         ImGui.EndDragDropTarget()
                     end
@@ -569,12 +589,13 @@ local function drawSpellRotationUI()
                 ImGui.EndListBox()
             end
             ImGui.SameLine()
-            if ImGui.Button(icons.FA_ARROW_LEFT) and selected_right then table.insert(class.customRotation, class.spells[selected_right]) end
+            if ImGui.Button(icons.FA_ARROW_LEFT) and selected_right then table.insert(class.customRotation,
+                    class.spells[selected_right]) end
             ImGui.SameLine()
             if ImGui.Button(icons.FA_ARROW_RIGHT) and selected_left then table.remove(class.customRotation, selected_left) end
             ImGui.SameLine()
-            if ImGui.BeginListBox('##AllSpells', ImVec2(200,-1)) then
-                for _,spellGroup in pairs(class.allDPSSpellGroups) do
+            if ImGui.BeginListBox('##AllSpells', ImVec2(200, -1)) then
+                for _, spellGroup in pairs(class.allDPSSpellGroups) do
                     local spell = class.spells[spellGroup]
                     if spell and ImGui.Selectable(spell.Name, selected_right == spellGroup) then
                         selected_right = spellGroup
@@ -589,15 +610,18 @@ end
 
 local function drawBuffLists()
     if buffGUIOpen then
-        buffGUIOpen, showBuffGUI = ImGui.Begin(('Buffs##AQOBOTUI%s'):format(state.class), buffGUIOpen, ImGuiWindowFlags.None)
+        buffGUIOpen, showBuffGUI = ImGui.Begin(('Buffs##AQOBOTUI%s'):format(state.class), buffGUIOpen,
+            ImGuiWindowFlags.None)
         if showBuffGUI then
             if ImGui.CollapsingHeader('Want Buffs') then
                 ImGui.Indent(30)
-                for _,category in ipairs(constants.buffcategories) do
-                    if ImGui.CollapsingHeader(category..'##want') then
-                        for _,buff in ipairs(constants.bufflines) do
+                for _, category in ipairs(constants.buffcategories) do
+                    if ImGui.CollapsingHeader(category .. '##want') then
+                        for _, buff in ipairs(constants.bufflines) do
                             if buff.category == category then
-                                class.desiredBuffs[buff.key] = ImGui.Checkbox(buff.label..' ['..buff.key..']'..'##desired', class.desiredBuffs[buff.key] or false)
+                                class.desiredBuffs[buff.key] = ImGui.Checkbox(
+                                buff.label .. ' [' .. buff.key .. ']' .. '##desired',
+                                    class.desiredBuffs[buff.key] or false)
                                 if buff.exclusivewith then
                                     ImGui.Indent(30)
                                     ImGui.Text('Does not stack with: %s', buff.exclusivewith)
@@ -611,12 +635,14 @@ local function drawBuffLists()
             end
             if ImGui.CollapsingHeader('Offer Buffs') then
                 ImGui.Indent(30)
-                for _,category in ipairs(constants.buffcategories) do
-                    if ImGui.CollapsingHeader(category..'##offer') then
-                        for _,buff in ipairs(constants.bufflines) do
+                for _, category in ipairs(constants.buffcategories) do
+                    if ImGui.CollapsingHeader(category .. '##offer') then
+                        for _, buff in ipairs(constants.bufflines) do
                             if buff.category == category then
                                 if class.requestAliases[buff.key] then
-                                    class.availableBuffs[buff.key] = ImGui.Checkbox(buff.label..' ['..buff.key..']'..'##available', class.availableBuffs[buff.key] or false)
+                                    class.availableBuffs[buff.key] = ImGui.Checkbox(
+                                    buff.label .. ' [' .. buff.key .. ']' .. '##available',
+                                        class.availableBuffs[buff.key] or false)
                                 end
                             end
                         end
@@ -630,8 +656,8 @@ local function drawBuffLists()
 end
 
 local function drawSpellSetTree(name, spells)
-    if ImGui.TreeNode(name..'##spellset') then
-        for _,spell in ipairs(spells) do
+    if ImGui.TreeNode(name .. '##spellset') then
+        for _, spell in ipairs(spells) do
             ImGui.Text(spell.Name)
         end
         ImGui.TreePop()
@@ -640,17 +666,18 @@ end
 
 local function drawAbilityInspector()
     if abilityGUIOpen then
-        abilityGUIOpen, shouldDrawAbilityGUI = ImGui.Begin(('Ability Inspector##AQOBOTUI%s'):format(state.class), abilityGUIOpen, ImGuiWindowFlags.AlwaysAutoResize)
+        abilityGUIOpen, shouldDrawAbilityGUI = ImGui.Begin(('Ability Inspector##AQOBOTUI%s'):format(state.class),
+            abilityGUIOpen, ImGuiWindowFlags.AlwaysAutoResize)
         if shouldDrawAbilityGUI then
             if ImGui.TreeNode('Class Order') then
-                for _,routine in ipairs(class.classOrder) do
+                for _, routine in ipairs(class.classOrder) do
                     ImGui.Text(routine)
                 end
                 ImGui.TreePop()
             end
             if #class.debuffs > 0 and ImGui.TreeNode('Debuff Order') then
-                if ImGui.BeginListBox('##debufforder', ImVec2(160,150)) then
-                    for i,debuffType in ipairs(class.debuffOrder) do
+                if ImGui.BeginListBox('##debufforder', ImVec2(160, 150)) then
+                    for i, debuffType in ipairs(class.debuffOrder) do
                         if ImGui.Selectable(('%s: %s'):format(i, debuffType), selected_left == i) then
                             selected_left = i
                         end
@@ -677,10 +704,10 @@ local function drawAbilityInspector()
             end
             if mq.TLO.Me.Class.CanCast() then
                 if ImGui.TreeNode('Spells') then
-                    for alias,spell in pairs(class.spells) do
-                        if ImGui.TreeNode(alias..'##spellalias') then
+                    for alias, spell in pairs(class.spells) do
+                        if ImGui.TreeNode(alias .. '##spellalias') then
                             ImGui.Text('Name: %s', spell.Name)
-                            for opt,value in pairs(spell) do
+                            for opt, value in pairs(spell) do
                                 if opt ~= 'Name' and (type(value) == 'number' or type(value) == 'string' or type(value) == 'boolean') then
                                     ImGui.Text('%s: %s', opt, value)
                                 end
@@ -691,7 +718,7 @@ local function drawAbilityInspector()
                     ImGui.TreePop()
                 end
                 if ImGui.TreeNode('DPS Spell Rotations') then
-                    for spellSetName,spellSet in pairs(class.spellRotations) do
+                    for spellSetName, spellSet in pairs(class.spellRotations) do
                         if spellSetName ~= 'custom' then
                             drawSpellSetTree(spellSetName, spellSet)
                         end
@@ -708,13 +735,14 @@ local function drawAbilityInspector()
             if ImGui.TreeNode('Class Lists') then
                 for i, list in ipairs(constants.classLists) do
                     if #class[list] > 0 then
-                        if ImGui.TreeNode(list..'##lists'..i) then
-                            for j,ability in ipairs(class[list]) do
-                                if ImGui.TreeNode(ability.Name..'##list'..list..i..j) then
-                                    for opt,value in pairs(ability) do
+                        if ImGui.TreeNode(list .. '##lists' .. i) then
+                            for j, ability in ipairs(class[list]) do
+                                if ImGui.TreeNode(ability.Name .. '##list' .. list .. i .. j) then
+                                    for opt, value in pairs(ability) do
                                         if opt ~= 'Name' and (type(value) == 'number' or type(value) == 'string' or type(value) == 'boolean') then
                                             local color = WHITE
-                                            if opt == 'opt' then if class:isEnabled(value) then color = GREEN else color = RED end end
+                                            if opt == 'opt' then if class:isEnabled(value) then color = GREEN else color =
+                                                    RED end end
                                             ImGui.TextColored(color, '%s: %s', opt, value)
                                         end
                                     end
@@ -724,15 +752,15 @@ local function drawAbilityInspector()
                             ImGui.TreePop()
                         end
                     elseif list == 'clickies' then
-                        if ImGui.TreeNode(list..'##lists'..i) then
-                            for clickyName,clicky in pairs(class.clickies) do
+                        if ImGui.TreeNode(list .. '##lists' .. i) then
+                            for clickyName, clicky in pairs(class.clickies) do
                                 ImGui.Text('%s (%s)', clickyName, clicky.clickyType)
                             end
                             ImGui.TreePop()
                         end
                     elseif list == 'requestAliases' then
-                        if ImGui.TreeNode(list..'##aliases'..i) then
-                            for alias,name in pairs(class.requestAliases) do
+                        if ImGui.TreeNode(list .. '##aliases' .. i) then
+                            for alias, name in pairs(class.requestAliases) do
                                 ImGui.Text('%s: %s', alias, name)
                             end
                             ImGui.TreePop()
@@ -742,7 +770,7 @@ local function drawAbilityInspector()
                 -- if class.rezAbility then
                 --     if ImGui.TreeNode('rezAbility') then
                 --         for opt,value in pairs(class.rezAbility) do
-                --             if (type(value) == 'number' or type(value) == 'string' or type(value) == 'boolean') then  -- opt ~= 'Name' and 
+                --             if (type(value) == 'number' or type(value) == 'string' or type(value) == 'boolean') then  -- opt ~= 'Name' and
                 --                 local color = WHITE
                 --                 if opt == 'opt' then if class:isEnabled(value) then color = GREEN else color = RED end end
                 --                 ImGui.TextColored(color, '%s: %s', opt, value)
@@ -816,7 +844,8 @@ end
 
 local function drawClickyManager()
     if clickyManagerOpen then
-        clickyManagerOpen, shouldDrawClickyManager = ImGui.Begin(('AQO Clickies##AQOBOTUI%s'):format(state.class), clickyManagerOpen)
+        clickyManagerOpen, shouldDrawClickyManager = ImGui.Begin(('AQO Clickies##AQOBOTUI%s'):format(state.class),
+            clickyManagerOpen)
         if shouldDrawClickyManager then
             if ImGui.BeginTable('clickies', 5, ImGuiTableFlags.Sortable) then
                 ImGui.TableSetupColumn('Enabled', ImGuiTableColumnFlags.NoSort, 1, 1)
@@ -830,7 +859,7 @@ local function drawClickyManager()
                 if sort_specs then
                     if sort_specs.SpecsDirty or #sortedClickies == 0 then
                         sortedClickies = {}
-                        for k,_ in pairs(class.clickies) do table.insert(sortedClickies, k) end
+                        for k, _ in pairs(class.clickies) do table.insert(sortedClickies, k) end
                         current_sort_specs = sort_specs
                         table.sort(sortedClickies, CompareWithSortSpecs)
                         current_sort_specs = nil
@@ -838,15 +867,18 @@ local function drawClickyManager()
                     end
                 end
 
-                for _,clickyName in pairs(sortedClickies) do
+                for _, clickyName in pairs(sortedClickies) do
                     local clicky = class.clickies[clickyName]
                     if clicky then
                         ImGui.TableNextRow()
                         ImGui.TableNextColumn()
-                        local tempEnabled = ImGui.Checkbox('##isEnabled'..clickyName, clicky.enabled)
+                        local tempEnabled = ImGui.Checkbox('##isEnabled' .. clickyName, clicky.enabled)
                         if tempEnabled ~= clicky.enabled then
-                            if not tempEnabled then class:disableClicky(clickyName)
-                            else class:enableClicky(clickyName) end
+                            if not tempEnabled then
+                                class:disableClicky(clickyName)
+                            else
+                                class:enableClicky(clickyName)
+                            end
                         end
                         ImGui.TableNextColumn()
                         ImGui.Text(clicky.clickyType)
@@ -873,16 +905,23 @@ local function drawGettingStarted()
     if state.ShowGettingStarted then
         ImGui.SetNextWindowSize(850, 320, ImGuiCond.Appearing)
         local windowSize = ImGui.GetIO().DisplaySize
-        ImGui.SetNextWindowPos(windowSize.x/2 - 425, windowSize.y/2 - 160)
-        gettingStartedOpen, shouldDrawGettingStarted = ImGui.Begin(('AQO Getting Started##AQOBOTUI%s'):format(state.class), gettingStartedOpen, bit32.bor(ImGuiWindowFlags.NoResize, ImGuiWindowFlags.NoMove))
+        ImGui.SetNextWindowPos(windowSize.x / 2 - 425, windowSize.y / 2 - 160)
+        gettingStartedOpen, shouldDrawGettingStarted = ImGui.Begin(
+        ('AQO Getting Started##AQOBOTUI%s'):format(state.class), gettingStartedOpen,
+            bit32.bor(ImGuiWindowFlags.NoResize, ImGuiWindowFlags.NoMove))
         if shouldDrawGettingStarted then
-            ImGui.Text('1. AQO commands can be run using either "/aqo" or "/${Me.Class.ShortName}" (e.g. /shd useaoe on).')
+            ImGui.Text(
+            '1. AQO commands can be run using either "/aqo" or "/${Me.Class.ShortName}" (e.g. /shd useaoe on).')
             ImGui.Text('2. Pause and unpause your group with "/cwtna pause on" and "/cwtna pause off".')
-            ImGui.Text('3. You can create aliases to broadcast commands similar to CWTN plugins:\n\t/noparse /alias /cwtn /dgge /aqo\n\t/noparse /alias /cwtna /dgga /aqo\n\t/noparse /alias /cwtnr /dgre /aqo\n\t/noparse /alias /cwtnra /dgra /aqo')
+            ImGui.Text(
+            '3. You can create aliases to broadcast commands similar to CWTN plugins:\n\t/noparse /alias /cwtn /dgge /aqo\n\t/noparse /alias /cwtna /dgga /aqo\n\t/noparse /alias /cwtnr /dgre /aqo\n\t/noparse /alias /cwtnra /dgra /aqo')
             ImGui.Text('4. By default, AQO depends on group main tank and group main assist role assignments.')
-            ImGui.Text('5. Group Main Assist does not function in raids, so you can set assist to "manual" with "/cwtn assist manual"\n\tand set who to assist with "/cwtn assistnames ${Me.CleanName}".')
-            ImGui.Text('6. Group Main Tank does not function in raids, so you can configure to use tank abilities while in manual mode with "/aqo maintank on".')
-            ImGui.Text('7. AQO supports several modes for characters. Most common will be manual, assist and chase modes.\n\tSet modes with "/aqo mode manual" (set driver to manual) or "/cwtn mode chase" (set group to chase).')
+            ImGui.Text(
+            '5. Group Main Assist does not function in raids, so you can set assist to "manual" with "/cwtn assist manual"\n\tand set who to assist with "/cwtn assistnames ${Me.CleanName}".')
+            ImGui.Text(
+            '6. Group Main Tank does not function in raids, so you can configure to use tank abilities while in manual mode with "/aqo maintank on".')
+            ImGui.Text(
+            '7. AQO supports several modes for characters. Most common will be manual, assist and chase modes.\n\tSet modes with "/aqo mode manual" (set driver to manual) or "/cwtn mode chase" (set group to chase).')
             ImGui.Text('8. For chase mode, set a chase target with "/cwtn chasetarget ${Me.CleanName}".')
             ImGui.Text('9. For anything else, use "/aqo" or the "?" button on the UI for more info.')
         end
@@ -897,7 +936,8 @@ local helpSelected = 'Commands'
 local function drawHelpWindow()
     if helpGUIOpen then
         ImGui.SetNextWindowSize(1240, 400)
-        helpGUIOpen, shouldDrawHelpGUI = ImGui.Begin(('AQO Help##AQOBOTUI%s'):format(state.class), helpGUIOpen, ImGuiWindowFlags.NoResize)
+        helpGUIOpen, shouldDrawHelpGUI = ImGui.Begin(('AQO Help##AQOBOTUI%s'):format(state.class), helpGUIOpen,
+            ImGuiWindowFlags.NoResize)
         if shouldDrawHelpGUI then
             if ImGui.BeginListBox('##Category', ImVec2(130, -1)) then
                 if ImGui.Selectable('Commands', helpSelected == 'Commands') then
@@ -906,7 +946,7 @@ local function drawHelpWindow()
                 if ImGui.Selectable('Class', helpSelected == 'Class') then
                     helpSelected = 'Class'
                 end
-                for _,category in ipairs(config.categories()) do
+                for _, category in ipairs(config.categories()) do
                     if ImGui.Selectable(category, helpSelected == category) then
                         helpSelected = category
                     end
@@ -919,10 +959,10 @@ local function drawHelpWindow()
                     ImGui.TableSetupColumn('Command', ImGuiTableColumnFlags.WidthFixed, 250)
                     ImGui.TableSetupColumn('Description', ImGuiTableColumnFlags.WidthFixed, 450)
                     ImGui.TableSetupColumn('Example', ImGuiTableColumnFlags.WidthFixed, 250)
-                    ImGui.TableSetupScrollFreeze(0,1)
+                    ImGui.TableSetupScrollFreeze(0, 1)
                     ImGui.TableHeadersRow()
 
-                    for _,command in ipairs(constants.commandHelp) do
+                    for _, command in ipairs(constants.commandHelp) do
                         ImGui.TableNextRow()
                         ImGui.TableNextColumn()
                         ImGui.Text(command.command)
@@ -942,11 +982,11 @@ local function drawHelpWindow()
                     ImGui.TableSetupColumn('DataType', ImGuiTableColumnFlags.WidthFixed, 70)
                     ImGui.TableSetupColumn('Description', ImGuiTableColumnFlags.WidthFixed, 450)
                     ImGui.TableSetupColumn('Example', ImGuiTableColumnFlags.WidthFixed, 250)
-                    ImGui.TableSetupScrollFreeze(0,1)
+                    ImGui.TableSetupScrollFreeze(0, 1)
                     ImGui.TableHeadersRow()
 
                     if helpSelected == 'Class' then
-                        for _,key in ipairs(class.options) do
+                        for _, key in ipairs(class.options) do
                             local value = class.options[key]
                             local valueType = type(value.value)
                             if valueType == 'string' or valueType == 'number' or valueType == 'boolean' then
@@ -967,7 +1007,7 @@ local function drawHelpWindow()
                         end
                     else
                         local categoryConfigs = config.getByCategory(helpSelected)
-                        for _,key in ipairs(categoryConfigs) do
+                        for _, key in ipairs(categoryConfigs) do
                             local cfg = config[key]
                             if cfg and type(cfg) == 'table' then
                                 ImGui.TableNextRow()
@@ -1006,8 +1046,9 @@ function ui.main()
     -- local width, height = config.get('WINDOWWIDTH'), config.get('WINDOWHEIGHT')
     if posX and posY then ImGui.SetNextWindowPos(ImVec2(posX, posY), ImGuiCond.Once) end
     -- if width and height then ImGui.SetNextWindowSize(ImVec2(width, height), ImGuiCond.Once) end
-    if minimize then ImGui.SetNextWindowSize(-1,-1) end
-    openGUI, shouldDrawGUI = ImGui.Begin(string.format('AQO Bot 1.0 - %s###AQOBOTUI%s', state.class, state.class), openGUI, flags)
+    if minimize then ImGui.SetNextWindowSize(-1, -1) end
+    openGUI, shouldDrawGUI = ImGui.Begin(string.format('AQO Bot 1.0 - %s###AQOBOTUI%s', state.class, state.class),
+        openGUI, flags)
     if shouldDrawGUI then
         if not minimize then
             drawHeader()
@@ -1017,18 +1058,18 @@ function ui.main()
         else
             ImGui.SetWindowSize(-1, -1)
             ImGui.PushStyleVar(ImGuiStyleVar.FramePadding, 0, 0)
-            ImGui.PushStyleColor(ImGuiCol.Button, 0,0,0,0)
-            ImGui.PushStyleColor(ImGuiCol.ButtonHovered, 0,0,0,0)
-            ImGui.PushStyleColor(ImGuiCol.ButtonActive, 0,0,0,0)
+            ImGui.PushStyleColor(ImGuiCol.Button, 0, 0, 0, 0)
+            ImGui.PushStyleColor(ImGuiCol.ButtonHovered, 0, 0, 0, 0)
+            ImGui.PushStyleColor(ImGuiCol.ButtonActive, 0, 0, 0, 0)
             if state.paused then
-                if ImGui.ImageButton('AQOButton', aqoImg:GetTextureID(), ImVec2(40, 40),ImVec2(0.0, 0.0), ImVec2(0.62, 0.62), ImVec4(0,0,0,0),ImVec4(1,0,0,1)) then
+                if ImGui.ImageButton('AQOButton', aqoImg:GetTextureID(), ImVec2(40, 40), ImVec2(0.0, 0.0), ImVec2(0.62, 0.62), ImVec4(0, 0, 0, 0), ImVec4(1, 0, 0, 1)) then
                     minimize = false
                 end
                 if ImGui.IsItemHovered() then
                     ImGui.SetTooltip("AQO is Paused")
                 end
             else
-                if ImGui.ImageButton('AQOButton', aqoImg:GetTextureID(), ImVec2(40, 40),ImVec2(0.0,0.0), ImVec2(0.62, 0.62)) then
+                if ImGui.ImageButton('AQOButton', aqoImg:GetTextureID(), ImVec2(40, 40), ImVec2(0.0, 0.0), ImVec2(0.62, 0.62)) then
                     minimize = false
                 end
                 if ImGui.IsItemHovered() then

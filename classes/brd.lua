@@ -12,14 +12,14 @@ local state = require('state')
 local Bard = class:new()
 
 function Bard:init()
-    self.classOrder = {'assist', 'mez', 'assist', 'aggro', 'burn', 'cast', 'mash', 'ae', 'recover', 'buff', 'rest'}
-    self.EPIC_OPTS = {always=1,shm=1,burn=1,never=1}
+    self.classOrder = { 'assist', 'mez', 'assist', 'aggro', 'burn', 'cast', 'mash', 'ae', 'recover', 'buff', 'rest' }
+    self.EPIC_OPTS = { always = 1, shm = 1, burn = 1, never = 1 }
     if state.emu then
-        self.spellRotations = {emuancient={},emucaster70={},emuaura65={},emuaura55={},emunoaura={},custom={}}
-        self.defaultSpellset='emuancient'
+        self.spellRotations = { emuancient = {}, emucaster70 = {}, emuaura65 = {}, emuaura55 = {}, emunoaura = {}, custom = {} }
+        self.defaultSpellset = 'emuancient'
     else
-        self.spellRotations = {melee={},caster={},meleedot={},custom={}}
-        self.defaultSpellset='melee'
+        self.spellRotations = { melee = {}, caster = {}, meleedot = {}, custom = {} }
+        self.defaultSpellset = 'melee'
     end
     self:initBase('BRD')
 
@@ -35,133 +35,151 @@ function Bard:init()
 end
 
 function Bard:initClassOptions()
-    self:addOption('USEEPIC', 'Epic', 'always', self.EPIC_OPTS, 'Set how to use bard epic', 'combobox', nil, 'UseEpic', 'string')
+    self:addOption('USEEPIC', 'Epic', 'always', self.EPIC_OPTS, 'Set how to use bard epic', 'combobox', nil, 'UseEpic',
+        'string')
     self:addOption('MEZST', 'Mez ST', true, nil, 'Mez single target', 'checkbox', nil, 'MezST', 'bool')
     self:addOption('MEZAE', 'Mez AE', true, nil, 'Mez AOE', 'checkbox', nil, 'MezAE', 'bool')
-    self:addOption('MEZAECOUNT', 'Mez AE Count', 3, nil, 'Threshold to use AE Mez ability', 'inputint', nil, 'MezAECount', 'int')
+    self:addOption('MEZAECOUNT', 'Mez AE Count', 3, nil, 'Threshold to use AE Mez ability', 'inputint', nil, 'MezAECount',
+        'int')
     self:addOption('USEINSULTS', 'Use Insults', true, nil, 'Use insult songs', 'checkbox', nil, 'UseInsults', 'bool')
-    self:addOption('USEINTIMIDATE', 'Use Intimidate', false, nil, 'Use Intimidate (It may fear mobs without the appropriate AA\'s)', 'checkbox', nil, 'UseIntimidate', 'bool')
+    self:addOption('USEINTIMIDATE', 'Use Intimidate', false, nil,
+        'Use Intimidate (It may fear mobs without the appropriate AA\'s)', 'checkbox', nil, 'UseIntimidate', 'bool')
     self:addOption('USEBELLOW', 'Use Bellow', true, nil, 'Use Boastful Bellow AA', 'checkbox', nil, 'UseBellow', 'bool')
-    self:addOption('USECACOPHONY', 'Use Cacophony', true, nil, 'Use Cacophony AA', 'checkbox', nil, 'UseCacophony', 'bool')
+    self:addOption('USECACOPHONY', 'Use Cacophony', true, nil, 'Use Cacophony AA', 'checkbox', nil, 'UseCacophony',
+        'bool')
     self:addOption('USEFADE', 'Use Fade', false, nil, 'Fade when aggro', 'checkbox', nil, 'UseFade', 'bool')
-    self:addOption('RALLYGROUP', 'Rallying Group', false, nil, 'Use Rallying Group AA', 'checkbox', nil, 'RallyGroup', 'bool')
+    self:addOption('RALLYGROUP', 'Rallying Group', false, nil, 'Use Rallying Group AA', 'checkbox', nil, 'RallyGroup',
+        'bool')
     self:addOption('USESWARM', 'Use Swarm', true, nil, 'Use swarm pet AAs', 'checkbox', nil, 'UseSwarm', 'bool')
     self:addOption('USESNARE', 'Use Snare', false, nil, 'Use snare song', 'checkbox', nil, 'UseSnare', 'bool')
-    self:addOption('USETWIST', 'Use Twist', false, nil, 'Use MQ2Twist instead of managing songs', 'checkbox', nil, 'UseTwist', 'bool')
-    self:addOption('USEFIREDOTS', 'Use Fire DoT', false, nil, 'Toggle use of Fire DoT songs if they are in the selected song list', 'checkbox', nil, 'UseFireDoTs', 'bool')
-    self:addOption('USEFROSTDOTS', 'Use Frost DoT', false, nil, 'Toggle use of Frost DoT songs if they are in the selected song list', 'checkbox', nil, 'UseFrostDoTs', 'bool')
-    self:addOption('USEPOISONDOTS', 'Use Poison DoT', false, nil, 'Toggle use of Poison DoT songs if they are in the selected song list', 'checkbox', nil, 'UsePoisonDoTs', 'bool')
-    self:addOption('USEDISEASEDOTS', 'Use Disease DoT', false, nil, 'Toggle use of Disease DoT songs if they are in the selected song list', 'checkbox', nil, 'UseDiseaseDoTs', 'bool')
-    self:addOption('USEREGENSONG', 'Use Regen Song', false, nil, 'Toggle use of hp/mana/heal regen song line', 'checkbox', nil, 'UseRegenSong', 'bool')
-    self:addOption('USESELOSAA', 'Use Selos AA', false, nil, 'Toggle use of Selos AA', 'checkbox', nil, 'UseSelosAA', 'bool')
+    self:addOption('USETWIST', 'Use Twist', false, nil, 'Use MQ2Twist instead of managing songs', 'checkbox', nil,
+        'UseTwist', 'bool')
+    self:addOption('USEFIREDOTS', 'Use Fire DoT', false, nil,
+        'Toggle use of Fire DoT songs if they are in the selected song list', 'checkbox', nil, 'UseFireDoTs', 'bool')
+    self:addOption('USEFROSTDOTS', 'Use Frost DoT', false, nil,
+        'Toggle use of Frost DoT songs if they are in the selected song list', 'checkbox', nil, 'UseFrostDoTs', 'bool')
+    self:addOption('USEPOISONDOTS', 'Use Poison DoT', false, nil,
+        'Toggle use of Poison DoT songs if they are in the selected song list', 'checkbox', nil, 'UsePoisonDoTs', 'bool')
+    self:addOption('USEDISEASEDOTS', 'Use Disease DoT', false, nil,
+        'Toggle use of Disease DoT songs if they are in the selected song list', 'checkbox', nil, 'UseDiseaseDoTs',
+        'bool')
+    self:addOption('USEREGENSONG', 'Use Regen Song', false, nil, 'Toggle use of hp/mana/heal regen song line', 'checkbox',
+        nil, 'UseRegenSong', 'bool')
+    self:addOption('USESELOSAA', 'Use Selos AA', false, nil, 'Toggle use of Selos AA', 'checkbox', nil, 'UseSelosAA',
+        'bool')
     self:addOption('USESELOS', 'Use Selos', false, nil, 'Toggle use of Selos at all', 'checkbox', nil, 'UseSelos', 'bool')
-    self:addOption('USEJONTHANS', 'Use Jonthans', false, nil, 'Toggle use Jonthans self-only song', 'checkbox', nil, 'UseJonthans', 'bool')
-    self:addOption('USEAMPLIFICATION', 'Use Amplification', false, nil, 'Toggle use of Amplification song', 'checkbox', nil, 'UseAmplification', 'bool')
-    self:addOption('USERESISTS', 'Use Resist Song', false, nil, 'Toggle use of Resists song', 'checkbox', nil, 'UseResists', 'bool')
+    self:addOption('USEJONTHANS', 'Use Jonthans', false, nil, 'Toggle use Jonthans self-only song', 'checkbox', nil,
+        'UseJonthans', 'bool')
+    self:addOption('USEAMPLIFICATION', 'Use Amplification', false, nil, 'Toggle use of Amplification song', 'checkbox',
+        nil, 'UseAmplification', 'bool')
+    self:addOption('USERESISTS', 'Use Resist Song', false, nil, 'Toggle use of Resists song', 'checkbox', nil,
+        'UseResists', 'bool')
 end
 
 -- melee haste v98 (Bard Haste) (Composition of Ervaj (lvl 60), Melody of Ervaj (lvl 50))
 -- melee haste v119 (BardHaste2) (Aria song line, Aura song line, Echo song line, Warsong)
 Bard.SpellLines = {
-    {-- spell dmg, overhaste, flurry, triple atk. Slot 1
-        Group='aria',
-        Spells={'Aria of Tenisbre', 'Aria of Pli Xin Liako', 'Aria of Margidor', 'Aria of Begalru', 'Aria of Maetanrus', --[[emu cutoff]] },
-        Options={Gem=1}
+    { -- spell dmg, overhaste, flurry, triple atk. Slot 1
+        Group = 'aria',
+        Spells = { 'Aria of Tenisbre', 'Aria of Pli Xin Liako', 'Aria of Margidor', 'Aria of Begalru', 'Aria of Maetanrus', --[[emu cutoff]] },
+        Options = { Gem = 1 }
     },
-    {-- spell dmg proc. Slot 2
-        Group='arcane',
-        Spells={'Arcane Rhythm', 'Arcane Harmony', 'Arcane Symphony', 'Arcane Ballad', 'Arcane Melody', --[[emu cutoff]] 'Arcane Aria'},
-        Options={Gem=2}
+    { -- spell dmg proc. Slot 2
+        Group = 'arcane',
+        Spells = { 'Arcane Rhythm', 'Arcane Harmony', 'Arcane Symphony', 'Arcane Ballad', 'Arcane Melody', --[[emu cutoff]] 'Arcane Aria' },
+        Options = { Gem = 2 }
     },
-    {-- frost dot. Slot 2
-        Group='chantfrost',
-        Spells={'Swarn\'s Chant of Frost', 'Sylra Fris\' Chant of Frost', 'Yelinak\'s Chant of Frost', 'Ekron\'s Chant of Frost', 'Kirchen\'s Chant of Frost', --[[emu cutoff]] 'Vulka\'s Chant of Frost', 'Tuyen\'s Chant of Ice', 'Tuyen\'s Chant of Frost'},
-        Options={opt='USEFROSTDOTS', Gem=function(lvl) return Bard:get('USEFIREDOTS') and 3 or 2 end, CheckFor=state.emu and 'Chant of Frost'}
+    { -- frost dot. Slot 2
+        Group = 'chantfrost',
+        Spells = { 'Swarn\'s Chant of Frost', 'Sylra Fris\' Chant of Frost', 'Yelinak\'s Chant of Frost', 'Ekron\'s Chant of Frost', 'Kirchen\'s Chant of Frost', --[[emu cutoff]] 'Vulka\'s Chant of Frost', 'Tuyen\'s Chant of Ice', 'Tuyen\'s Chant of Frost' },
+        Options = { opt = 'USEFROSTDOTS', Gem = function(lvl) return Bard:get('USEFIREDOTS') and 3 or 2 end, CheckFor = state.emu and 'Chant of Frost' }
     },
-    {-- AC. Slot 3
-        Group='spiteful',
-        Spells={'Tatalros\' Spiteful Lyric', 'Von Deek\'s Spiteful Lyric', 'Omorden\'s Spiteful Lyric', 'Travenro\' Spiteful Lyric', 'Fjilnauk\'s Spiteful Lyric', --[[emu cutoff]] 'Guardian Rhythms'},
-        Options={Gem=function() return Bard:get('SPELLSET') == 'melee' and 3 or nil end}
+    { -- AC. Slot 3
+        Group = 'spiteful',
+        Spells = { 'Tatalros\' Spiteful Lyric', 'Von Deek\'s Spiteful Lyric', 'Omorden\'s Spiteful Lyric', 'Travenro\' Spiteful Lyric', 'Fjilnauk\'s Spiteful Lyric', --[[emu cutoff]] 'Guardian Rhythms' },
+        Options = { Gem = function() return Bard:get('SPELLSET') == 'melee' and 3 or nil end }
     },
-    {-- inc fire DD. Slot 3
-        Group='firenukebuff',
-        Spells={'Flariton\'s Aria', 'Constance\'s Aria', 'Sontalak\'s Aria', 'Quinard\'s Aria', 'Nilsara\'s Aria', --[[emu cutoff]] 'Yelhun\'s Mystic Call', 'Rizlona\'s Fire', 'Rizlona\'s Embers'},
-        Options={Gem=function() return Bard:get('SPELLSET') == 'caster' and 3 or nil end}
+    { -- inc fire DD. Slot 3
+        Group = 'firenukebuff',
+        Spells = { 'Flariton\'s Aria', 'Constance\'s Aria', 'Sontalak\'s Aria', 'Quinard\'s Aria', 'Nilsara\'s Aria', --[[emu cutoff]] 'Yelhun\'s Mystic Call', 'Rizlona\'s Fire', 'Rizlona\'s Embers' },
+        Options = { Gem = function() return Bard:get('SPELLSET') == 'caster' and 3 or nil end }
     },
-    {-- fire dot. Slot 3
-        Group='chantflame',
-        Spells={'Kindleheart\'s Chant of Flame', 'Shak Dathor\'s Chant of Flame', 'Sontalak\'s Chant of Flame', 'Quinard\'s Chant of Flame', 'Nilsara\'s Chant of Flame', --[[emu cutoff]] 'Vulka\'s Chant of Flame', 'Tuyen\'s Chant of Fire', 'Tuyen\'s Chant of Flame'},
-        Options={opt='USEFIREDOTS', Gem=2, CheckFor=state.emu and 'Chant of Flame'}
+    { -- fire dot. Slot 3
+        Group = 'chantflame',
+        Spells = { 'Kindleheart\'s Chant of Flame', 'Shak Dathor\'s Chant of Flame', 'Sontalak\'s Chant of Flame', 'Quinard\'s Chant of Flame', 'Nilsara\'s Chant of Flame', --[[emu cutoff]] 'Vulka\'s Chant of Flame', 'Tuyen\'s Chant of Fire', 'Tuyen\'s Chant of Flame' },
+        Options = { opt = 'USEFIREDOTS', Gem = 2, CheckFor = state.emu and 'Chant of Flame' }
     },
-    {-- melee dmg proc. Slot 4
-        Group='suffering',
-        Spells={'Kanghammer\'s Song of Suffering', 'Shojralen\'s Song of Suffering', 'Omorden\'s Song of Suffering', 'Travenro\'s Song of Suffering', 'Fjilnauk\'s Song of Suffering', --[[emu cutoff]] 'Storm Blade', 'Song of the Storm', 'Katta\'s Sword Dancing'},
-        Options={Gem=4}
+    { -- melee dmg proc. Slot 4
+        Group = 'suffering',
+        Spells = { 'Kanghammer\'s Song of Suffering', 'Shojralen\'s Song of Suffering', 'Omorden\'s Song of Suffering', 'Travenro\'s Song of Suffering', 'Fjilnauk\'s Song of Suffering', --[[emu cutoff]] 'Storm Blade', 'Song of the Storm', 'Katta\'s Sword Dancing' },
+        Options = { Gem = 4 }
     },
-    {-- synergy DD. Slot 5
-        Group='insult',
-        Spells={'Nord\'s Disdain', 'Yelinak\'s Insult', 'Sathir\'s Insult', 'Tsaph\'s Insult', 'Garath\'s Insult', --[[emu cutoff]] 'Brusco\'s Boastful Bellow'},
-        Options={opt='USEINSULTS', Gem=5}
+    { -- synergy DD. Slot 5
+        Group = 'insult',
+        Spells = { 'Nord\'s Disdain', 'Yelinak\'s Insult', 'Sathir\'s Insult', 'Tsaph\'s Insult', 'Garath\'s Insult', --[[emu cutoff]] 'Brusco\'s Boastful Bellow' },
+        Options = { opt = 'USEINSULTS', Gem = 5 }
     },
-    {-- haste, atk, ds. Slot 6
-        Group='warmarch',
-        Spells={'War March of Nokk', 'War March of Centien Xi Va Xakra', 'War March of Radiwol', 'War March of Dekloaz', 'War March of Jocelyn', --[[emu cutoff]] 'War March of Muram', 'War March of the Mastruq', 'McVaxius\' Rousing Rondo', 'McVaxius\' Berserker Crescendo', 'Anthem de Arms', 'Chant of Battle'},
-        Options={Gem=function(lvl) return lvl ~= 70 and 6 or nil end}
+    { -- haste, atk, ds. Slot 6
+        Group = 'warmarch',
+        Spells = { 'War March of Nokk', 'War March of Centien Xi Va Xakra', 'War March of Radiwol', 'War March of Dekloaz', 'War March of Jocelyn', --[[emu cutoff]] 'War March of Muram', 'War March of the Mastruq', 'McVaxius\' Rousing Rondo', 'McVaxius\' Berserker Crescendo', 'Anthem de Arms', 'Chant of Battle' },
+        Options = { Gem = function(lvl) return lvl ~= 70 and 6 or nil end }
     },
     {
-        Group='chantpoison',
-        Spells={'Marsin\'s Chant of Poison', 'Cruor\'s Chant of Poison', 'Malvus\'s Chant of Poison', 'Nexona\'s Chant of Poison', 'Serisaria\'s Chant of Poison', --[[emu cutoff]] 'Vulka\'s Chant of Poison', 'Tuyen\'s Chant of Venom', 'Tuyen\'s Chant of Poison'},
-        Options={opt='USEPOISONDOTS', Gem=function(lvl) return 6 end, CheckFor=state.emu and 'Chant of Venom'}
+        Group = 'chantpoison',
+        Spells = { 'Marsin\'s Chant of Poison', 'Cruor\'s Chant of Poison', 'Malvus\'s Chant of Poison', 'Nexona\'s Chant of Poison', 'Serisaria\'s Chant of Poison', --[[emu cutoff]] 'Vulka\'s Chant of Poison', 'Tuyen\'s Chant of Venom', 'Tuyen\'s Chant of Poison' },
+        Options = { opt = 'USEPOISONDOTS', Gem = function(lvl) return 6 end, CheckFor = state.emu and 'Chant of Venom' }
     },
-    {-- spell shield, AC, dmg mitigation. Slot 7
-        Group='sonata',
-        Spells={'Dhakka\'s Spry Sonata', 'Xetheg\'s Spry Sonata', 'Kellek\'s Spry Sonata', 'Kluzen\'s Spry Sonata', 'Dhakka\'s Spry Sonata', --[[emu cutoff]] },
-        Options={Gem=function() return Bard:get('SPELLSET') == 'melee' and 7 or nil end}
+    { -- spell shield, AC, dmg mitigation. Slot 7
+        Group = 'sonata',
+        Spells = { 'Dhakka\'s Spry Sonata', 'Xetheg\'s Spry Sonata', 'Kellek\'s Spry Sonata', 'Kluzen\'s Spry Sonata', 'Dhakka\'s Spry Sonata', --[[emu cutoff]] },
+        Options = { Gem = function() return Bard:get('SPELLSET') == 'melee' and 7 or nil end }
     },
-    {-- inc fire+mag dot. Slot 7
-        Group='firemagicdotbuff',
-        Spells={'Tatalros\' Psalm of Potency', 'Fyrthek Fior\'s Psalm of Potency', 'Velketor\'s Psalm of Potency', 'Akett\'s Psalm of Potency', 'Horthin\'s Psalm of Potency', --[[emu cutoff]] },
-        Options={Gem=function() return Bard:get('SPELLSET') == 'caster' and 7 or nil end}
+    { -- inc fire+mag dot. Slot 7
+        Group = 'firemagicdotbuff',
+        Spells = { 'Tatalros\' Psalm of Potency', 'Fyrthek Fior\'s Psalm of Potency', 'Velketor\'s Psalm of Potency', 'Akett\'s Psalm of Potency', 'Horthin\'s Psalm of Potency', --[[emu cutoff]] },
+        Options = { Gem = function() return Bard:get('SPELLSET') == 'caster' and 7 or nil end }
     },
-    {-- disease dot. Slot 7
-        Group='chantdisease',
-        Spells={'Goremand\'s Chant of Disease', 'Coagulus\' Chant of Disease', 'Zlexak\'s Chant of Disease', 'Hoshkar\'s Chant of Disease', 'Horthin\'s Chant of Disease', --[[emu cutoff]] 'Vulka\'s Chant of Disease', 'Tuyen\'s Chant of the Plague', 'Tuyen\'s Chant of Disease'},
-        Options={opt='USEDISEASEDOTS', Gem=7, CheckFor=state.emu and 'Chant of Plague'}
+    { -- disease dot. Slot 7
+        Group = 'chantdisease',
+        Spells = { 'Goremand\'s Chant of Disease', 'Coagulus\' Chant of Disease', 'Zlexak\'s Chant of Disease', 'Hoshkar\'s Chant of Disease', 'Horthin\'s Chant of Disease', --[[emu cutoff]] 'Vulka\'s Chant of Disease', 'Tuyen\'s Chant of the Plague', 'Tuyen\'s Chant of Disease' },
+        Options = { opt = 'USEDISEASEDOTS', Gem = 7, CheckFor = state.emu and 'Chant of Plague' }
     },
-    {-- single target mez. Slot 8
-        Group='mezst',
-        Spells={'Slumber of Suja', 'Slumber of the Diabo', 'Slumber of Zburator', 'Slumber of Jembel', 'Slumber of Silisia', --[[emu cutoff]] 'Vulka\'s Lullaby', 'Luvwen\'s Lullaby','Lullaby of Morell','Dreams of Terris', 'Dreams of Thule', 'Vulka\'s Lullaby', 'Creeping Dreams', 'Lullaby of Morell', 'Sionachie\'s Dreams', 'Crission\'s Pixie Strike', 'Kelin\'s Lucid Lullaby'},
-        Options={opt='MEZST', Gem=8}
+    { -- single target mez. Slot 8
+        Group = 'mezst',
+        Spells = { 'Slumber of Suja', 'Slumber of the Diabo', 'Slumber of Zburator', 'Slumber of Jembel', 'Slumber of Silisia', --[[emu cutoff]] 'Vulka\'s Lullaby', 'Luvwen\'s Lullaby', 'Lullaby of Morell', 'Dreams of Terris', 'Dreams of Thule', 'Vulka\'s Lullaby', 'Creeping Dreams', 'Lullaby of Morell', 'Sionachie\'s Dreams', 'Crission\'s Pixie Strike', 'Kelin\'s Lucid Lullaby' },
+        Options = { opt = 'MEZST', Gem = 8 }
     },
-    {-- aoe mez. Slot 9
-        Group='mezae',
-        Spells={'Wave of Stupor', 'Wave of Nocturn', 'Wave of Sleep', 'Wave of Somnolence', 'Wave of Torpor', --[[emu cutoff]] 'Creeping Dreams', },
-        Options={opt='MEZAE', Gem=9}
+    { -- aoe mez. Slot 9
+        Group = 'mezae',
+        Spells = { 'Wave of Stupor', 'Wave of Nocturn', 'Wave of Sleep', 'Wave of Somnolence', 'Wave of Torpor', --[[emu cutoff]] 'Creeping Dreams', },
+        Options = { opt = 'MEZAE', Gem = 9 }
     },
-    {-- small heal hp, mana, end. Slot 10
-        Group='crescendo',
-        Spells={'Regar\'s Lively Crescendo', 'Zelinstein\'s Lively Crescendo', 'Zburator\'s Lively Crescendo', 'Jembel\'s Lively Crescendo', 'Silisia\'s Lively Crescendo', --[[emu cutoff]] },
-        Options={Gem=10, emu=false}
+    { -- small heal hp, mana, end. Slot 10
+        Group = 'crescendo',
+        Spells = { 'Regar\'s Lively Crescendo', 'Zelinstein\'s Lively Crescendo', 'Zburator\'s Lively Crescendo', 'Jembel\'s Lively Crescendo', 'Silisia\'s Lively Crescendo', --[[emu cutoff]] },
+        Options = { Gem = 10, emu = false }
     },
-    {-- heal focus + regen. Slot 11
-        Group='pulse',
-        Spells={'Pulse of August', 'Pulse of Nikolas', 'Pulse of Vhal`Sera', 'Pulse of Xigarn', 'Pulse of Sionachie', --[[emu cutoff]]},
-        Options={opt='USEREGENSONG', Gem=function(lvl) return (lvl <= 20 and 7) or (lvl >= 34 and lvl <= 70 and 7) or 11 end}
+    { -- heal focus + regen. Slot 11
+        Group = 'pulse',
+        Spells = { 'Pulse of August', 'Pulse of Nikolas', 'Pulse of Vhal`Sera', 'Pulse of Xigarn', 'Pulse of Sionachie', --[[emu cutoff]] },
+        Options = { opt = 'USEREGENSONG', Gem = function(lvl) return (lvl <= 20 and 7) or (lvl >= 34 and lvl <= 70 and 7) or
+            11 end }
     },
-    {-- DD+melee dmg bonus + small heal. Slot 12
-        Group='composite',
-        Spells={'Ecliptic Psalm', 'Composite Psalm', 'Dissident Psalm', 'Dichotomic Psalm'},
-        Options={Gem=12, emu=false}
+    { -- DD+melee dmg bonus + small heal. Slot 12
+        Group = 'composite',
+        Spells = { 'Ecliptic Psalm', 'Composite Psalm', 'Dissident Psalm', 'Dichotomic Psalm' },
+        Options = { Gem = 12, emu = false }
     },
-    {-- spell+melee dmg mitigation. Slot 13
-        Group='dirge',
-        Spells={'Dirge of the Onokiwan', 'Dirge of the Restless', 'Dirge of Lost Horizons'},
-        Options={Gem=13}
+    { -- spell+melee dmg mitigation. Slot 13
+        Group = 'dirge',
+        Spells = { 'Dirge of the Onokiwan', 'Dirge of the Restless', 'Dirge of Lost Horizons' },
+        Options = { Gem = 13 }
     },
 
-    {Group='aura', Spells={'Aura of Tenisbre', 'Aura of Pli Xin Liako', 'Aura of Margidor', 'Aura of Begalru', 'Aura of Maetanrus', --[[emu cutoff]] 'Aura of the Muse', 'Aura of Insight'}, Options={aurabuff=true, Gem=function(lvl) return state.emu and 12 or nil end}}, -- spell dmg, overhaste, flurry, triple atk
-    {Group='insultpushback', Spells={'Eoreg\'s Insult', 'Sogran\'s Insult', 'Omorden\'s Insult', 'Travenro\'s Insult', 'Fjilnauk\'s Insult', --[[emu cutoff]] }, Options={opt='USEINSULTS'}}, -- synergy DD 2
-    {Group='alliance', Spells={'Conjunction of Sticks and Stones', 'Coalition of Sticks and Stones', 'Covenant of Sticks and Stones', 'Alliance of Sticks and Stones'}, Options={emu=false}},
+    { Group = 'aura',         Spells = { 'Aura of Tenisbre', 'Aura of Pli Xin Liako', 'Aura of Margidor', 'Aura of Begalru', 'Aura of Maetanrus', --[[emu cutoff]] 'Aura of the Muse', 'Aura of Insight' },                                                             Options = { aurabuff = true, Gem = function(
+        lvl) return state.emu and 12 or nil end } },                                                                                                                                                                                                                         -- spell dmg, overhaste, flurry, triple atk
+    { Group = 'insultpushback', Spells = { 'Eoreg\'s Insult', 'Sogran\'s Insult', 'Omorden\'s Insult', 'Travenro\'s Insult', 'Fjilnauk\'s Insult', --[[emu cutoff]] },                                                                                                  Options = { opt = 'USEINSULTS' } }, -- synergy DD 2
+    { Group = 'alliance',     Spells = { 'Conjunction of Sticks and Stones', 'Coalition of Sticks and Stones', 'Covenant of Sticks and Stones', 'Alliance of Sticks and Stones' },                                                                                      Options = { emu = false } },
 
     -- resonating barrier, new defensive stun proc?
     -- Fatesong of Zoraxmen, increase cold nuke dmg
@@ -172,236 +190,247 @@ Bard.SpellLines = {
     -- Voice of Suja, charm
     -- Zinnia's Melodic Binding, PB slow
     -- haste song doesn't stack with enc haste?
-    {Group='overhaste', Spells={'Ancient: Call of Power','Yelhun\'s Mystic Call', 'Rizlona\'s Call of Flame','Warsong of the Vah Shir', 'Battlecry of the Vah Shir'}, Options={Gem=function(lvl) return state.emu and 1 or nil end}},
-    {Group='bardhaste', Spells={'Verse of Veeshan',  'Composition of Ervaj'}, Options={Gem=function(lvl) return state.emu and 5 or nil end}},
-    {Group='emuhaste', Spells={'War March of Muram','War March of the Mastruq','Warsong of Zek','War March of Muram', 'War March of the Mastruq', 'McVaxius\' Rousing Rondo', 'McVaxius\' Berserker Crescendo', 'Vilia\'s Verses of Celerity', 'Anthem de Arms'}},
-    {Group='snare', Spells={'Selo\'s Assonant Strain','Selo\'s Consonant Chain'}, Options={opt='USESNARE'}},
-    {Group='debuff', Spells={'Harmony of Sound'}},
-    {Group='jonthans', Spells={'Jonthan\'s Inspiration', 'Jonthan\'s Whistling Warsong'}, Options={opt='USEJONTHANS'}},
-    {Group='magicweapons', Spells={'Magical Monologue'}, Options={}},
-    {Group='chantmagic', Spells={'Fufil\'s Curtailing Chant'}, Options={}},
-    {Group='selos', Spells={'Selo\'s Accelerating Chorus', 'Selo\'s Rhythm of Speed', 'Selo\'s Accelerando'}, Options={alias='SELOS', opt='USESELOS', Gem=function(lvl) return lvl <= 70 and 10 or nil end}},
+    { Group = 'overhaste',    Spells = { 'Ancient: Call of Power', 'Yelhun\'s Mystic Call', 'Rizlona\'s Call of Flame', 'Warsong of the Vah Shir', 'Battlecry of the Vah Shir' },                                                                                       Options = { Gem = function(
+        lvl) return state.emu and 1 or nil end } },
+    { Group = 'bardhaste',    Spells = { 'Verse of Veeshan', 'Composition of Ervaj' },                                                                                                                                                                                  Options = { Gem = function(
+        lvl) return state.emu and 5 or nil end } },
+    { Group = 'emuhaste',     Spells = { 'War March of Muram', 'War March of the Mastruq', 'Warsong of Zek', 'War March of Muram', 'War March of the Mastruq', 'McVaxius\' Rousing Rondo', 'McVaxius\' Berserker Crescendo', 'Vilia\'s Verses of Celerity', 'Anthem de Arms' } },
+    { Group = 'snare',        Spells = { 'Selo\'s Assonant Strain', 'Selo\'s Consonant Chain' },                                                                                                                                                                        Options = { opt = 'USESNARE' } },
+    { Group = 'debuff',       Spells = { 'Harmony of Sound' } },
+    { Group = 'jonthans',     Spells = { 'Jonthan\'s Inspiration', 'Jonthan\'s Whistling Warsong' },                                                                                                                                                                    Options = { opt = 'USEJONTHANS' } },
+    { Group = 'magicweapons', Spells = { 'Magical Monologue' },                                                                                                                                                                                                         Options = {} },
+    { Group = 'chantmagic',   Spells = { 'Fufil\'s Curtailing Chant' },                                                                                                                                                                                                 Options = {} },
+    { Group = 'selos',        Spells = { 'Selo\'s Accelerating Chorus', 'Selo\'s Rhythm of Speed', 'Selo\'s Accelerando' },                                                                                                                                             Options = { alias = 'SELOS', opt = 'USESELOS', Gem = function(
+        lvl) return lvl <= 70 and 10 or nil end } },
 
-    {Group='aedot', Spells={'Denon\'s Disruptive Discord', 'Chords of Dissonance'}, Options={'USEAOE'}},
-    {Group='aeslow', Spells={'Largo\'s Melodic Binding'}, Options={}},
-    {Group='manasong', Spells={'Chorus of Life', 'Cantata of Life', 'Chorus of Marr', 'Wind of Marr', 'Ancient: Lcea\'s Lament', 'Chorus of Replenishment', 'Cantata of Replenishment', 'Cassindra\'s Chorus of Clarity', 'Cassindra\'s Chant of Clarity'},  Options={}},
-    {Group='dispel', Spells={'Syvelian\'s Anti-Magic Aria', 'Alenia\'s Disenchanting Melody'}, Options={}},
-    {Group='amplification', Spells={'Amplification'}, Options={opt='USEAMPLIFICATION', selfbuff=true, combatbuff=true}},
-    {Group='allresists', Spells={'Psalm of Veeshan', 'Elemental Chorus'}, Options={opt='USERESISTS'}},
+    { Group = 'aedot',        Spells = { 'Denon\'s Disruptive Discord', 'Chords of Dissonance' },                                                                                                                                                                       Options = { 'USEAOE' } },
+    { Group = 'aeslow',       Spells = { 'Largo\'s Melodic Binding' },                                                                                                                                                                                                  Options = {} },
+    { Group = 'manasong',     Spells = { 'Chorus of Life', 'Cantata of Life', 'Chorus of Marr', 'Wind of Marr', 'Ancient: Lcea\'s Lament', 'Chorus of Replenishment', 'Cantata of Replenishment', 'Cassindra\'s Chorus of Clarity', 'Cassindra\'s Chant of Clarity' },  Options = {} },
+    { Group = 'dispel',       Spells = { 'Syvelian\'s Anti-Magic Aria', 'Alenia\'s Disenchanting Melody' },                                                                                                                                                             Options = {} },
+    { Group = 'amplification', Spells = { 'Amplification' },                                                                                                                                                                                                            Options = { opt = 'USEAMPLIFICATION', selfbuff = true, combatbuff = true } },
+    { Group = 'allresists',   Spells = { 'Psalm of Veeshan', 'Elemental Chorus' },                                                                                                                                                                                      Options = { opt = 'USERESISTS' } },
 }
 
-Bard.compositeNames = {['Ecliptic Psalm']=true,['Composite Psalm']=true,['Dissident Psalm']=true,['Dichotomic Psalm']=true}
-Bard.allDPSSpellGroups = {'aria', 'arcane', 'chantfrost', 'spiteful', 'firenukebuff', 'chantflame', 'suffering', 'insult', 'warmarch', 'sonata', 'firemagicdotbuff', 'chantdisease',
-    'crescendo', 'pulse', 'composite', 'dirge', 'insultpushback', 'chantpoison', 'alliance', 'overhaste', 'bardhaste', 'emuhaste', 'snare', 'debuff', 'jonthans', 'magicweapons',
-    'chantmagic', 'aedot', 'aeslow', 'manasong', 'dispel', 'amplification', 'selos', 'allresists'}
+Bard.compositeNames = { ['Ecliptic Psalm'] = true, ['Composite Psalm'] = true, ['Dissident Psalm'] = true,
+    ['Dichotomic Psalm'] = true }
+Bard.allDPSSpellGroups = { 'aria', 'arcane', 'chantfrost', 'spiteful', 'firenukebuff', 'chantflame', 'suffering',
+    'insult', 'warmarch', 'sonata', 'firemagicdotbuff', 'chantdisease',
+    'crescendo', 'pulse', 'composite', 'dirge', 'insultpushback', 'chantpoison', 'alliance', 'overhaste', 'bardhaste',
+    'emuhaste', 'snare', 'debuff', 'jonthans', 'magicweapons',
+    'chantmagic', 'aedot', 'aeslow', 'manasong', 'dispel', 'amplification', 'selos', 'allresists' }
 
 Bard.Abilities = {
     { -- lazarus specific clicky pickpocket
-        Type='Item',
-        Name='Forgotten Mugger\'s Sap',
-        Options={dps=true, condition=function() return (mq.TLO.Target.Distance() or 100) < 50 and mq.TLO.Target.Body() == 'Humanoid' end}
+        Type = 'Item',
+        Name = 'Forgotten Mugger\'s Sap',
+        Options = { dps = true, condition = function() return (mq.TLO.Target.Distance() or 100) < 50 and
+            mq.TLO.Target.Body() == 'Humanoid' end }
     },
     {
-        Type='AA',
-        Name='Fierce Eye',
-        Options={key='fierceeye', condition=function() return not mq.TLO.Me.Buff('Illusions of Grandeur')() and not mq.TLO.Me.Song('Illusions of Grandeur')() end}
+        Type = 'AA',
+        Name = 'Fierce Eye',
+        Options = { key = 'fierceeye', condition = function() return not mq.TLO.Me.Buff('Illusions of Grandeur')() and
+            not mq.TLO.Me.Song('Illusions of Grandeur')() end }
     },
     { -- Epic 2.0
-        Type='Item',
-        Name='Blade of Vesagran',
-        Options={key='epic', epicburn=true}
+        Type = 'Item',
+        Name = 'Blade of Vesagran',
+        Options = { key = 'epic', epicburn = true }
     },
     { -- Epic 2.0
-        Type='Item',
-        Name='Ancient Blade of Vesagran',
-        Options={key='epic', epicburn=true, emu=true}
+        Type = 'Item',
+        Name = 'Ancient Blade of Vesagran',
+        Options = { key = 'epic', epicburn = true, emu = true }
     },
     { -- Epic 1.5
-        Type='Item',
-        Name='Prismatic Dragon Blade',
-        Options={key='epic', epicburn=true}
+        Type = 'Item',
+        Name = 'Prismatic Dragon Blade',
+        Options = { key = 'epic', epicburn = true }
     },
     -- Bellow handled separately as we want it to run its course and not be refreshed early
     { -- single target AA with fulmination
-        Type='AA',
-        Name='Boastful Bellow',
-        Options={key='bellow', usebelowpct=97}
+        Type = 'AA',
+        Name = 'Boastful Bellow',
+        Options = { key = 'bellow', usebelowpct = 97 }
     },
     { -- long AA mez
-        Type='AA',
-        Name='Dirge of the Sleepwalker',
-        Options={key='dirge'}
+        Type = 'AA',
+        Name = 'Dirge of the Sleepwalker',
+        Options = { key = 'dirge' }
     },
     { -- pull ability
-        Type='AA',
-        Name='Sonic Disturbance',
-        Options={key='sonic'}
+        Type = 'AA',
+        Name = 'Sonic Disturbance',
+        Options = { key = 'sonic' }
     },
     { -- pull ability
-        Type='Item',
-        Name='Staff of Viral Flux',
-        Options={key='fluxstaff'}
+        Type = 'Item',
+        Name = 'Staff of Viral Flux',
+        Options = { key = 'fluxstaff' }
     },
     {
-        Type='AA',
-        Name='Selo\'s Sonata',
-        Options={key='selosaa'}
+        Type = 'AA',
+        Name = 'Selo\'s Sonata',
+        Options = { key = 'selosaa' }
     },
 
     -- DPS
     {
-        Type='Disc',
-        Group='reflexive',
-        Names={'Reflexive Rebuttal'},
-        Options={dps=true, emu=false}
+        Type = 'Disc',
+        Group = 'reflexive',
+        Names = { 'Reflexive Rebuttal' },
+        Options = { dps = true, emu = false }
     },
     {
-        Type='Skill',
-        Name='Intimidation',
-        Options={opt='USEINTIMIDATE', dps=true}
+        Type = 'Skill',
+        Name = 'Intimidation',
+        Options = { opt = 'USEINTIMIDATE', dps = true }
     },
     {
-        Type='Skill',
-        Name='Kick',
-        Options={dps=true, condition=conditions.withinMeleeDistance},
+        Type = 'Skill',
+        Name = 'Kick',
+        Options = { dps = true, condition = conditions.withinMeleeDistance },
     },
     {
-        Type='AA',
-        Name='Selo\'s Kick',
-        Options={dps=true}
+        Type = 'AA',
+        Name = 'Selo\'s Kick',
+        Options = { dps = true }
     },
 
     -- AE DPS
     { -- aoe aa
-        Type='AA',
-        Name='Vainglorious Shout',
-        Options={aedps=true, threshold=3}
+        Type = 'AA',
+        Name = 'Vainglorious Shout',
+        Options = { aedps = true, threshold = 3 }
     },
 
     -- Burns
     {
-        Type='Item',
-        Name=mq.TLO.InvSlot('Chest').Item.Name(),
-        Options={first=true}
+        Type = 'Item',
+        Name = mq.TLO.InvSlot('Chest').Item.Name(),
+        Options = { first = true }
     },
     {
-        Type='Item',
-        Name='Rage of Rolfron',
-        Options={first=true}
+        Type = 'Item',
+        Name = 'Rage of Rolfron',
+        Options = { first = true }
     },
     {
-        Type='AA',
-        Name='Quick Time',
-        Options={first=true}
+        Type = 'AA',
+        Name = 'Quick Time',
+        Options = { first = true }
     },
     {
-        Type='AA',
-        Name='Funeral Dirge',
-        Options={first=true}
+        Type = 'AA',
+        Name = 'Funeral Dirge',
+        Options = { first = true }
     },
     {
-        Type='AA',
-        Name='Spire of the Minstrels',
-        Options={first=true, emu=false}
+        Type = 'AA',
+        Name = 'Spire of the Minstrels',
+        Options = { first = true, emu = false }
     },
     {
-        Type='AA',
-        Name='Third Spire of the Minstrels',
-        Options={emu=true, first=true}
+        Type = 'AA',
+        Name = 'Third Spire of the Minstrels',
+        Options = { emu = true, first = true }
     },
     {
-        Type='AA',
-        Name='Bladed Song',
-        Options={first=true}
+        Type = 'AA',
+        Name = 'Bladed Song',
+        Options = { first = true }
     },
     {
-        Type='AA',
-        Name='Dance of Blades',
-        Options={first=true}
+        Type = 'AA',
+        Name = 'Dance of Blades',
+        Options = { first = true }
     },
     {
-        Type='AA',
-        Name='Flurry of Notes',
-        Options={first=true}
+        Type = 'AA',
+        Name = 'Flurry of Notes',
+        Options = { first = true }
     },
     {
-        Type='AA',
-        Name='Frenzied Kicks',
-        Options={first=true}
+        Type = 'AA',
+        Name = 'Frenzied Kicks',
+        Options = { first = true }
     },
     {
-        Type='Disc',
-        Group='thousand',
-        Names={'Thousand Blades'},
-        Options={first=true}
+        Type = 'Disc',
+        Group = 'thousand',
+        Names = { 'Thousand Blades' },
+        Options = { first = true }
     },
     {
-        Type='AA',
-        Name='Cacophony',
-        Options={first=true, opt='USECACOPHONY', usebelowpct=97}
+        Type = 'AA',
+        Name = 'Cacophony',
+        Options = { first = true, opt = 'USECACOPHONY', usebelowpct = 97 }
     },
     {
-        Type='AA',
-        Name='Lyrical Prankster',
-        Options={first=true, opt='USESWARM', delay=1500}
+        Type = 'AA',
+        Name = 'Lyrical Prankster',
+        Options = { first = true, opt = 'USESWARM', delay = 1500 }
     },
     {
-        Type='AA',
-        Name='Song of Stone',
-        Options={first=true, opt='USESWARM', delay=1500}
+        Type = 'AA',
+        Name = 'Song of Stone',
+        Options = { first = true, opt = 'USESWARM', delay = 1500 }
     },
     {
-        Type='AA',
-        Name='A Tune Stuck In Your Head',
-        Options={first=true}
+        Type = 'AA',
+        Name = 'A Tune Stuck In Your Head',
+        Options = { first = true }
     },
     {
-        Type='Disc',
-        Group='puretone',
-        Names={'Puretone Discipline'},
-        Options={first=true}
+        Type = 'Disc',
+        Group = 'puretone',
+        Names = { 'Puretone Discipline' },
+        Options = { first = true }
     },
 
     -- Buffs
     {
-        Type='AA',
-        Name='Sionachie\'s Crescendo',
-        Options={selfbuff=true}
+        Type = 'AA',
+        Name = 'Sionachie\'s Crescendo',
+        Options = { selfbuff = true }
     },
 
     -- Defensives and Fade
     {
-        Type='AA',
-        Name='Shield of Notes',
-        Options={defensive=true}
+        Type = 'AA',
+        Name = 'Shield of Notes',
+        Options = { defensive = true }
     },
     {
-        Type='AA',
-        Name='Hymn of the Last Stand',
-        Options={defensive=true}
+        Type = 'AA',
+        Name = 'Hymn of the Last Stand',
+        Options = { defensive = true }
     },
     {
-        Type='Disc',
-        Group='deftdance',
-        Names={'Deftdance Discipline'},
-        Options={defensive=true}
+        Type = 'Disc',
+        Group = 'deftdance',
+        Names = { 'Deftdance Discipline' },
+        Options = { defensive = true }
     },
     {
-        Type='AA',
-        Name='Fading Memories',
-        Options={fade=true, opt='USEFADE', precast=function() mq.cmd('/attack off') end, postcast=function() mq.delay(500) mq.cmd('/makemevis') end}
+        Type = 'AA',
+        Name = 'Fading Memories',
+        Options = { fade = true, opt = 'USEFADE', precast = function() mq.cmd('/attack off') end, postcast = function()
+            mq.delay(500)
+            mq.cmd('/makemevis')
+        end }
     },
 
     -- Recover
     {
-        Type='AA',
-        Name='Rallying Solo',
-        Options={recover=true, mana=true, endurance=true, threshold=20, combat=false, ooc=true}
+        Type = 'AA',
+        Name = 'Rallying Solo',
+        Options = { recover = true, mana = true, endurance = true, threshold = 20, combat = false, ooc = true }
     },
     {
-        Type='AA',
-        Name='Rallying Call',
-        Options={opt='RALLYGROUP', recover=true, emu=false}
+        Type = 'AA',
+        Name = 'Rallying Call',
+        Options = { opt = 'RALLYGROUP', recover = true, emu = false }
     },
 }
 
@@ -449,7 +478,6 @@ function Bard:initSpellRotations()
         table.insert(self.spellRotations.emunoaura, self.spells.overhaste)
         table.insert(self.spellRotations.emunoaura, self.spells.emuhaste)
         table.insert(self.spellRotations.emunoaura, self.spells.allresists)
-
     else
         self.spellRotations.melee = {}
         self.spellRotations.caster = {}
@@ -497,7 +525,7 @@ local function tryAlliance()
         if mq.TLO.Spell(alliance).Mana() > mq.TLO.Me.CurrentMana() then
             return false
         end
-        if mq.TLO.Me.Gem(alliance)() and mq.TLO.Me.GemTimer(alliance)() == 0  and not mq.TLO.Target.Buff(alliance)() and mq.TLO.Spell(alliance).StacksTarget() then
+        if mq.TLO.Me.Gem(alliance)() and mq.TLO.Me.GemTimer(alliance)() == 0 and not mq.TLO.Target.Buff(alliance)() and mq.TLO.Spell(alliance).StacksTarget() then
             Bard.spells.alliance:use()
             return true
         end
@@ -574,7 +602,7 @@ local function isSongReady(spellId, spellName)
         return true
     else
         local cast_time = mq.TLO.Spell(spellName).MyCastTime()
-        if songDuration < cast_time +500 then
+        if songDuration < cast_time + 500 then
             logger.debug(logger.flags.class.cast, 'song ready %s', spellName)
         end
         return songDuration < cast_time + 500
@@ -591,13 +619,13 @@ function Bard:findNextSong()
     local spellRotation = self:getSpellRotation()
     if not spellRotation then return nil end
     local startIndex = state.rotationIndex and state.rotationIndex < #spellRotation and state.rotationIndex + 1 or 1
-    for i=startIndex,#spellRotation do
+    for i = startIndex, #spellRotation do
         local spell = spellRotation[i]
         local resistCount = state.resists[spell.Name] or 0
         local resistStopCount = config.get('RESISTSTOPCOUNT')
         if self:isAbilityEnabled(spell.opt) and isSongReady(spell.ID, spell.CastName) and not mq.TLO.Target.Buff(spell.CheckFor)()
-                and (resistStopCount == 0 or resistCount < resistStopCount)
-                and (not spell.condition or spell.condition()) then
+            and (resistStopCount == 0 or resistCount < resistStopCount)
+            and (not spell.condition or spell.condition()) then
             return spell, i
         end
     end
@@ -618,15 +646,18 @@ end
 
 function Bard:cast()
     if self:isEnabled('USETWIST') or mq.TLO.Me.Invis() or state.paused then return false end
-    for i=1,mq.TLO.Group.Members() do if (mq.TLO.Group.Member(i).Distance3D() or 0) > config.get('CAMPRADIUS') then return end end
+    for i = 1, mq.TLO.Group.Members() do if (mq.TLO.Group.Member(i).Distance3D() or 0) > config.get('CAMPRADIUS') then return end end
     if not mq.TLO.Me.Invis() and self:doneSinging() then
         --if mq.TLO.Target.Type() == 'NPC' and mq.TLO.Me.CombatState() == 'COMBAT' then
         if mq.TLO.Target.Type() == 'NPC' and mq.TLO.Me.Combat() then
             local useEpic = self:get('USEEPIC')
             if (useEpic == 'always' or state.burnActive or (useEpic == 'shm' and (mq.TLO.Me.Song('Prophet\'s Gift of the Ruchu')() or mq.TLO.Me.Song('Prophet\'s Ritual of the Ruchu')()))) then
-                if self:useEpic() then mq.delay(250) return true end
+                if self:useEpic() then
+                    mq.delay(250)
+                    return true
+                end
             end
-            for _,clicky in ipairs(self.castClickies) do
+            for _, clicky in ipairs(self.castClickies) do
                 if clicky.enabled then
                     if clicky.TargetType == 'Single' and (mq.TLO.Target.PctHPs() or 100) < 97 then
                         -- if single target clicky then make sure in combat
@@ -648,7 +679,7 @@ function Bard:cast()
             self:doMashClickies()
         end
         local spell = self:findNextSong() -- find the first available dot to cast that is missing from the target
-        if spell then -- if a song was found
+        if spell then                     -- if a song was found
             local didCast = false
             if spell.TargetType == 'Single' and mq.TLO.Target.Type() == 'NPC' then
                 if assist.isFighting() then didCast = spell:use() end
@@ -683,6 +714,7 @@ function Bard:useEpic()
         return true
     end
 end
+
 function Bard:burnClass() Bard:useEpic() end
 
 function Bard:mashClass()
@@ -723,7 +755,7 @@ end
 function Bard:doneSinging()
     if self:isEnabled('USETWIST') then return true end
     if mq.TLO.Me.CastTimeLeft() > 0 and not mq.TLO.Window('CastingWindow').Open() then
-        mq.delay(250+config.get('DELAYFORLAG'))
+        mq.delay(250 + config.get('DELAYFORLAG'))
         mq.cmd('/stopsong')
         mq.delay(1)
     end
