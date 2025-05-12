@@ -22,6 +22,8 @@ end
 
 local PULL_TARGET_SKIP = {}
 
+local pull_range = nil
+
 local polygon = config.get('POLYGON')
 -- mob at 135, SE
 -- pull arc left 90
@@ -405,6 +407,49 @@ function pull.pullRadar()
     return pull_id
 end
 
+local function getPullRange()
+    local melee_range = 100
+    local pullWith = config.get('PULLWITH')
+    local pull_item = nil
+    if pullWith == 'spell' then
+        if not class.pullSpell then
+            return melee_range
+        else
+            return class.pullSpell.Range()
+        end
+    elseif pullWith == 'item' then
+        if #class.pullClickies == 0 then return melee_range end
+        for _, clicky in ipairs(class.pullClickies) do
+            local reagentCount = mq.TLO.FindItem(clicky.CastName).Clicky.Spell.ReagentCount(1)()
+            local reagentID = mq.TLO.FindItem(clicky.CastName).Clicky.Spell.ReagentID(1)()
+            if clicky.enabled and mq.TLO.Me.ItemReady(clicky.CastName)() and
+                (reagentCount == -1 or mq.TLO.FindItemCount(reagentID)() > 0) then
+                pull_item = true
+                return mq.TLO.FindItem(clicky.CastName).Clicky.Spell.Range()
+            end
+            break
+        end
+        if not pull_item then return melee_range end
+    elseif pullWith == 'ranged' then
+        local ranged_item = mq.TLO.InvSlot('ranged').Item
+        local ammo_item = mq.TLO.InvSlot('ammo').Item
+        if not ranged_item() or (ranged_item.Damage() or 0) == 0 or not ammo_item() or (ammo_item.Damage() or 0) == 0 then
+            return melee_range
+        else
+            return ranged_item.Range() + ammo_item.Range()
+        end
+    elseif pullWith == 'custom' then
+        if not class.pullCustom then
+            return melee_range
+        else
+            return class.pullCustom.Range()
+        end
+    end
+    return melee_range
+end
+
+
+
 ---Reset common mob ID variables to 0 to reset pull status.
 function pull.clearPullVars(caller)
     logger.debug(logger.flags.routines.pull, 'Resetting pull status. beforeState=%s, caller=%s', state.pullStatus, caller)
@@ -418,6 +463,8 @@ end
 local function pullNavToMob(pull_spawn, announce_pull)
     local mob_x = pull_spawn.X()
     local mob_y = pull_spawn.Y()
+    local pullRange = getPullRange()
+
     if not (mob_x and mob_y) then
         pull.clearPullVars('navToMob')
         return false
@@ -426,7 +473,7 @@ local function pullNavToMob(pull_spawn, announce_pull)
         logger.info('Pulling \at%s\ax (\at%s\ax)', pull_spawn.CleanName(), pull_spawn.ID())
     end
     -- TODO: find proper pullability range and check for that - safety margin
-    if ((helpers.distance(mq.TLO.Me.X(), mq.TLO.Me.Y(), mob_x, mob_y) > 100) and config.get('PULLWITH') == 'melee') or (config.get('PULLWITH') ~= 'melee' and (not pull_spawn.LineOfSight() or pull_spawn.Distance3D() > 200)) then
+    if ((helpers.distance(mq.TLO.Me.X(), mq.TLO.Me.Y(), mob_x, mob_y) > 100) and config.get('PULLWITH') == 'melee') or (config.get('PULLWITH') ~= 'melee' and (not pull_spawn.LineOfSight() or pull_spawn.Distance3D() > (pullRange -30))) then
         logger.debug(logger.flags.routines.pull, 'Moving to pull target (\at%s\ax)', state.pullMobID)
         -- TODO: set timeout as parameter
         movement.navToSpawn('id ' .. state.pullMobID, 'dist=5', 1000)
@@ -435,6 +482,7 @@ local function pullNavToMob(pull_spawn, announce_pull)
 end
 
 local function pullApproaching(pull_spawn)
+    local pullRange = getPullRange()
     if not pull_spawn or not mq.TLO.Navigation.Active() then
         return true
     end
@@ -444,7 +492,7 @@ local function pullApproaching(pull_spawn)
     -- return true once target is in range and in LOS, or if something appears on xtarget
     -- TODO: set distance as parameter
 
-    return (config.get('PULLWITH') ~= 'melee' and pull_spawn.LineOfSight() and dist3d < 250) or dist3d < 5 or
+    return (config.get('PULLWITH') ~= 'melee' and pull_spawn.LineOfSight() and dist3d < (pullRange - 30)) or dist3d < 5 or
         common.hostileXTargets()
 end
 
@@ -452,6 +500,7 @@ end
 ---@param pull_spawn MQSpawn @The MQ Spawn to be pulled.
 local function pullEngage(pull_spawn)
     -- pull  mob
+    local pullRange = getPullRange()
     local pullMobID = state.pullMobID
     local dist3d = pull_spawn.Distance3D()
     if not dist3d then
@@ -459,7 +508,7 @@ local function pullEngage(pull_spawn)
         pull.clearPullVars('pullEngage-distanceCheck')
         return false
     end
-    if not pull_spawn.LineOfSight() or dist3d > 200 then
+    if not pull_spawn.LineOfSight() or dist3d > (pullRange - 30) then
         state.pullStatus = constants.pullStates.APPROACHING
         pullNavToMob(pull_spawn, false)
         return false
@@ -507,6 +556,7 @@ local function pullEngage(pull_spawn)
                 if clicky.enabled and mq.TLO.Me.ItemReady(clicky.CastName)() and
                     (reagentCount == -1 or mq.TLO.FindItemCount(reagentID)() > 0) then
                     pull_item = clicky
+                    pull_range = mq.TLO.FindItem(clicky.CastName).Clicky.Spell.Range()
                     break
                 end
             end
