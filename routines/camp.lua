@@ -232,35 +232,36 @@ end
 ---Set, update or clear the CAMP values depending on whether currently in a camp mode or not.
 function camp.setCampCustom(X, Y, Z, Heading, ZoneID)
     local mode = mode.currentMode
-    if mode:isCampMode() then
-        mq.cmd('/squelch /maploc remove')
-        camp.Active = true
-        camp.X = tonumber(X)
-        camp.Y = tonumber(Y)
-        camp.Z = tonumber(Z)
-        camp.Heading = tonumber(Heading)
-        camp.ZoneID = tonumber(ZoneID)
-        if mode:isPullMode() then
-            if config.get('PULLARC') > 0 and config.get('PULLARC') < 360 then
-                setPullAngles()
-                drawMapLoc(camp.X, camp.Y, camp.Z, camp.PullArcLeft, '0 0 255')
-                drawMapLoc(camp.X, camp.Y, camp.Z, camp.PullArcRight, '0 0 255')
-                drawMapLoc(camp.X, camp.Y, camp.Z, camp.Heading, '255 0 0')
-            else
-                camp.PullArcLeft = 0
-                camp.PullArcRight = 0
-            end
-            mq.cmdf('/squelch /maploc size 10 width 1 color 0 0 255 radius %s rcolor 0 0 255 %s %s %s',
-                config.get('PULLRADIUS'), camp.Y, camp.X, camp.Z)
+    if (not mode:isCampMode()) and (not mode:isPullMode()) then
+        mode.currentMode = mode.modes.tank
+    end
+    mq.cmd('/squelch /maploc remove')
+    camp.Active = true
+    camp.X = tonumber(X)
+    camp.Y = tonumber(Y)
+    camp.Z = tonumber(Z)
+    camp.Heading = tonumber(Heading)
+    camp.ZoneID = tonumber(ZoneID)
+    if mode:isPullMode() then
+        if config.get('PULLARC') > 0 and config.get('PULLARC') < 360 then
+            setPullAngles()
+            drawMapLoc(camp.X, camp.Y, camp.Z, camp.PullArcLeft, '0 0 255')
+            drawMapLoc(camp.X, camp.Y, camp.Z, camp.PullArcRight, '0 0 255')
+            drawMapLoc(camp.X, camp.Y, camp.Z, camp.Heading, '255 0 0')
         else
             camp.PullArcLeft = 0
             camp.PullArcRight = 0
         end
+        mq.cmdf('/squelch /maploc size 10 width 1 color 0 0 255 radius %s rcolor 0 0 255 %s %s %s',
+            config.get('PULLRADIUS'), camp.Y, camp.X, camp.Z)
+
+
         logger.info('Camp set to \ayX: %.02f Y: %.02f Z: %.02f R: %s H: %.02f\ax', camp.X, camp.Y, camp.Z,
             config.get('CAMPRADIUS'), camp.Heading)
         mq.cmdf('/squelch /maploc size 10 width 1 color 255 0 0 radius %s rcolor 255 0 0 %s %s %s',
             config.get('CAMPRADIUS'), camp.Y + 1, camp.X + 1, camp.Z)
     end
 end
+
 
 return camp
