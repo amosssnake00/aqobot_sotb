@@ -662,7 +662,7 @@ local old_pull_state = nil
 function pull.pullMob()
     local pull_state = state.pullStatus
     if pull_state ~= old_pull_state then
-        logger.info('\arPull state \ax(\at%s\ax) was: %s', pull_state, old_pull_state)
+        logger.debug(logger.flags.routines.pull, '\arPull state \ax(\at%s\ax) was: %s', pull_state, old_pull_state)
         old_pull_state = pull_state
     end
     
