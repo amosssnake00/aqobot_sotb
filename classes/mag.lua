@@ -304,7 +304,8 @@ Magician.SpellLines = {
             'Shock of Burning Steel',              -- [[MAG/112 - Mana: 1475 - Cast: 3,25s - Recast 5,25s  - Duration: 0s - Resist: Magic  - Target: Single - Effects: Push: 0,5 1: Decrease Current HP by 15915 ]]
             'Shock of Arcronite Steel',            -- [[MAG/107 - Mana: 1229 - Cast: 3,25s - Recast 5,25s  - Duration: 0s - Resist: Magic  - Target: Single - Effects: Push: 0,5 1: Decrease Current HP by 13123 ]]
             'Shock of Darksteel', --[[emu cutoff]] -- [[MAG/102 - Mana: 1023 - Cast: 3,25s - Recast 5,25s  - Duration: 0s - Resist: Magic  - Target: Single - Effects: Push: 0,5 1: Decrease Current HP by 10821 ]]
-            'Blade Strike',                        -- [[MAG/68 - Mana: 431 - Cast: 6,25s - Recast 1,5s  - Duration: 0s - Resist: Magic  - Target: Single - Effects: Push: 0,5 1: Decrease Current HP by 2029 ]]
+            'Blade Strike',
+            'Black Steel',                        -- [[MAG/68 - Mana: 431 - Cast: 6,25s - Recast 1,5s  - Duration: 0s - Resist: Magic  - Target: Single - Effects: Push: 0,5 1: Decrease Current HP by 2029 ]]
             'Rock of Taelosia',                    -- [[MAG/65 - Mana: 379 - Cast: 6,25s - Recast 1,5s  - Duration: 0s - Resist: Magic  - Target: Single - Effects: 1: Decrease Current HP by 1623 ]]
             'Shock of Steel',                      -- [[MAG/57 - Mana: 293 - Cast: 6,25s - Recast 1,5s  - Duration: 0s - Resist: Magic  - Target: Single - Effects: Push: 0,5 1: Decrease Current HP by 1193 ]]
             'Shock of Swords',                     -- [[MAG/41 - Mana: 162 - Cast: 5s - Recast 1,5s  - Duration: 0s - Resist: Magic  - Target: Single - Effects: Push: 0,5 1: Decrease Current HP by 584 ]]

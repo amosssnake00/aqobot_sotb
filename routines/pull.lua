@@ -349,6 +349,7 @@ function pull.pullRadar()
     pullRadarTimer:reset()
     local pull_radius_count
     local pull_radius = config.get('PULLRADIUS')
+    local pull_level_priority = config.get('PULLLEVELPRIORITY')
     -- local max_radius = math.max(pull_radius, math.max(config.get('PULLHIGH'), config.get('PULLLOW')))
     local max_radius = pull_radius
     if not pull_radius then return 0 end
@@ -363,6 +364,7 @@ function pull.pullRadar()
     end
     local shortest_path = config.get('PULLPATH')
     local pull_id = 0
+    local pull_level_priority_max = 0
     if pull_radius_count > 0 then
         local zone_sn = mq.TLO.Zone.ShortName()
         for i = 1, pull_radius_count do
@@ -391,10 +393,22 @@ function pull.pullRadar()
                         -- if path length is within 50 of distance3d then its probably safe to pull also
                         state.pullMobID = mob.ID()
                         return mob.ID()
-                    elseif path_len < shortest_path then
+                    elseif not pull_level_priority and path_len < shortest_path then
                         logger.debug(logger.flags.routines.pull,
                             ("Found closer pull, %s < %s"):format(path_len, shortest_path))
                         shortest_path = path_len
+                        pull_id = mob.ID()
+                    elseif pull_level_priority and mob.Level() > pull_level_priority_max then
+                        logger.debug(logger.flags.routines.pull,
+                            ("Found higher level pull, %s < %s"):format(pull_level_priority_max, mob.Level()))
+                        pull_level_priority_max = mob.Level()
+                        shortest_path = path_len
+                        pull_id = mob.ID()
+                    elseif pull_level_priority and mob.Level() == pull_level_priority_max and path_len < shortest_path then
+                        logger.debug(logger.flags.routines.pull,
+                            ("Found closer pull (L %s), %s < %s"):format(pull_level_priority_max, path_len, shortest_path))
+                        shortest_path = path_len
+                        pull_level_priority_max = mob.Level()
                         pull_id = mob.ID()
                     end
                 end
@@ -475,8 +489,9 @@ local function pullNavToMob(pull_spawn, announce_pull)
     -- TODO: find proper pullability range and check for that - safety margin
     if ((helpers.distance(mq.TLO.Me.X(), mq.TLO.Me.Y(), mob_x, mob_y) > 100) and config.get('PULLWITH') == 'melee') or (config.get('PULLWITH') ~= 'melee' and (not pull_spawn.LineOfSight() or pull_spawn.Distance3D() > (pullRange -30))) then
         logger.debug(logger.flags.routines.pull, 'Moving to pull target (\at%s\ax)', state.pullMobID)
-        -- TODO: set timeout as parameter
-        movement.navToSpawn('id ' .. state.pullMobID, 'dist=5', 1000)
+        -- TODO: set timeout as parameter - handling for some areas where xtarget aggro detection seemed not to work
+        --movement.navToSpawn('id ' .. state.pullMobID, 'dist=5', 1000)
+        movement.navToSpawn('id ' .. state.pullMobID, 'dist=5')
     end
     return true
 end
@@ -503,6 +518,7 @@ local function pullEngage(pull_spawn)
     local pullRange = getPullRange()
     local pullMobID = state.pullMobID
     local dist3d = pull_spawn.Distance3D()
+    
     if not dist3d then
         logger.info('\arPull target no longer valid \ax(\at%s\ax)', pullMobID)
         pull.clearPullVars('pullEngage-distanceCheck')
@@ -510,6 +526,7 @@ local function pullEngage(pull_spawn)
     end
     if not pull_spawn.LineOfSight() or dist3d > (pullRange - 30) then
         state.pullStatus = constants.pullStates.APPROACHING
+        logger.info('\arPull state \ax(\at%s\ax)', state.pullStatus)
         pullNavToMob(pull_spawn, false)
         return false
     end
@@ -536,6 +553,7 @@ local function pullEngage(pull_spawn)
         --movement.stop()
         if mq.TLO.Navigation.Active() then mq.cmd('/squelch /nav stop') end
         mq.cmd('/squelch /face fast')
+        mq.cmd('/squelch /stand')
         mq.cmd('/squelch /stick front loose moveback 10')
         mq.cmd('/attack on')
         state.pullStatus = constants.pullStates.WAIT_FOR_AGGRO
@@ -577,6 +595,7 @@ local function pullEngage(pull_spawn)
             state.pullStatus = constants.pullStates.WAIT_FOR_AGGRO
         elseif pullWith == 'ranged' then
             mq.cmd('/squelch /face fast')
+            mq.cmd('/squelch /stand')
             mq.cmd('/autofire on')
             -- mq.delay(1000)
             if not mq.TLO.Me.AutoFire() then
@@ -637,10 +656,16 @@ local function anyoneDead()
 end
 
 local pullEngageTimer = timer:new(3000)
+local old_pull_state = nil
 ---Attempt to pull the mob whose ID is stored in common.pullMobID.
 ---Sets common.tankMobID to the mob being pulled.
 function pull.pullMob()
     local pull_state = state.pullStatus
+    if pull_state ~= old_pull_state then
+        logger.info('\arPull state \ax(\at%s\ax) was: %s', pull_state, old_pull_state)
+        old_pull_state = pull_state
+    end
+    
     -- or (mq.TLO.Group.Injured(config.get('MEDHPSTART'))() or 0) > 0
     if anyoneDead() or mq.TLO.Me.PctHPs() < config.get('MEDHPSTART') or constants.DMZ[mq.TLO.Zone.ID()] then -- or (state.holdForBuffs and not state.holdForBuffs:expired()) then
         if pull_state == constants.pullStates.APPROACHING or pull_state == constants.pullStates.ENGAGING then
@@ -673,6 +698,15 @@ function pull.pullMob()
     -- try to break if something agro'd that isn't the pull mob? thought this was already happening somewhere...
     if pull_state and common.hostileXTargets() and not pullMobOnXTarget() then
         pull.clearPullVars('pullMob-onXTargetCheck')
+        if mode.currentMode:isReturnToCampMode() and camp.Active then
+            logger.debug(logger.flags.routines.pull, 'Xtar aggro? - returning to camp')
+            state.pullStatus = constants.pullStates.RETURNING
+            movement.stop()
+            pullReturn(false)
+        else
+            pullReturnTimer:reset()
+            state.pullStatus = constants.pullStates.PULLED
+        end
         return
     end
     if not pull_state then
@@ -722,7 +756,8 @@ function pull.pullMob()
         end
         if pullApproaching(pull_spawn) then
             -- movement stopped, either spawn became invalid, we're in range, or other stuff agro'd
-            state.pullStatus = constants.pullStates.ENGAGING
+            state.pullStatus = constants.pullStates.ENGAGING            
+            return --ams test
         end
     elseif pull_state == constants.pullStates.ENGAGING then
         local pull_spawn = mq.TLO.Spawn(state.pullMobID)
@@ -740,7 +775,9 @@ function pull.pullMob()
             -- successfully agro'd the mob, or something else agro'd in the process
             pullEngageTimer:reset()
             if mode.currentMode:isReturnToCampMode() and camp.Active then
+                logger.debug(logger.flags.routines.pull, 'got aggro, pull or xtarget, or target gone?')
                 state.pullStatus = constants.pullStates.RETURNING
+                movement.stop()
                 pullReturn(false)
             else
                 pullReturnTimer:reset()

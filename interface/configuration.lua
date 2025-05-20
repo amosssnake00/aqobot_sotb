@@ -323,6 +323,14 @@ local config = {
         tlo = 'PullRadius',
         tlotype = 'int',
     },
+    PULLLEVELPRIORITY = {
+        value = false,
+        tip = 'Will try to pull highest mobs within allowed parameters first',
+        label = 'Pull Level Priority',
+        type = 'checkbox',
+        tlo = 'PullLevelPriority',
+        tlotype = 'bool',
+    },
     PULLPATH = {
         value = 100,
         tip = 'The maximum Pullpath to mobs inside your pull radius',
@@ -652,7 +660,7 @@ local configByCategory = {
     Assist = { 'MODE', 'ASSIST', 'AUTOASSISTAT', 'ASSISTNAMES', 'SWITCHWITHMA', 'STICKCOMMAND', 'RESISTSTOPCOUNT', 'NUKEMANAMIN', 'DOTMANAMIN' },
     Camp = { 'CAMPRADIUS', 'CAMPRETURN', 'CHASETARGET', 'CHASEDISTANCE', 'CHASESTOPDISTANCE', 'CHASEPAUSED' },
     Burn = { 'BURNALWAYS', 'BURNALLNAMED', 'BURNCOUNT', 'BURNPCT', 'USEGLYPH', 'USEINTENSITY' },
-    Pull = { 'PULLRADIUS', 'PULLPATH', 'PULLLOW', 'PULLHIGH', 'PULLMINLEVEL', 'PULLMAXLEVEL', 'PULLARC', 'GROUPWATCHWHO', 'GROUPSTAYCLOSE', 'PULLWITH' },
+    Pull = { 'PULLRADIUS', 'PULLPATH', 'PULLLOW', 'PULLHIGH', 'PULLMINLEVEL', 'PULLMAXLEVEL', 'PULLARC', 'GROUPWATCHWHO', 'GROUPSTAYCLOSE', 'PULLWITH', 'PULLLEVELPRIORITY' },
     Heal = { 'HEALPCT', 'PANICHEALPCT', 'HOTHEALPCT', 'GROUPHEALPCT', 'GROUPHEALMIN', 'XTARGETHEAL', 'REZGROUP', 'REZRAID', 'REZINCOMBAT', 'PRIORITYTARGET', 'INTERRUPTFULLHP', 'INTERRUPTFORHEALS', 'ANNOUNCEHEALS', 'ANNOUNCEDEATHS' },
     Tank = { 'MAINTANK', 'OFFTANK' },
     Rest = { 'MEDCOMBAT', 'RECOVERPCT', 'MEDHPSTART', 'MEDHPSTOP', 'MEDMANASTART', 'MEDMANASTOP', 'MEDENDSTART', 'MEDENDSTOP', 'MANASTONESTART', 'MANASTONESTARTHP', 'MANASTONESTOPHP', 'MANASTONETIME' },

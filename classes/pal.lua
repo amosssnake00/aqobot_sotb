@@ -162,7 +162,7 @@ Paladin.SpellLines = {
     },
     {
         Group = 'heal',
-        Spells = { 'Touch of Nife', 'Superior Healing', 'Greater Healing', 'Healing', 'Light Healing', 'Minor Healing', 'Salve' },
+        Spells = { 'Touch of Piety', 'Touch of Nife', 'Superior Healing', 'Greater Healing', 'Healing', 'Light Healing', 'Minor Healing', 'Salve' },
         Options = { Gem = function(lvl) return lvl <= 70 and 2 or nil end, heal = true, tank = true, regular = true }
     },
     {
