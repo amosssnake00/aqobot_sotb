@@ -526,7 +526,7 @@ local function pullEngage(pull_spawn)
     end
     if not pull_spawn.LineOfSight() or dist3d > (pullRange - 30) then
         state.pullStatus = constants.pullStates.APPROACHING
-        logger.info('\arPull state \ax(\at%s\ax)', state.pullStatus)
+        --logger.info('\arPull state \ax(\at%s\ax)', state.pullStatus)
         pullNavToMob(pull_spawn, false)
         return false
     end
