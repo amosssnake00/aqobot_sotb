@@ -19,6 +19,35 @@ local campBuffer = 20
 
 --- Tank Functions
 
+--- Check Pet
+---
+-- Checks if the current target is a pet and determines if its owner is a PC or NPC.
+-- Outputs the result to the MQ console.
+-- @return boolean
+function IsPcPet(mob)
+    if not mob() then
+        return false
+    end
+    if mob.Owner.Type() ~= nil and mob.Owner.Type() == 'PC' then
+        return true
+    elseif mob.Owner.Type() ~= nil then
+        return false
+    else
+        -- No direct owner, check the target's name for "`s pet" pattern
+        local potentialOwnerName = mob.CleanName():match("^(.-)`s pet$") or mob.CleanName():match("^(.-)'s pet$")
+        if potentialOwnerName and potentialOwnerName ~= "" then
+            -- Check if the potential owner is a PC or NPC
+            if mq.TLO.Spawn(potentialOwnerName).Type() == 'PC' then
+                return true
+            else
+                return false
+            end
+        else
+            return false
+        end
+    end
+end
+
 function tank.isTank()
     return mode.currentMode:isTankMode() or mq.TLO.Group.MainTank() == mq.TLO.Me.CleanName() or config.get('MAINTANK')
 end
@@ -42,7 +71,7 @@ function tank.findMobToTank()
         -- No mobs present to tank
         return false
     end
-    if state.tankMobID > 0 and mq.TLO.Target() and mq.TLO.Target.Type() ~= 'Corpse' and state.tankMobID == mq.TLO.Target.ID() then
+    if state.tankMobID > 0 and mq.TLO.Target() and mq.TLO.Target.Type() ~= 'Corpse' and state.tankMobID == mq.TLO.Target.ID() and not IsPcPet(mq.TLO.Target) then
         -- Already actively tanking a mob
         tank.stickToMob()
         if not mq.TLO.Me.Combat() then mq.cmd('/attack on') end
@@ -81,7 +110,7 @@ function tank.findMobToTank()
     for id, _ in pairs(state.targets) do
         -- loop through for named, highest level, unmezzed, lowest hp
         local mob = mq.TLO.Spawn(id)
-        if mob.Aggressive() then -- this seems to fix attacking swarm pets. Side effects: unknown?
+        if mob.Aggressive() and not IsPcPet(mob) then -- this seems to fix attacking most swarm pets. Side effects: unknown? Shammy swarmpet...is Aggressive, sigh
             local name = mob.CleanName() or ''
             if firstid == 0 then
                 firstid = mob.ID()

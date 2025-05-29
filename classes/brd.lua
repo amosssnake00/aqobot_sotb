@@ -52,6 +52,7 @@ function Bard:initClassOptions()
         'bool')
     self:addOption('USESWARM', 'Use Swarm', true, nil, 'Use swarm pet AAs', 'checkbox', nil, 'UseSwarm', 'bool')
     self:addOption('USESNARE', 'Use Snare', false, nil, 'Use snare song', 'checkbox', nil, 'UseSnare', 'bool')
+    self:addOption('USESLOW', 'Use Slow', false, nil, 'Use ST Slow', 'checkbox', nil, 'UseSlow', 'bool')
     self:addOption('USETWIST', 'Use Twist', false, nil, 'Use MQ2Twist instead of managing songs', 'checkbox', nil,
         'UseTwist', 'bool')
     self:addOption('USEFIREDOTS', 'Use Fire DoT', false, nil,
@@ -195,7 +196,7 @@ Bard.SpellLines = {
     { Group = 'bardhaste',    Spells = { 'Verse of Veeshan', 'Composition of Ervaj' },                                                                                                                                                                                  Options = { Gem = function(
         lvl) return state.emu and 5 or nil end } },
     { Group = 'emuhaste',     Spells = { 'War March of Muram', 'War March of the Mastruq', 'Warsong of Zek', 'War March of Muram', 'War March of the Mastruq', 'McVaxius\' Rousing Rondo', 'McVaxius\' Berserker Crescendo', 'Vilia\'s Verses of Celerity', 'Anthem de Arms' } },
-    { Group = 'snare',        Spells = { 'Selo\'s Assonant Strain', 'Selo\'s Consonant Chain' },                                                                                                                                                                        Options = { opt = 'USESNARE' } },
+    { Group = 'snare',        Spells = { 'Dirge of Metala', 'Selo\'s Assonant Strain', 'Selo\'s Consonant Chain' },                                                                                                                                                                        Options = { opt = 'USESNARE' } },
     { Group = 'debuff',       Spells = { 'Harmony of Sound' } },
     { Group = 'jonthans',     Spells = { 'Jonthan\'s Inspiration', 'Jonthan\'s Whistling Warsong' },                                                                                                                                                                    Options = { opt = 'USEJONTHANS' } },
     { Group = 'magicweapons', Spells = { 'Magical Monologue' },                                                                                                                                                                                                         Options = {} },
@@ -204,7 +205,8 @@ Bard.SpellLines = {
         lvl) return lvl <= 70 and 10 or nil end } },
 
     { Group = 'aedot',        Spells = { 'Denon\'s Disruptive Discord', 'Chords of Dissonance' },                                                                                                                                                                       Options = { 'USEAOE' } },
-    { Group = 'aeslow',       Spells = { 'Largo\'s Melodic Binding' },                                                                                                                                                                                                  Options = {} },
+    { Group = 'aeslow',       Spells = { 'Largo\'s Assonant Binding','Largo\'s Melodic Binding' },                                                                                                                                                                                                  Options = {} },
+    { Group = 'slow',       Spells = { 'Requiem of Time' },                                                                                                                                                                                                             Options = { 'USESLOW' } },
     { Group = 'manasong',     Spells = { 'Chorus of Life', 'Cantata of Life', 'Chorus of Marr', 'Wind of Marr', 'Ancient: Lcea\'s Lament', 'Chorus of Replenishment', 'Cantata of Replenishment', 'Cassindra\'s Chorus of Clarity', 'Cassindra\'s Chant of Clarity' },  Options = {} },
     { Group = 'dispel',       Spells = { 'Syvelian\'s Anti-Magic Aria', 'Alenia\'s Disenchanting Melody' },                                                                                                                                                             Options = {} },
     { Group = 'amplification', Spells = { 'Amplification' },                                                                                                                                                                                                            Options = { opt = 'USEAMPLIFICATION', selfbuff = true, combatbuff = true } },
@@ -217,7 +219,7 @@ Bard.allDPSSpellGroups = { 'aria', 'arcane', 'chantfrost', 'spiteful', 'firenuke
     'insult', 'warmarch', 'sonata', 'firemagicdotbuff', 'chantdisease',
     'crescendo', 'pulse', 'composite', 'dirge', 'insultpushback', 'chantpoison', 'alliance', 'overhaste', 'bardhaste',
     'emuhaste', 'snare', 'debuff', 'jonthans', 'magicweapons',
-    'chantmagic', 'aedot', 'aeslow', 'manasong', 'dispel', 'amplification', 'selos', 'allresists' }
+    'chantmagic', 'aedot', 'aeslow','slow', 'manasong', 'dispel', 'amplification', 'selos', 'allresists' }
 
 Bard.Abilities = {
     { -- lazarus specific clicky pickpocket
