@@ -658,8 +658,14 @@ end
 ---@param wait_for_spell_ready boolean|nil # Toggle waiting for spell to become ready
 ---@param other_names table|nil # List of spell names to compare against, because of dissident,dichotomic,composite
 function Ability.swapSpell(spell, gem, wait_for_spell_ready, other_names)
-    if not spell or not gem or mq.TLO.Me.Casting() or mq.TLO.Cursor() then return end
-    if gem > mq.TLO.Me.NumGems() then gem = 8 end
+    if not spell or mq.TLO.Me.Casting() or mq.TLO.Cursor() then return end -- Removed 'not gem' check here, will be handled below
+
+    -- Validate gem parameter, default to state.swapGem (last available gem) if invalid
+    local num_gems = mq.TLO.Me.NumGems() or 0 -- Fallback for NumGems if it's nil
+    if not gem or type(gem) ~= 'number' or gem <= 0 or gem > num_gems then
+        gem = state.swapGem -- Default to the last gem if no valid specific gem is provided
+    end
+
     if mq.TLO.Me.Gem(gem)() == spell.Name then return end
     if other_names and other_names[mq.TLO.Me.Gem(gem)()] then return end
     mq.cmdf('/memspell %d "%s"', gem, spell.Name)
@@ -678,25 +684,41 @@ end
 function Ability.swapAndCast(spell, gem, class, skipReadyCheck, queuedAction)
     if (mq.TLO.Me.CombatState() == 'COMBAT' and state.class ~= 'NEC') or mq.TLO.Me.Moving() then return false end
     if not spell then return false end
+    -- The 'gem' parameter for swapAndCast is the gem to swap INTO.
+    -- If the spell isn't already memmed, we proceed to swap it.
     if not mq.TLO.Me.Gem(spell.Name)() then
-        if gem > mq.TLO.Me.NumGems() then gem = 8 end
-        if mq.TLO.Me.Gem(gem)() then
-            state.restore_gem = { Name = mq.TLO.Me.Gem(gem)(), gem = gem }
-            state.restoreGemTimer:reset()
+        -- Validate the target 'gem' for swapping, defaulting to state.swapGem if necessary.
+        local target_swap_gem = gem
+        local num_gems = mq.TLO.Me.NumGems() or 0
+        if not target_swap_gem or type(target_swap_gem) ~= 'number' or target_swap_gem <= 0 or target_swap_gem > num_gems then
+            target_swap_gem = state.swapGem
         end
-        if not Ability.swapSpell(spell, gem, true) then
+
+        -- If the target gem currently holds a spell, record it for restoration.
+        if mq.TLO.Me.Gem(target_swap_gem)() then
+            state.restore_gem = { Name = mq.TLO.Me.Gem(target_swap_gem)(), gem = target_swap_gem }
+            state.restoreGemTimer:reset()
+        else
+            state.restore_gem = nil -- Ensure no previous restore_gem interferes if the target slot is empty
+        end
+
+        -- Perform the swap into target_swap_gem
+        if not Ability.swapSpell(spell, target_swap_gem, true) then
             -- failed to mem?
             return false
         end
+
         state.queuedAction = function()
             local reMemQueuedAction = nil
             if state.restore_gem then
+                -- The gem to restore TO is state.restore_gem.gem
                 reMemQueuedAction = function()
                     if queuedAction then queuedAction() end
-                    Ability.swapSpell(state.restore_gem, gem)
+                    Ability.swapSpell(state.restore_gem, state.restore_gem.gem) -- Pass the correct original gem
                 end
             end
             local tmpQueuedAction = state.queuedAction
+            -- Use the spell (which is now memmed in target_swap_gem)
             Ability.use(spell, class, false, skipReadyCheck, reMemQueuedAction)
             if tmpQueuedAction == state.queuedAction then return nil else return state.queuedAction end
         end

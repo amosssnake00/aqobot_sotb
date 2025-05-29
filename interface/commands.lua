@@ -14,6 +14,7 @@ local timer = require('libaqo.timer')
 local constants = require('constants')
 local mode = require('mode')
 local state = require('state')
+local spelldb = require('utils.spelldb') -- Add this line
 
 local class
 local commands = {}
@@ -72,6 +73,7 @@ local function showHelp()
     for _, command in ipairs(constants.commandHelp) do
         output = output .. prefix .. command.command .. ' -- ' .. command.tip
     end
+    output = output .. prefix .. "spelldb populate [max_spell_id] -- Initializes and populates the spell database from game data."
     -- printMDTable({'Command', 'Description'}, constants.commandHelp, {'command', 'tip'})
     output = output ..
     '\n- /nowcast [name] alias <targetID> -- Tells the named character or yourself to cast a spell on the specified target ID.'
@@ -198,6 +200,29 @@ function commands.commandHandler(...)
     elseif opt == 'TIMESTAMPS' then
         config.getOrSetOption(opt, config.get(configName), new_value, configName)
         logger.timestamps = config.get(configName)
+    elseif opt == 'SPELLDB' then
+        if new_value and new_value:lower() == 'populate' then
+            local max_id_arg = args[3] and tonumber(args[3]) or nil -- Optional max_id
+            if spelldb.is_available() then
+                logger.info("Spell DB: Initializing database...")
+                local init_ok = spelldb.initialize_database()
+                if init_ok then
+                    logger.info("Spell DB: Initialization complete. Populating database... (This may take a while)")
+                    local populate_ok = spelldb.populate_spell_database(max_id_arg)
+                    if populate_ok then
+                        logger.info("Spell DB: Population process finished.")
+                    else
+                        logger.error("Spell DB: Population process encountered errors.")
+                    end
+                else
+                    logger.error("Spell DB: Initialization failed.")
+                end
+            else
+                logger.error("Spell DB: SQLite library not available. Cannot populate database.")
+            end
+        else
+            logger.info("Usage: /aqo spelldb populate [max_spell_id]")
+        end
     elseif configName then
         config.getOrSetOption(opt, config.get(configName), new_value, configName)
         local pullSettings = config.getByCategory('Pull')

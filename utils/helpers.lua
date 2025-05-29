@@ -66,4 +66,16 @@ function helpers.convertHeading(heading)
     return heading
 end
 
+---Creates a shallow copy of a table.
+---@param original table The table to copy.
+---@return table A new table with the same key-value pairs as the original.
+function helpers.shallow_copy(original)
+   local copy = {}
+   if type(original) ~= 'table' then return original end -- Handle non-table inputs
+   for key, value in pairs(original) do
+       copy[key] = value
+   end
+   return copy
+end
+
 return helpers

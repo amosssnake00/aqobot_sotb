@@ -1,3 +1,12 @@
+-- ############################################################################
+-- # DEPRECATION NOTICE                                                       #
+-- # ------------------------------------------------------------------------ #
+-- # This file (utils/cast.lua) is considered DEPRECATED and EXPERIMENTAL.    #
+-- # It is NOT believed to be in active use by the main script.               #
+-- # The primary casting logic is handled by ability.lua.                     #
+-- # Proceed with caution if attempting to integrate or use this file.        #
+-- ############################################################################
+
 -- Borrowed from e3next.. not really in use, just exploring some other flavors of casting code
 local mq = require('mq')
 

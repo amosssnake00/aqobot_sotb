@@ -163,7 +163,16 @@ end
 local lootMyCorpseTimer = timer:new(2000)
 local reloadTimer = timer:new(60000)
 local function doLooting()
-    if true then return end --the fuck you are looting the corpse unrezzed...again!
+    if mq.TLO.Me.Dead() then
+        logger.info('doLooting: Character is dead, skipping loot.')
+        return
+    end
+    if mq.TLO.Me.Feigning() then
+        logger.info('doLooting: Character is feigning, skipping loot.')
+        return
+    end
+    logger.info('doLooting: Entered function.')
+    -- if true then return end --the fuck you are looting the corpse unrezzed...again!
     local myCorpse = mq.TLO.Spawn('pccorpse ' .. mq.TLO.Me.CleanName() .. '\'s corpse radius 100')
     if mq.TLO.SpawnCount('pccorpse ' .. mq.TLO.Me.CleanName() .. '\'s corpse radius 100')() > 1 and reloadTimer:expired() then
         mq.cmd('/reload')
@@ -183,6 +192,7 @@ local function doLooting()
                 mq.cmd('/corpse')
                 movement.navToTarget(nil, 10000)
                 if (mq.TLO.Target.Distance3D() or 100) > 10 then return end
+                logger.info('doLooting: Attempting to loot own corpse.')
                 loot.lootMyCorpse()
                 if mq.TLO.Cursor() then mq.cmd('/autoinv') end
                 state.actionTaken = true
@@ -191,6 +201,7 @@ local function doLooting()
         end
     end
     if config.get('LOOTMOBS') and (state.mobCount == 0 or config.get('LOOTCOMBAT')) and not state.pullStatus then
+        logger.info('doLooting: Attempting to loot nearby NPC corpses.')
         state.actionTaken = loot.lootMobs(1)
         if state.lootBeforePull then state.lootBeforePull = false end
     end

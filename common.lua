@@ -10,6 +10,43 @@ local constants = require('constants')
 local mode = require('mode')
 local state = require('state')
 
+--[[
+    Recommendation for Improved Robustness: Using pcall for Risky TLO Accesses
+
+    MacroQuest TLOs (mq.TLO) are essential for interacting with the game state.
+    However, accessing TLOs can sometimes lead to script errors if the game
+    state is unexpected (e.g., a target disappearing, an item not having an
+    expected property). These errors can halt script execution.
+
+    To improve robustness, consider using `pcall` (protected call) for TLO
+    accesses that are particularly risky or have been observed to cause errors.
+    `pcall` allows you to catch these errors and handle them gracefully.
+
+    Example of pcall usage:
+
+    local function getTargetIDSafe()
+        local status, result = pcall(function() return mq.TLO.Target.ID() end)
+        if status then
+            return result -- result is the target ID, or nil if no target
+        else
+            logger.warn("Error accessing mq.TLO.Target.ID(): " .. tostring(result))
+            return nil -- Return nil or a default value on error
+        end
+    end
+
+    local currentTargetID = getTargetIDSafe()
+    if currentTargetID then
+        -- Proceed with logic using currentTargetID
+    else
+        -- Handle the case where target ID couldn't be retrieved
+    end
+
+    It's not always necessary to wrap every TLO call, but for operations
+    involving potentially volatile game objects (like Targets, Spawns that can
+    despawn, or complex Item property accesses), `pcall` can prevent script
+    crashes and allow for more controlled error handling.
+--]]
+
 local common = {}
 
 local familiar = mq.TLO.Familiar and mq.TLO.Familiar.Stat.Item.ID() or mq.TLO.FindItem('Personal Hemic Source').ID()
@@ -423,16 +460,10 @@ end
 
 --Shamelessly stolen from Rekka and E3Next
 function common.amIDead()
-    for i = 1, 10 do
-        local slot = mq.TLO.Me.Inventory('pack' .. i)
-        if slot() then
-            return false
-        end
-    end
-    if mq.TLO.Me.Inventory('Chest')() then
-        return false
-    end
-    return true
+    -- Replaced inventory check logic with mq.TLO.Me.Dead() for reliability.
+    -- The previous method (checking if all pack/chest slots were empty)
+    -- was not a robust way to determine if the character is dead.
+    return mq.TLO.Me.Dead()
 end
 
 return common

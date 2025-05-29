@@ -22,6 +22,7 @@ local common    = require('common')
 local constants = require('constants')
 local mode      = require('mode')
 local state     = require('state')
+local spelldb   = require('utils.spelldb') -- Added for spell database access
 
 ---Each EQ class' implementation extends from and overrides this base class.
 ---Base provides the main class routine loop and common implementations to iterate over ability lists
@@ -130,6 +131,7 @@ end
 function base:initBase(class)
     self.class = class
     self:addCommonOptions()
+    self.databaseSpellSelections = {} -- Initialize the table for DB spell selections
 end
 
 ---Adds a new class configuration option which will be exposed via the UI, CLI and TLO.
@@ -274,6 +276,20 @@ end
 ---@param spellList table # Table of spell names to search in order
 ---@param options table # Table of options to be applied to the spell
 function base:addNSpells(spellGroup, numToAdd, spellList, options)
+    if options.Selection and type(options.Selection) == 'table' then
+        -- Store selection criteria for later processing by the database.
+        -- As per clarification, register one selection task for the spellGroup,
+        -- ignoring numToAdd here as Selection.Pick will handle the count.
+        table.insert(self.databaseSpellSelections, {
+            group = spellGroup,
+            selection_options = options.Selection,
+            original_options = options,
+            num_to_pick_explicit = numToAdd -- Store numToAdd in case Selection.Pick is not set, though Pick should take precedence.
+        })
+        logger.info('Spell group \ay%s\ax will be populated from database using selection criteria. NumToAdd: %d (Note: Selection.Pick will override)', spellGroup, numToAdd)
+        return
+    end
+
     for i = 1, numToAdd do
         if options.Gems then options.Gem = options.Gems[i] end
         local foundSpell = common.getBestSpell(spellList, options, spellGroup)
@@ -308,6 +324,99 @@ function base:initSpellLines()
             end
         end
     end
+
+    -- Process spell selections from the database
+    if spelldb.is_available() and self.databaseSpellSelections and #self.databaseSpellSelections > 0 then
+        logger.info("Populating spell groups from database...")
+        for _, entry in ipairs(self.databaseSpellSelections) do
+            -- entry.selection_options already contains Query, Params, OrderBy, Limit (from Pick)
+            local spells_from_db = spelldb.get_spells_by_criteria(entry.selection_options)
+
+            if spells_from_db and #spells_from_db > 0 then
+                local num_picked = 0
+                local pick_limit = entry.selection_options.Limit or entry.selection_options.Pick or 1 -- Default to picking 1. Limit takes precedence if set by criteria.
+                                
+                -- If num_to_pick_explicit was set (from addNSpells) and no specific Pick/Limit in selection_options, use it.
+                if pick_limit == 1 and entry.num_to_pick_explicit and entry.num_to_pick_explicit > 1 then
+                    pick_limit = entry.num_to_pick_explicit
+                end
+
+                if pick_limit == 1 then
+                    local spell_data_from_db = spells_from_db[1] -- Take the first one
+                    local merged_options = helpers.shallow_copy(entry.original_options) -- Start with class file options
+                    merged_options.Name = spell_data_from_db.name -- Crucial for identify
+                    merged_options.CastName = spell_data_from_db.name -- Crucial for ability.lua logic
+                    merged_options.ID = spell_data_from_db.spell_id -- Spell's actual ID
+                    merged_options.Level = spell_data_from_db.level -- Override level from DB
+                    -- Map other DB fields to fields expected by abilities.Spell:new() or that Ability:setSpellData() uses
+                    merged_options.MyCastTime = spell_data_from_db.cast_time_ms
+                    merged_options.Duration = spell_data_from_db.duration_ticks 
+                    merged_options.DurationTotalSeconds = spell_data_from_db.duration_seconds
+                    merged_options.Mana = spell_data_from_db.mana_cost
+                    -- Add any other direct mappings as needed based on abilities.Spell:new() and Ability:setSpellData()
+                    merged_options.SpellType = spell_data_from_db.beneficial == 1 and 'Beneficial' or 'Detrimental' -- Example, might need more nuance
+                    merged_options.TargetType = spell_data_from_db.target_type
+                    merged_options.Skill = spell_data_from_db.skill
+                    merged_options.MyRange = spell_data_from_db.range
+
+
+                    local spell_ability = abilities.Spell:new(merged_options)
+                    self.spells[entry.group] = spell_ability
+                    self:addAbilityToLists(spell_ability)
+                    num_picked = 1
+                else
+                    self.spells[entry.group] = {} -- This group will be a list of spells
+                    for i = 1, math.min(#spells_from_db, pick_limit) do
+                        local spell_data_from_db = spells_from_db[i]
+                        local merged_options = helpers.shallow_copy(entry.original_options)
+                        merged_options.Name = spell_data_from_db.name
+                        merged_options.CastName = spell_data_from_db.name
+                        merged_options.ID = spell_data_from_db.spell_id
+                        merged_options.Level = spell_data_from_db.level
+                        merged_options.MyCastTime = spell_data_from_db.cast_time_ms
+                        merged_options.Duration = spell_data_from_db.duration_ticks
+                        merged_options.DurationTotalSeconds = spell_data_from_db.duration_seconds
+                        merged_options.Mana = spell_data_from_db.mana_cost
+                        merged_options.SpellType = spell_data_from_db.beneficial == 1 and 'Beneficial' or 'Detrimental'
+                        merged_options.TargetType = spell_data_from_db.target_type
+                        merged_options.Skill = spell_data_from_db.skill
+                        merged_options.MyRange = spell_data_from_db.range
+                        
+                        -- If original_options had Gems table, try to assign a specific Gem
+                        if entry.original_options and entry.original_options.Gems and entry.original_options.Gems[i] then
+                            merged_options.Gem = entry.original_options.Gems[i]
+                        end
+
+                        local spell_ability = abilities.Spell:new(merged_options)
+                        table.insert(self.spells[entry.group], spell_ability)
+                        self:addAbilityToLists(spell_ability)
+                        num_picked = num_picked + 1
+                    end
+                end
+                logger.info(string.format("Populated group '%s' with %d spell(s) from database.", entry.group, num_picked))
+            else
+                logger.warn(string.format("No spells found in database for group '%s' with given criteria.", entry.group))
+                -- Ensure the group exists as an empty table or nil if it was expected to be populated
+                -- If pick_limit > 1, it implies a table was expected.
+                if (entry.selection_options.Limit and entry.selection_options.Limit > 1) or 
+                   (entry.selection_options.Pick and entry.selection_options.Pick > 1) or
+                   (entry.num_to_pick_explicit and entry.num_to_pick_explicit > 1) then
+                    if not self.spells[entry.group] then self.spells[entry.group] = {} end
+                else
+                    -- If pick_limit was 1 or default, and no spells found, it might be okay for self.spells[entry.group] to remain nil
+                    -- or be an empty table depending on how other parts of the code handle it.
+                    -- For consistency with non-DB spell failures, leaving it potentially nil or ensuring it's an empty object might be fine.
+                    -- Let's ensure it's nil if not found and was singular, or empty table if it was plural
+                    -- However, the original addSpell/addNSpells might also leave it nil if not found.
+                    -- For now, if it's not found, it will just log a warning.
+                end
+            end
+        end
+    else
+        if self.databaseSpellSelections and #self.databaseSpellSelections > 0 then
+            logger.warn("Spell database is not available. Skipping population of DB-driven spell groups.")
+        end
+    end
 end
 
 ---Add the best spell from the list of spells to the class spell list
@@ -315,6 +424,17 @@ end
 ---@param spellList table # Table of spell names to search in order
 ---@param options table # Table of options to be applied to the spell
 function base:addSpell(spellGroup, spellList, options)
+    if options.Selection and type(options.Selection) == 'table' then
+        -- Store selection criteria for later processing by the database.
+        table.insert(self.databaseSpellSelections, {
+            group = spellGroup,
+            selection_options = options.Selection,
+            original_options = options
+        })
+        logger.info('Spell group \ay%s\ax will be populated from database using selection criteria.', spellGroup)
+        return
+    end
+
     local foundSpell = common.getBestSpell(spellList, options, spellGroup)
     if not foundSpell then
         logger.info('Could not find spell: \ag%s\ax', spellGroup)
@@ -1303,45 +1423,6 @@ function base:handleRampage()
     end
 end
 
-local function findSpellForSlotSub60(slot)
-
-end
-
-local function findSpellForSlot(slot)
-    local spell = nil
-    local spellFallback = nil
-    local lvl = mq.TLO.Me.Level()
-    if state.ActAsLevel then lvl = state.ActAsLevel end -- dev hook to mem spells for whatever level
-    for _, spellInfo in pairs(base.spells) do
-        local gem = spellInfo.Gem
-        if type(gem) == 'function' then gem = gem(lvl) end
-        if gem == slot then
-            if not spellInfo.opt and not spell then
-                -- spell assigned to this gem with no related option, default spell for the gem
-                spell = spellInfo
-            elseif spellInfo.opt and base:isEnabled(spellInfo.opt) then
-                if spell ~= nil then
-                    -- spell assigned to this gem with an option, but we've already found one matching spell for this gem
-                    if spell.opt then
-                        -- the spell that was already found for this gem also has an associated option enabled, prioritize options or its a conflict
-                        -- do nothing for now, keep the first spell we found
-                    else
-                        -- the spell that was already found for this gem was the default with no option, override it with this spell based on enabled option
-                        spell = spellInfo
-                    end
-                else
-                    -- spell assigned to this gem with an option, haven't found another spell for the gem yet
-                    spell = spellInfo
-                end
-            else
-                -- in case options were disabled and we had no default spell for the gem, mem whatever option based spell we find anyways
-                spellFallback = spellInfo
-            end
-        end
-    end
-    return spell or spellFallback
-end
-
 function base:getSpellRotation()
     local spellSet = self:get('SPELLSET')
     if not self:isEnabled('BYOS') then
@@ -1364,23 +1445,142 @@ end
 
 base.checkSpellTimer = timer:new(30000)
 function base:checkMemmedSpells()
-    if not mq.TLO.Me.Class.CanCast() or not self.spells or not common.clearToBuff() or mq.TLO.Me.Moving() or self:isEnabled('BYOS') or state.memSpell or state.restore_gem then return end
-    local spellSet = self:get('SPELLSET')
-    if state.spellSetLoaded ~= spellSet or self.checkSpellTimer:expired() then
-        local numGems = mq.TLO.Me.NumGems() or 8
-        for i = 1, numGems do
-            local spellToMem = findSpellForSlot(i)
-            if spellToMem and mq.TLO.Me.Gem(i).BaseName() ~= spellToMem.BaseName then
-                if self.compositeNames[spellToMem.BaseName] then
-                    if abilities.swapSpell(spellToMem, i, false, self.compositeNames) then return end
-                else
-                    if abilities.swapSpell(spellToMem, i) then return end
+    -- Pre-checks
+    if not mq.TLO.Me.Class.CanCast() or not self.spells or #self.spells == 0 or not common.clearToBuff() or mq.TLO.Me.Moving() or self:isEnabled('BYOS') or state.memSpell or state.restore_gem then
+        return
+    end
+
+    if state.spellSetLoaded == self:get('SPELLSET') and not self.checkSpellTimer:expired() then
+        return
+    end
+
+    logger.debug(logger.flags.class.spells, "Running checkMemmedSpells for spellset: %s", self:get('SPELLSET'))
+
+    local num_gems_total = mq.TLO.Me.NumGems() or 8
+    local reserved_swap_gem_idx = state.swapGem -- This is now num_gems_total by default
+    
+    local gem_assignments = {} -- Stores the target Ability object for each gem slot
+    local gem_is_fixed = {}    -- Flags if a gem slot was explicitly assigned by a spell's .Gem property
+
+    -- Initialize, marking reserved_swap_gem_idx
+    for i = 1, num_gems_total do
+        gem_assignments[i] = nil
+        gem_is_fixed[i] = false
+    end
+    -- If swapGem is indeed the last gem, it will be naturally available unless a spell specifically targets it.
+    -- We don't need to mark it 'RESERVED_SWAP' in gem_assignments unless we want to prevent it from being used in Pass 2.
+    -- For now, let's allow it to be filled by rotation if no fixed spell targets it and it's the last resort.
+
+    -- Pass 1: Fixed Gem Assignments
+    -- Iterate through all defined spells (self.spells contains Ability objects)
+    for spell_group_name, spell_or_list in pairs(self.spells) do
+        local spells_to_check = {}
+        if type(spell_or_list) == 'table' and spell_or_list.CastType then -- Single Ability object
+            table.insert(spells_to_check, spell_or_list)
+        elseif type(spell_or_list) == 'table' then -- List of Ability objects
+            for _, s in ipairs(spell_or_list) do
+                table.insert(spells_to_check, s)
+            end
+        end
+
+        for _, spell in ipairs(spells_to_check) do
+            if spell and spell.Gem then
+                local target_gem_idx = type(spell.Gem) == 'function' and spell.Gem(mq.TLO.Me.Level()) or spell.Gem
+                if target_gem_idx and type(target_gem_idx) == 'number' and target_gem_idx >= 1 and target_gem_idx <= num_gems_total then
+                    if gem_assignments[target_gem_idx] and gem_assignments[target_gem_idx].Name ~= spell.Name then
+                        logger.warn(string.format("MEMMING CONFLICT: Gem slot %d for %s already assigned to %s. %s will NOT be memmed there.",
+                                target_gem_idx, spell.Name, gem_assignments[target_gem_idx].Name, spell.Name))
+                    elseif not gem_assignments[target_gem_idx] then
+                        logger.debug(logger.flags.class.spells, "Fixed assignment: Gem %d -> %s", target_gem_idx, spell.Name)
+                        gem_assignments[target_gem_idx] = spell
+                        gem_is_fixed[target_gem_idx] = true
+                    end
                 end
             end
         end
-        state.spellSetLoaded = spellSet
-        self.checkSpellTimer:reset()
     end
+
+    -- Pass 2: Rotation Spells Assignments
+    local spell_rotation = self:getSpellRotation()
+    if spell_rotation then
+        for _, spell_in_rotation in ipairs(spell_rotation) do
+            if spell_in_rotation and spell_in_rotation.Name then -- Ensure it's a valid spell object
+                -- Check if this spell is already assigned (e.g. by a fixed assignment)
+                local already_assigned = false
+                for i = 1, num_gems_total do
+                    if gem_assignments[i] and gem_assignments[i].Name == spell_in_rotation.Name then
+                        already_assigned = true
+                        break
+                    end
+                end
+
+                if not already_assigned then
+                    -- Find the first available non-fixed slot up to num_gems_total
+                    -- Prioritize slots before the reserved_swap_gem_idx, but allow using it if necessary.
+                    local found_slot = false
+                    for i = 1, num_gems_total do
+                        if not gem_assignments[i] then
+                            logger.debug(logger.flags.class.spells, "Rotation assignment: Gem %d -> %s", i, spell_in_rotation.Name)
+                            gem_assignments[i] = spell_in_rotation
+                            found_slot = true
+                            break
+                        end
+                    end
+                    -- If no slot was found (e.g. all gems filled with fixed spells), it won't be memmed in this pass.
+                end
+            end
+        end
+    end
+
+    -- Pass 3: Other Important Spells (Simplified for now)
+    -- This pass is largely covered if important spells have Gem properties or are in rotation.
+    -- Spells needed on-demand without specific gem assignments will use state.swapGem via abilities.swapAndCast.
+
+    -- Memorization Execution
+    for i = 1, num_gems_total do
+        local spell_to_mem = gem_assignments[i]
+        
+        if spell_to_mem and spell_to_mem.Name then -- Check if it's a valid spell object
+            local current_spell_in_gem_tlo = mq.TLO.Me.Gem(i)
+            local current_spell_name_in_gem = current_spell_in_gem_tlo.Name()
+
+            local needs_mem = false
+            if not current_spell_name_in_gem then -- Gem is empty
+                needs_mem = true
+            elseif current_spell_name_in_gem ~= spell_to_mem.Name then
+                -- Check composite names if applicable
+                if self.compositeNames and self.compositeNames[spell_to_mem.BaseName] then
+                    local is_composite_match = false
+                    for _, composite_variant_name in ipairs(self.compositeNames[spell_to_mem.BaseName]) do
+                        if current_spell_name_in_gem == composite_variant_name then
+                            is_composite_match = true
+                            break
+                        end
+                    end
+                    if not is_composite_match then needs_mem = true end
+                elseif current_spell_in_gem_tlo.BaseName() ~= spell_to_mem.BaseName then -- Fallback to BaseName check
+                     needs_mem = true
+                end
+            end
+
+            if needs_mem then
+                logger.info(string.format("MEMMING: Slot %d: %s (replacing %s)", i, spell_to_mem.Name, current_spell_name_in_gem or "Empty"))
+                local composite_list_for_swap = (self.compositeNames and self.compositeNames[spell_to_mem.BaseName]) or nil
+                if abilities.swapSpell(spell_to_mem, i, false, composite_list_for_swap) then
+                    state.actionTaken = true -- Indicate a spell swap was initiated
+                    -- It's important to return here as only one spell can be memmed per cycle.
+                    -- The timer reset and spellSetLoaded update should happen only if no swap is done.
+                    return
+                end
+            end
+        end
+        -- Logic for clearing gems that are NOT state.swapGem and are NOT assigned AND currently hold a spell:
+        -- This is more complex as you need to be sure the current spell isn't one that's just not in rotation but still desired.
+        -- For now, we only mem assigned spells. We don't proactively clear unassigned slots.
+    end
+
+    state.spellSetLoaded = self:get('SPELLSET')
+    self.checkSpellTimer:reset()
 end
 
 function base:useEpic()
