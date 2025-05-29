@@ -153,7 +153,8 @@ function Ability.shouldUseSpell(spell, skipSelfStack, skipTargetCheck)
     local result = false
     local dist = mq.TLO.Target.Distance3D()
     if spell.Beneficial() then
-        if spell.TargetType() == 'Group v1' and not spell.Stacks() then return IsReady.SHOULD_NOT_CAST end
+        if spell.TargetType() == 'Group v1' and not spell.Stacks() then 
+            return IsReady.SHOULD_NOT_CAST end
         -- duration is number of ticks, so it tostring'd
         if spell.Duration.TotalSeconds() ~= 0 then
             if spell.TargetType() == 'Self' then
@@ -163,10 +164,11 @@ function Ability.shouldUseSpell(spell, skipSelfStack, skipTargetCheck)
                 not mq.TLO.Me.Song(spell.Name())()
             elseif spell.TargetType() == 'Single' then
                 result = skipTargetCheck or
-                (dist and dist <= spell.MyRange() and spell.StacksTarget() and not mq.TLO.Target.Buff(spell.Name())())
-            elseif spell.TargetType() == 'Group v2' and state.class ~= 'BRD' then
+                (dist and (dist <= spell.MyRange() or dist <= spell.AERange()) and spell.StacksTarget() and not mq.TLO.Target.Buff(spell.Name())())
+            elseif spell.TargetType() == 'Group v2' and mq.TLO.Me.Class.ShortName() ~= 'BRD' then
                 result = skipTargetCheck or
-                (dist and dist <= spell.MyRange() and spell.StacksTarget() and not mq.TLO.Target.Buff(spell.Name())())
+                (dist and (dist <= spell.MyRange() or dist <= spell.AERange()) and spell.StacksTarget() and not mq.TLO.Target.Buff(spell.Name())())
+                logger.debug(logger.flags.ability.validation,'dist: %s, spellrange: %s, stacks: %s, buff: %s', dist, spell.MyRange(), spell.StacksTarget(), not mq.TLO.Target.Buff(spell.Name())())
             elseif spell.TargetType() == 'Pet' then
                 result = (mq.TLO.Pet.Distance3D() or 300) <= spell.MyRange() and spell.StacksPet() and
                 not mq.TLO.Pet.Buff(spell.Name())()
@@ -211,7 +213,7 @@ function Ability.shouldUseSpell(spell, skipSelfStack, skipTargetCheck)
         end
     end
     logger.debug(logger.flags.ability.validation, 'EXIT shouldUseSpell: \ag%s\ax=%s', spell.Name(),
-        result and IsReady.SHOULD_CAST or IsReady.SHOULD_NOT_CAST)
+    result and IsReady.SHOULD_CAST or IsReady.SHOULD_NOT_CAST)
     return result and IsReady.SHOULD_CAST or IsReady.SHOULD_NOT_CAST
 end
 

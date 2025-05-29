@@ -262,6 +262,28 @@ Paladin.Abilities = {
         Options = { tanking = true, aggro = true, condition = conditions.lowAggroInMelee }
     },
     {
+        Type = 'Skill',
+        Name = 'Bash',
+        Options = {
+            dps = true,
+            condition = function()
+                return mq.TLO.Me.Inventory('offhand').Type() == 'Shield' and
+                    conditions.withinMeleeDistance()
+            end
+        }
+    },
+    {
+        Type = 'Skill',
+        Name = 'Kick',
+        Options = {
+            dps = true,
+            condition = function()
+                return mq.TLO.Me.Inventory('offhand').Type() ~= 'Shield' and
+                    conditions.withinMeleeDistance()
+            end
+        }
+    },
+    {
         Type = 'Disc',
         Group = 'defy',
         Names = { 'Defy' },

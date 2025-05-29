@@ -130,7 +130,7 @@ Enchanter.SpellLines = {
     },
     { -- targeted AE mez. Slot 4
         Group = 'mezaeprocblur',
-        Spells = { 'Entrancing Stare', 'Mesmeric Stare', 'Deceiving Stare', 'Transfixing Stare', 'Anodyne Stare', 'Mesmerizing Stare', 'Sedative Stare', 'Soporific Stare', --[[emu cutoff]] 'Wake of Felicity', 'Entrancing Lights' },
+        Spells = { 'Entrancing Stare', 'Mesmeric Stare', 'Deceiving Stare', 'Transfixing Stare', 'Anodyne Stare', 'Mesmerizing Stare', 'Sedative Stare', 'Soporific Stare', --[[emu cutoff]]'Circle of Dreams','Word of Morell', 'Wake of Felicity', 'Entrancing Lights' },
         Options = { Gem = 4 }
     },
     { -- main dot. Slot 5

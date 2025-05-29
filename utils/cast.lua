@@ -61,7 +61,7 @@ function casting.cast(spell, targetID, interruptCheck)
         if (spell.ReagentID or 0) > 0 then
             local itemCount = mq.TLO.FindItemCount(spell.ReagentID)()
             local requiredCount = spell.ReagentCount or 1
-            if itemCount < requiredCount then
+            if itemCount < requiredCount and (spell.Category ~= 'Pet' and not mq.TLO.AltAbility('Elemental Pact')) then
                 spell.ReagentOutOfStock = true
                 logger.info('Spell reagent out of stock %s %s', spell.SpellName, spell.ReagentID)
                 return casting.CastReturn.CAST_REAGENT

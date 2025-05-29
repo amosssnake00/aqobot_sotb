@@ -161,7 +161,7 @@ Cleric.SpellLines = {
     },
     { -- emu or before remedies standard heal. Slot 2, otherwise slot 11
         Group = 'lightheal',
-        Spells = { 'Avowed Light', 'Fervent Light', 'Sincere Light', 'Merciful Light', 'Ardent Light', 'Reverent Light', 'Zealoud Light', 'Earnest Light', 'Devout Light', --[[emu cutoff]] 'Supernal Light', 'Ethereal Light', 'Ancient: Hallowed Light', 'Pious Light', 'Holy Light', 'Divine Light', 'Healing Light', 'Superior Healing', 'Greater Healing', 'Healing', 'Light Healing', 'Minor Healing' },
+        Spells = { 'Avowed Light', 'Fervent Light', 'Sincere Light', 'Merciful Light', 'Ardent Light', 'Reverent Light', 'Zealoud Light', 'Earnest Light', 'Devout Light', --[[emu cutoff]] 'Supernal Light', 'Ancient: Hallowed Light', 'Pious Light', 'Ethereal Light', 'Holy Light', 'Divine Light', 'Healing Light', 'Superior Healing', 'Greater Healing', 'Healing', 'Light Healing', 'Minor Healing' },
         Options = { Gem = function(lvl) return lvl < 101 and 2 or 11 end, tank = true, regular = true }
     },
     { -- Heal target + nuke targets target. Slot 3, 4
@@ -202,7 +202,7 @@ Cleric.SpellLines = {
     },
     { -- Group heal with cure component. Slot 8
         Group = 'grouphealcure',
-        Spells = { 'Word of Greater Vivification', 'Word of Greater Rejuvenation', 'Word of Greater Replenishment', 'Word of Greater Restoration', 'Word of Greater Reformation', 'Word of Reformation', 'Word of Rehabilitation', 'Word of Resurgence', --[[emu cutoff]] 'Word of Vivification', 'Word of Replenishment', 'Word of Redemption' },
+        Spells = { 'Word of Greater Vivification', 'Word of Greater Rejuvenation', 'Word of Greater Replenishment', 'Word of Greater Restoration', 'Word of Greater Reformation', 'Word of Reformation', 'Word of Rehabilitation', 'Word of Resurgence', --[[emu cutoff]]'Word of Restoration', 'Word of Vivification', 'Word of Replenishment', 'Word of Redemption' },
         Options = { alias = 'GROUPHEAL', Gem = function(lvl) return (lvl <= 70 and 8) or
             (Cleric:isEnabled('USESPLASH') and 8) or nil end, threshold = 3, regular = true, single = true, group = true, pct = 70, cure = true, Disease = true, Poison = true, Curse = true }
     },

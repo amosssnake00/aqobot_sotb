@@ -41,31 +41,31 @@ end
 -- gelid rains, tears of ro
 -- ether flame
 Wizard.SpellLines = {
-    { Group = 'largefire',   Spells = { 'Ether Flame', 'Corona Flare', 'White Fire', 'Strike of Solusek', 'Conflagration', 'Fire Bolt' },                                           Options = { Gem = 1 } },
+    { Group = 'largefire',   Spells = { 'Ether Flame', 'Corona Flare', 'White Fire', 'Strike of Solusek', 'Conflagration', 'Fire Bolt' },                                           Options = { } },
     { Group = 'weavenuke',   Spells = { 'Ether Flame', 'Corona Flare', 'White Fire', 'Strike of Solusek', 'Conflagration', 'Fire Bolt' },                                           Options = { condition = function() return
         mq.TLO.Me.Buff('Weave of Power')() or mq.TLO.Me.Song('Weave of Power')() end } },
-    { Group = 'stun',        Spells = { 'Telakemara', 'Telekara', 'Telaka', 'Telekin', 'Markar\'s Discord', 'Tishan\'s Discord', 'Markar\'s Clash', 'Tishan\'s Clash', 'Thunderclap' }, Options = { Gem = 2 } },
-    { Group = 'firerain',    Spells = { --[['Tears of the Sun', 'Tears of Arlyxir', ]] 'Tears of Ro', 'Tears of Solusek', 'Lava Storm', 'Firestorm' },                              Options = { opt = 'USEAOE', Gem = 3 } },
-    { Group = 'icerain',     Spells = { 'Gelid Rains', 'Tears of Marr', 'Tears of Prexus', 'Frost Storm', 'Icestrike' },                                                            Options = { opt = 'USEAOE', Gem = 4 } },
+    { Group = 'stun',        Spells = { 'Telakemara', 'Telekara', 'Telaka', 'Telekin', 'Markar\'s Discord', 'Tishan\'s Discord', 'Markar\'s Clash', 'Tishan\'s Clash', 'Thunderclap' }, Options = {  } },
+    { Group = 'firerain',    Spells = { --[['Tears of the Sun', 'Tears of Arlyxir', ]] 'Tears of Ro', 'Tears of Solusek', 'Lava Storm', 'Firestorm' },                              Options = { opt = 'USEAOE'} },
+    { Group = 'icerain',     Spells = { 'Gelid Rains', 'Tears of Marr', 'Tears of Prexus', 'Frost Storm', 'Icestrike' },                                                            Options = { opt = 'USEAOE' } },
     { Group = 'weave',       Spells = { 'Mana Weave' },                                                                                                                             Options = { Gem = function(
         lvl) return lvl <= 70 and 5 end, condition = function() return not mq.TLO.Me.Buff('Weave of Power')() and
         not mq.TLO.Me.Song('Weave of Power')() end } },
-    { Group = 'pbaelightning', Spells = { 'Circle of Thunder', 'Jyll\'s Static Pulse', 'Cast Force', 'Project Lightning' },                                                         Options = { opt = 'USEAOE', Gem = 6, condition = function() return (mq.TLO.Target.Distance3D() or 100) <
+    { Group = 'pbaelightning', Spells = { 'Circle of Thunder', 'Jyll\'s Static Pulse', 'Cast Force', 'Project Lightning' },                                                         Options = { opt = 'USEAOE', condition = function() return (mq.TLO.Target.Distance3D() or 100) <
         45 and state.mobCountNoPets > 2 end } },
-    { Group = 'pbaeice',     Spells = { --[['Winds of Gelid', ]] 'Jyll\'s Zephyr of Ice', 'Numbing Cold' },                                                                         Options = { opt = 'USEAOE', Gem = 7, condition = function() return (mq.TLO.Target.Distance3D() or 100) <
+    { Group = 'pbaeice',     Spells = { --[['Winds of Gelid', ]] 'Jyll\'s Zephyr of Ice', 'Numbing Cold' },                                                                         Options = { opt = 'USEAOE', condition = function() return (mq.TLO.Target.Distance3D() or 100) <
         45 and state.mobCountNoPets > 2 end } },
-    { Group = 'pbaefire',    Spells = { --[['Circle of Fire', ]] 'Jyll\'s Wave of Heat', 'Fingers of Fire' },                                                                       Options = { opt = 'USEAOE', Gem = 8, condition = function() return (mq.TLO.Target.Distance3D() or 100) <
+    { Group = 'pbaefire',    Spells = { --[['Circle of Fire', ]] 'Jyll\'s Wave of Heat', 'Fingers of Fire' },                                                                       Options = { opt = 'USEAOE', condition = function() return (mq.TLO.Target.Distance3D() or 100) <
         45 and state.mobCountNoPets > 2 end } },
 
     { Group = 'harvest',     Spells = { 'Harvest' },                                                                                                                                Options = { Gem = 9, opt = 'USEHARVEST', condition = function() return not
         state.burn_active end } },
-    { Group = 'rune',        Spells = { 'Ether Skin' },                                                                                                                             Options = { selfbuff = true, Gem = 10 } },
+    { Group = 'rune',        Spells = { 'Ether Skin' },                                                                                                                             Options = { selfbuff = true} },
     { Group = 'dispel',      Spells = { 'Annul Magic', 'Nullify Magic', 'Cancel Magic' },                                                                                           Options = { debuff = true, dispel = true, opt = 'USEDISPEL', } }, -- Gem=11}},
     { Group = 'hpbuff',      Spells = { 'Ether Shield', 'Greater Shielding', 'Major Shielding', 'Shielding', 'Lesser Shielding', 'Minor Shielding' },                               Options = { selfbuff = true } },
 
     { Group = 'largeice',    Spells = { 'Gelidin Comet', 'Ice Meteor', 'Ice Comet' },                                                                                               Options = {} }, -- Gem=3
     { Group = 'smallice',    Spells = { 'Claw of Vox', 'Spark of Ice', 'Claw of Frost', 'Ice Shock', 'Frost Shock', 'Shock of Ice', 'Blast of Cold' },                              Options = {} }, -- Gem=1
-    { Group = 'fastice',     Spells = { 'Ancient: Spear of Gelaqua', 'Black Ice', 'Ice Spear of Solist', 'Draught of E`ci', 'Draught of Ice' },                                     Options = { Gem = 11 } }, -- Gem=2
+    { Group = 'fastice',     Spells = { 'Ancient: Spear of Gelaqua', 'Black Ice', 'Ice Spear of Solist', 'Draught of E`ci', 'Draught of Ice' },                                     Options = {} }, -- Gem=2
     { Group = 'lureice',     Spells = { 'Icebane', 'Lure of Ice', 'Lure of Frost' },                                                                                                Options = {} }, -- Gem=12
     -- {Group='targetpbaeice', Spells={'Retribution of Al\'Kabor', 'Wrath of Al\'Kabor', 'Frost Spiral of Al\'Kabor', 'Column of Frost'}, Options={opt='USEAOE', Gem=3}},
 
@@ -88,7 +88,7 @@ Wizard.SpellLines = {
 Wizard.compositeNames = { ['Ecliptic Fire'] = true, ['Composite Fire'] = true, ['Dissident Fire'] = true,
     ['Dichotomic Fire'] = true, }
 Wizard.allDPSSpellGroups = { 'weave', 'weavenuke', 'largefire', 'largeice', 'smallfire', 'smallice', 'firefire',
-    'fastice', 'lurefire', 'lureice', 'lightning', 'stun', 'swarm', 'firerain', 'icerain', 'lightningrain', 'aetrap',
+    'fastice', 'fastfire','lurefire', 'lureice', 'lightning', 'stun', 'swarm', 'firerain', 'icerain', 'lightningrain', 'aetrap',
     'pbaefire', --[['targetpbaefire', ]] 'pbaeice', --[['targetpbaeice', ]] 'pbaelightning', --[['targetpbaelightning']] }
 
 Wizard.Abilities = {
