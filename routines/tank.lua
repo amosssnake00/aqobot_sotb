@@ -38,6 +38,7 @@ function IsPcPet(mob)
         if potentialOwnerName and potentialOwnerName ~= "" then
             -- Check if the potential owner is a PC or NPC
             if mq.TLO.Spawn(potentialOwnerName).Type() == 'PC' then
+                logger.debug(logger.flags.routines.tank, 'owner of target is a PC!')
                 return true
             else
                 return false
@@ -71,8 +72,13 @@ function tank.findMobToTank()
         -- No mobs present to tank
         return false
     end
-    if state.tankMobID > 0 and mq.TLO.Target() and mq.TLO.Target.Type() ~= 'Corpse' and state.tankMobID == mq.TLO.Target.ID() and not IsPcPet(mq.TLO.Target) then
+    if state.tankMobID > 0 and mq.TLO.Target() and mq.TLO.Target.Type() ~= 'Corpse' and state.tankMobID == mq.TLO.Target.ID() then
         -- Already actively tanking a mob
+        if IsPcPet(mq.TLO.Target) then
+            mq.cmd('/mqtarget clear')
+            state.tankMobID = 0
+            logger.debug(logger.flags.routines.tank, 'Cleared target due to pet on target')
+        end
         tank.stickToMob()
         if not mq.TLO.Me.Combat() then mq.cmd('/attack on') end
         return false
