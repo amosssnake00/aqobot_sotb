@@ -227,45 +227,12 @@ local function validatePull(pull_spawn, path_len, zone_sn)
     end
 end
 
--- Helper Function: Extract the owner's name from the corpse
-local function getCorpseOwner(corpse)
-    local owner = corpse.Owner() or ""
-    if owner == "" then
-        local name = corpse.Name() or ""
-        owner = name:match("^(.-)'s corpse")
-    end
-    return owner or "Unknown"
-end
-
-
-
 
 --local medding = false
 local healers = { CLR = true, DRU = true, SHM = true }
 local holdPullTimer = timer:new(5000)
 local holdPulls = false
 function pull.checkPullConditions()
-    if config.get('WAITFORCORPSES') and mq.TLO.SpawnCount('pccorpse radius ' .. config.get('CAMPRADIUS') .. ' zradius 40')() > 0 then
-        logger.debug(logger.flags.routines.pull, ('checking corpses!'))
-        local pcCorpses = mq.getFilteredSpawns(function(spawn)
-            if spawn.Type() == "Corpse" and spawn.Distance() <= config.get('CAMPRADIUS') then
-                local owner = getCorpseOwner(spawn)
-                if owner ~= "Unknown" and (mq.TLO.Group.Member(owner)() or mq.TLO.Raid.Member(owner)()) or mq.TLO.DanNet(owner)() then
-                    logger.debug(logger.flags.routines.pull, ('Associated PC Corpse found: '):format(owner))
-                    return true
-                end
-            end
-            return false
-        end)
-        if pcCorpses and #pcCorpses > 0 then
-            if not holdPulls then
-                holdPullTimer:reset()
-                holdPulls = true
-            end
-            return false
-        end
-    end
-
     if config.get('GROUPSTAYCLOSE') and mq.TLO.Group.Members() then
         for i = 1, mq.TLO.Group.Members() do
             local member = mq.TLO.Group.Member(i)
@@ -318,27 +285,15 @@ function pull.checkPullConditions()
                     return false
                 elseif healers[member.Class.ShortName()] and config.get('GROUPWATCHWHO') == 'healer' and pctmana then
                     if pcthp < config.get('MEDHPSTOP') and state.groupWatchWaiting then
-                        if mq.TLO.Target.ID ~= member.ID() then
-                            member.DoTarget() -- yay for reliable hp/mana updates on emu :-/
-                        end
                         return false
                     end
                     if pctmana < config.get('MEDMANASTOP') and state.groupWatchWaiting then
-                        if mq.TLO.Target.ID ~= member.ID() then
-                            member.DoTarget()
-                        end
                         return false
                     end
                     if pctmana < config.get('MEDMANASTART') then
-                        if mq.TLO.Target.ID ~= member.ID() then
-                            member.DoTarget()
-                        end
                         state.groupWatchWaiting = true
                         return false
                     elseif pcthp < config.get('MEDHPSTART') then
-                        if mq.TLO.Target.ID ~= member.ID() then
-                            member.DoTarget()
-                        end
                         state.groupWatchWaiting = true
                         return false
                     end
@@ -414,8 +369,8 @@ function pull.pullRadar()
         local zone_sn = mq.TLO.Zone.ShortName()
         for i = 1, pull_radius_count do
             -- try not to iterate through the whole world if there's a pretty large pull radius
-            if i > config.get('MOBSEVAL') then
-                logger.debug(logger.flags.routines.pull, ('too many mobs %s > MobsEval!'):format(pull_radius_count))
+            if i > 100 then
+                logger.debug(logger.flags.routines.pull, ('too many mobs %s > 100!'):format(pull_radius_count))
                 break
             end
             local mob
@@ -474,7 +429,7 @@ local function getPullRange()
         if not class.pullSpell then
             return melee_range
         else
-            return class.pullSpell.MyRange()
+            return class.pullSpell.Range()
         end
     elseif pullWith == 'item' then
         if #class.pullClickies == 0 then return melee_range end
@@ -532,7 +487,7 @@ local function pullNavToMob(pull_spawn, announce_pull)
         logger.info('Pulling \at%s\ax (\at%s\ax)', pull_spawn.CleanName(), pull_spawn.ID())
     end
     -- TODO: find proper pullability range and check for that - safety margin
-    if ((helpers.distance(mq.TLO.Me.X(), mq.TLO.Me.Y(), mob_x, mob_y) > 100) and config.get('PULLWITH') == 'melee') or (config.get('PULLWITH') ~= 'melee' and (not pull_spawn.LineOfSight() or pull_spawn.Distance3D() > (pullRange - 30))) then
+    if ((helpers.distance(mq.TLO.Me.X(), mq.TLO.Me.Y(), mob_x, mob_y) > 100) and config.get('PULLWITH') == 'melee') or (config.get('PULLWITH') ~= 'melee' and (not pull_spawn.LineOfSight() or pull_spawn.Distance3D() > (pullRange -30))) then
         logger.debug(logger.flags.routines.pull, 'Moving to pull target (\at%s\ax)', state.pullMobID)
         -- TODO: set timeout as parameter - handling for some areas where xtarget aggro detection seemed not to work
         --movement.navToSpawn('id ' .. state.pullMobID, 'dist=5', 1000)
@@ -802,7 +757,6 @@ function pull.pullMob()
         if pullApproaching(pull_spawn) then
             -- movement stopped, either spawn became invalid, we're in range, or other stuff agro'd
             state.pullStatus = constants.pullStates.ENGAGING
-            movement.stop()
             return --ams test
         end
     elseif pull_state == constants.pullStates.ENGAGING then

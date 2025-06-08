@@ -69,7 +69,6 @@ constants.bufflines = {
     { key = 'FEROCITY',  label = 'Ferocity (Bst)',                category = 'Stats' },
     { key = 'WOLF',      label = 'Pact of Wolf (Shm)',            category = 'Stats' },
     { key = 'STR',       label = 'Strength',                      category = 'Stats' },
-    { key = 'STA',       label = 'Stamina',                       category = 'Stats' },
     { key = 'CHA',       label = 'Charisma',                      category = 'Stats' },
     { key = 'DEX',       label = 'Dexterity',                     category = 'Stats' },
     { key = 'AGI',       label = 'Agility',                       category = 'Stats' },
@@ -100,7 +99,6 @@ constants.bufflines = {
     { key = 'RESMAGIC',  label = 'Resist Magic',                  category = 'Resists' },
     { key = 'RESPOI',    label = 'Resist Poison',                 category = 'Resists' },
     { key = 'RESCORR',   label = 'Resist Corruption',             category = 'Resists' },
-    { key = 'RESDRPR',   label = 'Resist Disease+Poison',         category = 'Resists' },
 }
 constants.buffcategories = { 'Standard', 'Stats', 'Utility', 'Short Term Buffs', 'Resists' }
 -- Class buff beg defaults

@@ -324,7 +324,7 @@ Warrior.Abilities = {
                     conditions.withinMeleeDistance()
             end
         }
-    }, -- once Slam working, use { and not string.find("Ogre Troll Vah Shir Barbarian", mq.TLO.Me.Race()) } in the condition to select slam or kick
+    },
     {
         Type = 'Skill',
         Name = 'Kick',

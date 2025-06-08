@@ -305,28 +305,6 @@ ShadowKnight.Abilities = {
         Name = 'Taunt',
         Options = { tanking = true, aggro = true, condition = conditions.lowAggroInMelee }
     },
-    {
-        Type = 'Skill',
-        Name = 'Bash',
-        Options = {
-            dps = true,
-            condition = function()
-                return mq.TLO.Me.Inventory('offhand').Type() == 'Shield' and
-                    conditions.withinMeleeDistance()
-            end
-        }
-    },
-    {
-        Type = 'Skill',
-        Name = 'Kick',
-        Options = {
-            dps = true,
-            condition = function()
-                return mq.TLO.Me.Inventory('offhand').Type() ~= 'Shield' and
-                    conditions.withinMeleeDistance()
-            end
-        }
-    },
     { -- mash, 90% melee/spell dmg mitigation, 2 ticks or 85k dmg
         Type = 'Disc',
         Group = 'repudiate',

@@ -136,13 +136,8 @@ Shaman.SpellLines = {
     { -- DPS spellset. Disease DoT. Slot 1
         Group = 'maladydot',
         Spells = { 'Uncia\'s Malady', 'Cruor\'s Malady', 'Malvus\'s Malady', 'Hoshkar\'s Malady', 'Sephry\'s Malady', --[[emu cutoff]] 'Scourge', 'Affliction', 'Sicken' },
-        Options = {
-            opt = 'USEDOTS',
-            Gem = function(lvl)
-                return (lvl <= 60 and 5) or
-                    (Shaman:get('SPELLSET') == 'dps' and 1) or nil
-            end
-        }
+        Options = { opt = 'USEDOTS', Gem = function(lvl) return (lvl <= 60 and 5) or
+            (Shaman:get('SPELLSET') == 'dps' and 1) or nil end }
     },
     { -- group HoT. Slot 2
         Group = 'grouphot',
@@ -161,10 +156,8 @@ Shaman.SpellLines = {
         Options = {
             -- heal=true, tank=true,
             opt = 'USENUKES',
-            Gems = { 4, function()
-                return Shaman:get('SPELLSET') ~= 'dps' and not Shaman:isEnabled('USEGROWTH') and 6 or
-                    nil
-            end },
+            Gems = { 4, function() return Shaman:get('SPELLSET') ~= 'dps' and not Shaman:isEnabled('USEGROWTH') and 6 or
+                nil end },
             -- precast = function() mq.cmdf('/mqtar id %s', mq.TLO.Group.MainTank.ID() or config.get('CHASETARGET')) end
         },
     },
@@ -181,26 +174,14 @@ Shaman.SpellLines = {
     { -- disease dot. Not used directly, only by combo spell. Combo spell comes in non-level increase expansions. (pendemiccombo)
         Group = 'breathdot',
         Spells = { 'Breath of the Hotariton', 'Breath of the Tegi', 'Breath of Bledrek', 'Breath of Elkikatar', 'Breath of Hemocoraxius', --[[emu cutoff]] 'Breath of Wunshi' },
-        Options = {
-            opt = 'USEDOTS',
-            Gem = function(lvl)
-                return (not Shaman:get('USEDISPEL') and lvl <= 70 and 5) or
-                    (lvl <= 70 and 12) or (not Shaman.spells.pandemiccombo and Shaman:get('SPELLSET') == 'dps' and 5) or
-                    nil
-            end
-        }
+        Options = { opt = 'USEDOTS', Gem = function(lvl) return (not Shaman:get('USEDISPEL') and lvl <= 70 and 5) or
+            (lvl <= 70 and 12) or (not Shaman.spells.pandemiccombo and Shaman:get('SPELLSET') == 'dps' and 5) or nil end }
     },
     { -- temp hp buff. Slot 6
         Group = 'growth',
         Spells = { 'Overwhelming Growth', 'Fervent Growth', 'Frenzied Growth', 'Savage Growth', 'Ferocious Growth' },
-        Options = {
-            opt = 'USEGROWTH',
-            Gem = function()
-                return Shaman:get('SPELLSET') ~= 'dps' and
-                    not Shaman:isEnabled('MEMCUREALL') and 6 or nil
-            end,
-            emu = false
-        }
+        Options = { opt = 'USEGROWTH', Gem = function() return Shaman:get('SPELLSET') ~= 'dps' and
+            not Shaman:isEnabled('MEMCUREALL') and 6 or nil end, emu = false }
     },
     { -- cure all. Slot 6
         Group = 'cureall',
@@ -215,28 +196,15 @@ Shaman.SpellLines = {
     { -- DPS spellset. Slot 7
         Group = 'poisonnuke',
         Spells = { 'Red Eye\'s Spear of Venom', 'Fleshrot\'s Spear of Venom', 'Narandi\'s Spear of Venom', 'Nexona\'s Spear of Venom', 'Serisaria\'s Spear of Venom', 'Yoppa\'s Spear of Venom', 'Spear of Torment', 'Shock of the Tainted' },
-        Options = {
-            opt = 'USENUKES',
-            Gem = function(lvl)
-                return (lvl <= 70 and 3) or
-                    (Shaman:get('SPELLSET') ~= 'standard' and 7) or nil
-            end
-        }
+        Options = { opt = 'USENUKES', Gem = function(lvl) return (lvl <= 70 and 3) or
+            (Shaman:get('SPELLSET') ~= 'standard' and 7) or nil end }
     },
     { -- Lvl 100+ main heal. Slot 8, 9, 10
         Group = 'reckless',
         NumToPick = 3,
         Spells = { 'Reckless Reinvigoration', 'Reckless Resurgence', 'Reckless Renewal', 'Reckless Rejuvenation', 'Reckless Regeneration' },
-        Options = {
-            Gems = { 8, function() return Shaman:get('SPELLSET') ~= 'dps' and 9 or nil end, function()
-                return
-                    Shaman:get('SPELLSET') == 'standard' and 10 or nil
-            end },
-            panic = true,
-            regular = true,
-            tank = true,
-            emu = false
-        }
+        Options = { Gems = { 8, function() return Shaman:get('SPELLSET') ~= 'dps' and 9 or nil end, function() return
+            Shaman:get('SPELLSET') == 'standard' and 10 or nil end }, panic = true, regular = true, tank = true, emu = false }
     },
     { -- Below lvl 100 main heal. Slot 8
         Group = 'heal',
@@ -251,24 +219,14 @@ Shaman.SpellLines = {
     { -- lesser poison dot. Not used directly. only by combo spell. (chaotic)
         Group = 'nectardot',
         Spells = { 'Nectar of Obscurity', 'Nectar of Destitution', 'Nectar of Misery', 'Nectar of Suffering', 'Nectar of Woe', 'Nectar of Pain', --[[emu cutoff]] 'Venom of the Snake', 'Envenomed Breath', 'Tainted Breath' },
-        Options = {
-            opt = 'USEDOTS',
-            Gem = function(lvl)
-                return (lvl <= 60 and 6) or (lvl <= 70 and 9) or
-                    (not Shaman.spells.malodot and Shaman:get('SPELLSET') == 'dps' and 9) or nil
-            end
-        }
+        Options = { opt = 'USEDOTS', Gem = function(lvl) return (lvl <= 60 and 6) or (lvl <= 70 and 9) or
+            (not Shaman.spells.malodot and Shaman:get('SPELLSET') == 'dps' and 9) or nil end }
     },
     { -- DPS spellset. curse DoT. Slot 10
         Group = 'cursedot',
         Spells = { 'Fandrel\'s Curse', 'Lenrel\'s Curse', 'Marlek\'s Curse', 'Erogo\'s Curse', 'Sraskus\' Curse', 'Curse of Sisslak', 'Curse' },
-        Options = {
-            opt = 'USEDOTS',
-            Gem = function(lvl)
-                return (lvl <= 70 and 10) or
-                    (Shaman:get('SPELLSET') ~= 'standard' and 10) or nil
-            end
-        }
+        Options = { opt = 'USEDOTS', Gem = function(lvl) return (lvl <= 70 and 10) or
+            (Shaman:get('SPELLSET') ~= 'standard' and 10) or nil end }
     },
     { -- splash, easiest to cast on self, requires los. Slot 11
         Group = 'splash',
@@ -283,13 +241,8 @@ Shaman.SpellLines = {
     { -- Hybrid spellset. Slot 11
         Group = 'icenuke',
         Spells = { 'Ice Barrage', 'Heavy Sleet', 'Ice Salvo', 'Ice Shards', 'Ice Squall', --[[emu cutoff]] 'Dire Avalanche', 'Winder\'s Roar', 'Frost Strike', 'Spirit Strike', 'Frost Rift', 'Burst of Flame' },
-        Options = {
-            opt = 'USENUKES',
-            Gem = function(lvl)
-                return (lvl <= 60 and 3) or
-                    (Shaman:get('SPELLSET') ~= 'standard' and not Shaman:isEnabled('USESPLASH') and 11) or nil
-            end
-        }
+        Options = { opt = 'USENUKES', Gem = function(lvl) return (lvl <= 60 and 3) or
+            (Shaman:get('SPELLSET') ~= 'standard' and not Shaman:isEnabled('USESPLASH') and 11) or nil end }
     },
     { -- stacks with HoT but overwrites regen, blocked by dots. Slot 12
         Group = 'composite',
@@ -299,26 +252,16 @@ Shaman.SpellLines = {
     { -- Combo 2x DoTs + 1-2 nukes. Slot 13 (heal) or 6 (dps)
         Group = 'chaotic',
         Spells = { 'Chaotic Toxin', 'Chaotic Venin', 'Chaotic Poison', 'Chaotic Venom' },
-        Options = {
-            Gem = function()
-                return ((Shaman:get('SPELLSET') == 'standard' or not Shaman:isEnabled('USEALLIANCE')) and 13) or
-                    (Shaman:get('SPELLSET') == 'dps' and not Shaman:isEnabled('MEMCUREALL') and 6) or nil
-            end,
-            emu = false
-        }
+        Options = { Gem = function() return ((Shaman:get('SPELLSET') == 'standard' or not Shaman:isEnabled('USEALLIANCE')) and 13) or
+            (Shaman:get('SPELLSET') == 'dps' and not Shaman:isEnabled('MEMCUREALL') and 6) or nil end, emu = false }
     },
     { -- greater poison dot. Not used directly. only by combo spell. (chaotic)
         Group = 'blooddot',
         Spells = { 'Caustic Blood', 'Desperate Vampyre Blood', 'Restless Blood', 'Scorpikis Blood', 'Reef Crawler Blood', 'Blood of Yoppa' },
-        Options = {
-            opt = 'USEDOTS',
-            Gem = function(lvl)
-                return (not Shaman:get('USECRIPPLE') and lvl == 70 and 6) or
-                    (not Shaman.spells.chaotic and (Shaman:get('SPELLSET') == 'standard' or not Shaman:isEnabled('USEALLIANCE')) and 13) or
-                    (not Shaman.spells.chaotic and Shaman:get('SPELLSET') == 'dps' and not Shaman:isEnabled('MEMCUREALL') and 6) or
-                    nil
-            end
-        }
+        Options = { opt = 'USEDOTS', Gem = function(lvl) return (not Shaman:get('USECRIPPLE') and lvl == 70 and 6) or
+            (not Shaman.spells.chaotic and (Shaman:get('SPELLSET') == 'standard' or not Shaman:isEnabled('USEALLIANCE')) and 13) or
+            (not Shaman.spells.chaotic and Shaman:get('SPELLSET') == 'dps' and not Shaman:isEnabled('MEMCUREALL') and 6) or
+            nil end }
     },
     { -- keep up on tank, proc ae heal from target. Slot 13
         Group = 'alliance',
@@ -328,67 +271,25 @@ Shaman.SpellLines = {
 
     -- TODO: Need to work these spells into places they can be used
     -- self buff, proc heal when hit
-    { Group = 'selfprocheal', Spells = { 'Watchful Spirit', 'Attentive Spirit', 'Responsive Spirit' },                          Options = { selfbuff = true } },
+    { Group = 'selfprocheal', Spells = { 'Watchful Spirit', 'Attentive Spirit', 'Responsive Spirit' },                    Options = { selfbuff = true } },
     -- Cures
-    { Group = 'cure',         Spells = { 'Disinfecting Aura', 'Blood of Nadox' },                                               Options = { cure = true, all = true } },
-    { Group = 'rgc',          Spells = { 'Remove Greater Curse', 'Remove Curse', 'Remove Lesser Curse', 'Remove Minor Curse' }, Options = { cure = true, Curse = true } },
+    { Group = 'cure',       Spells = { 'Disinfecting Aura', 'Blood of Nadox' },                                           Options = { cure = true, all = true } },
+    { Group = 'rgc',        Spells = { 'Remove Greater Curse', 'Remove Curse', 'Remove Lesser Curse', 'Remove Minor Curse' }, Options = { cure = true, Curse = true } },
 
     -- TODO: cleanup Leftover EMU specific stuff
-    { Group = 'torpor',       Spells = { 'Transcendent Torpor' },                                                               Options = { alias = 'TORPOR', hot = true, opt = 'USEHOT' } },
+    { Group = 'torpor',     Spells = { 'Transcendent Torpor' },                                                           Options = { alias = 'TORPOR', hot = true, opt = 'USEHOT' } },
     -- {Group='hot', Spells={'Celestial Health', 'Celestial Remedy'}, Options={}},
-    {
-        Group = 'idol',
-        Spells = { 'Idol of Malos' },
-        Options = {
-            opt = 'USEDEBUFF',
-            debuff = true,
-            condition = function()
-                return
-                    mq.TLO.Spawn('Spirit Idol')() ~= nil
-            end
-        }
-    },
-    {
-        Group = 'dispel',
-        Spells = { 'Abashi\'s Disempowerment', 'Cancel Magic' },
-        Options = {
-            opt = 'USEDISPEL',
-            debuff = true,
-            Gem = function(
-                lvl)
-                return Shaman:isEnabled('USEDISPEL') and lvl <= 70 and 5 or nil
-            end
-        }
-    },
-    {
-        Group = 'debuff',
-        Spells = { 'Crippling Spasm', 'Listless Power', 'Disempower' },
-        Options = {
-            opt = 'USECRIPPLE',
-            debuff = true,
-            Gem = function(
-                lvl)
-                return state.emu and Shaman:isEnabled('USECRIPPLE') and 6 or nil
-            end,
-            condition = function()
-                return mq.TLO
-                    .SpawnCount('pc class enchanter radius 100')() == 0 and mq.TLO.Target.Named()
-            end
-        }
-    },
-    { Group = 'disdebuff', Spells = { 'Insidious Malady', 'Insidious Fever' },                                                                                            Options = { opt = 'USEDEBUFF', debuff = true } },
+    { Group = 'idol',       Spells = { 'Idol of Malos' },                                                                 Options = { opt = 'USEDEBUFF', debuff = true, condition = function() return
+        mq.TLO.Spawn('Spirit Idol')() ~= nil end } },
+    { Group = 'dispel',     Spells = { 'Abashi\'s Disempowerment', 'Cancel Magic' },                                      Options = { opt = 'USEDISPEL', debuff = true, Gem = function(
+        lvl) return Shaman:isEnabled('USEDISPEL') and lvl <= 70 and 5 or nil end } },
+    { Group = 'debuff',     Spells = { 'Crippling Spasm', 'Listless Power', 'Disempower' },                               Options = { opt = 'USECRIPPLE', debuff = true, Gem = function(
+        lvl) return state.emu and Shaman:isEnabled('USECRIPPLE') and 6 or nil end, condition = function() return mq.TLO
+        .SpawnCount('pc class enchanter radius 100')() == 0 and mq.TLO.Target.Named() end } },
+    { Group = 'disdebuff',  Spells = { 'Insidious Malady', 'Insidious Fever' },                                           Options = { opt = 'USEDEBUFF', debuff = true } },
     -- EMU special: Ice Age nuke has 25% chance to proc slow
-    {
-        Group = 'slownuke',
-        Spells = { 'Ice Age' },
-        Options = {
-            opt = 'USENUKES',
-            Gem = function(
-                lvl)
-                return mq.TLO.FindItem('Forsaken Jaundiced Bone Bracer')() and 2 or nil
-            end
-        }
-    },
+    { Group = 'slownuke',   Spells = { 'Ice Age' },                                                                       Options = { opt = 'USENUKES', Gem = function(
+        lvl) return mq.TLO.FindItem('Forsaken Jaundiced Bone Bracer')() and 2 or nil end } },
 
     -- Debuffs
     { -- Malo spell line. AA malo is Malosinete
@@ -396,19 +297,9 @@ Shaman.SpellLines = {
         Spells = { 'Malosinera', 'Malosinetra', 'Malosinara', 'Malosinata', 'Malosenete', --[[emu cutoff]] 'Malosi', 'Malaisement', 'Malaise' },
         Options = { Gem = function(lvl) return lvl <= 60 and 1 or nil end, opt = 'USEDEBUFF', debuff = true }
     },
-    {
-        Group = 'slow',
-        Spells = { 'Balance of Discord', 'Cloud of Grummus', 'Turgur\'s Insects', 'Togor\'s Insects', 'Tagar\'s Insects', 'Walking Sleep', 'Drowsy' },
-        Options = {
-            Gem = function(
-                lvl)
-                return lvl <= 60 and 2 or nil
-            end,
-            debuff = true,
-            opt = 'USESLOW'
-        }
-    },
-    { Group = 'slowaoe',   Spells = { 'Rimeclaw\'s Drowse', 'Aten Ha Ra\'s Drowse', 'Amontehepna\'s Drowse', 'Erogo\'s Drowse', 'Sraskus\' Drowse', 'Tigir\'s Insects' }, Options = { debuff = true, opt = 'USESLOWAOE' } },
+    { Group = 'slow',  Spells = { 'Cloud of Grummus', 'Turgur\'s Insects', 'Togor\'s Insects', 'Tagar\'s Insects', 'Walking Sleep', 'Drowsy' },                  Options = { Gem = function(
+        lvl) return lvl <= 60 and 2 or nil end, debuff = true, opt = 'USESLOW' } },
+    { Group = 'slowaoe', Spells = { 'Rimeclaw\'s Drowse', 'Aten Ha Ra\'s Drowse', 'Amontehepna\'s Drowse', 'Erogo\'s Drowse', 'Sraskus\' Drowse', 'Tigir\'s Insects' }, Options = { debuff = true, opt = 'USESLOWAOE' } },
 
     -- Extra DoTs just used by combo spells
     { -- disease dot. Not used directly, only by combo spell. (pendemiccombo)
@@ -423,43 +314,13 @@ Shaman.SpellLines = {
     },
 
     -- Buffs
-    {
-        Group = 'proc',
-        Spells = { 'Spirit of the Panther', 'Spirit of the Leopard', 'Spirit of the Jaguar' },
-        Options = {
-            alias = 'MELEEPROC',
-            classes = { MNK = true, BER = true, ROG = true, BST = true, WAR = true, PAL = true, SHD = true },
-            singlebuff = true,
-            condition = function()
-                return not
-                    mq.TLO.FindItem('Imbued Rune of the Panther')() and not Shaman.spells.panther
-            end
-        }
-    },
+    { Group = 'proc',   Spells = { 'Spirit of the Panther', 'Spirit of the Leopard', 'Spirit of the Jaguar' }, Options = { alias = 'MELEEPROC', classes = { MNK = true, BER = true, ROG = true, BST = true, WAR = true, PAL = true, SHD = true }, singlebuff = true, condition = function() return not
+        mq.TLO.FindItem('Imbued Rune of the Panther')() and not Shaman.spells.panther end } },
     -- define group panther after normal panther so alias prefers group spell
-    {
-        Group = 'panther',
-        Spells = { 'Talisman of the Panther' },
-        Options = {
-            alias = 'MELEEPROC',
-            selfbuff = function()
-                return not
-                    mq.TLO.FindItem('Imbued Rune of the Panther')() and true or false
-            end
-        }
-    },
-    {
-        Group = 'champion',
-        Spells = { 'Champion', 'Ferine Avatar' },
-        Options = {
-            Gem = function(
-                lvl)
-                return not mq.TLO.FindItem('Forsaken Jaundiced Bone Bracer')() and lvl <= 70 and 2 or nil
-            end,
-            alias = not mq.TLO.FindItem('Forsaken Jaundiced Bone Bracer')() and 'CHAMPION',
-            combatbuffothers = true
-        }
-    },
+    { Group = 'panther', Spells = { 'Talisman of the Panther' },                                           Options = { alias = 'MELEEPROC', selfbuff = function() return not
+        mq.TLO.FindItem('Imbued Rune of the Panther')() and true or false end } },
+    { Group = 'champion', Spells = { 'Champion', 'Ferine Avatar' },                                        Options = { Gem = function(
+        lvl) return not mq.TLO.FindItem('Forsaken Jaundiced Bone Bracer')() and lvl <= 70 and 2 or nil end, alias = not mq.TLO.FindItem('Forsaken Jaundiced Bone Bracer')() and 'CHAMPION', combatbuffothers = true } },
 
     -- {
     --     Group='groupevasion',
@@ -504,40 +365,13 @@ Shaman.SpellLines = {
     },
 
     -- Utility
-    {
-        Group = 'canni',
-        Spells = { 'Pained Memory', 'Cannibalize IV', 'Cannibalize III', 'Cannibalize II', 'Cannibalize' },
-        Options = {
-            Gem = function(
-                lvl)
-                return lvl <= 70 and 8 or nil
-            end,
-            recover = true,
-            mana = true,
-            threshold = 70,
-            combat = false,
-            endurance = false,
-            minhp = 50,
-            ooc = false
-        }
-    },
-    {
-        Group = 'pet',
-        Spells = { 'Farrel\'s Companion', 'Commune with the Wild', 'True Spirit', 'Frenzied Spirit', 'Vigilant Spirit', 'Companion Spirit' },
-        Options = {
-            opt = 'SUMMONPET',
-            postcast = function()
-                if Shaman.spells.pet.CastName == 'Commune with the Wild' and not PET_RACES[mq.TLO.Pet.Race.Name()] then
-                    mq.cmd('/pet leave')
-                else
-                    common.petClicky()
-                end
-            end
-        }
-    },
-    { Group = 'sow',       Spells = { 'Pack Shrew', 'Spirit of the Shrew', 'Spirit of Bih`Li', 'Spirit of Wolf' }, Options = { alias = 'SOW' } },
-    { Group = 'shrink',    Spells = { 'Shrink' },                                                                  Options = { alias = 'SHRINK' } },
-    { Group = 'petshrink', Spells = { 'Tiny Companion' },                                                          Options = {} },
+    { Group = 'canni',   Spells = { 'Cannibalize IV', 'Cannibalize III', 'Cannibalize II', 'Cannibalize' },                         Options = { Gem = function(
+        lvl) return lvl <= 70 and 8 or nil end, recover = true, mana = true, threshold = 70, combat = false, endurance = false, minhp = 50, ooc = false } },
+    { Group = 'pet',     Spells = { 'Commune with the Wild', 'True Spirit', 'Frenzied Spirit', 'Vigilant Spirit', 'Companion Spirit' }, Options = { opt = 'SUMMONPET', postcast = function() if Shaman.spells.pet.CastName == 'Commune with the Wild' and not PET_RACES[mq.TLO.Pet.Race.Name()] then
+            mq.cmd('/pet leave') else common.petClicky() end end } },
+    { Group = 'sow',     Spells = { 'Pack Shrew', 'Spirit of the Shrew', 'Spirit of Bih`Li', 'Spirit of Wolf' },                    Options = { alias = 'SOW' } },
+    { Group = 'shrink',  Spells = { 'Shrink' },                                                                                     Options = { alias = 'SHRINK' } },
+    { Group = 'petshrink', Spells = { 'Tiny Companion' },                                                                           Options = {} },
 
     --Call of the Ancients -- 5 minute duration ward AE healing
 
@@ -554,33 +388,28 @@ Shaman.SpellLines = {
     },
     { -- single dex buff
         Group = 'singledex',
-        Spells = { 'Mortal Deftness', 'Deftness', 'Rising Dexterity', 'Spirit of Monkey', 'Dexterous Aura' },
+        Spells = { 'Deftness', 'Rising Dexterity', 'Spirit of Monkey', 'Dexterous Aura' },
         Options = {}
     },
     { -- single str buff
         Group = 'singlestr',
-        Spells = { 'Spirit of Might', 'Furious Strength', 'Raging Strength', 'Spirit Strength', 'Talisman of the Beast', 'Strengthen' },
+        Spells = { 'Furious Strength', 'Raging Strength', 'Spirit Strength', 'Talisman of the Beast', 'Strengthen' },
         Options = {}
     },
     { -- group str buff
         Group = 'groupstr',
-        Spells = { 'Talisman of the Diaku', 'Tumultuous Strength' },
-        Options = { alias = 'STR' }
+        Spells = { 'Tumultuous Strength' },
+        Options = {}
     },
     { -- single agi buff
         Group = 'singleagi',
         Spells = { 'Nimble', 'Spirit of Cat', 'Feet like Cat' },
-        Options = { }
-    },
-    { -- group agi buff
-        Group = 'groupagi',
-        Spells = { 'Talisman of Sense' },
-        Options = { alias = 'AGI' }
+        Options = {}
     },
     { -- single sta buff
         Group = 'singlesta',
-        Spells = { 'Talisman of the Boar','Health', 'Spirit of Ox', 'Spirit of Bear' },
-        Options = { alias = 'STA' }
+        Spells = { 'Health', 'Spirit of Ox', 'Spirit of Bear' },
+        Options = {}
     },
     { -- single cha buff
         Group = 'singlecha',
@@ -612,12 +441,6 @@ Shaman.SpellLines = {
         Spells = { 'Quickness' },
         Options = {}
     },
-    {
-        Group = 'resistsdispois',
-        Spells = { 'Talisman of the Tribunal' },
-        Options = { alias = 'RESDISPOIS' }
-    },
-
     -- AE DPS, can be used in byos custom otherwise unused
     {
         Group = 'aedot',
@@ -636,12 +459,8 @@ Shaman.SpellLines = {
     }
 }
 
-Shaman.compositeNames = {
-    ['Ecliptic Roar'] = true,
-    ['Composite Roar'] = true,
-    ['Dissident Roar'] = true,
-    ['Roar of the Lion'] = true
-}
+Shaman.compositeNames = { ['Ecliptic Roar'] = true, ['Composite Roar'] = true, ['Dissident Roar'] = true,
+    ['Roar of the Lion'] = true }
 Shaman.allDPSSpellGroups = { 'maladydot', 'bitenuke', 'tcnuke', 'slownuke', 'pandemiccombo', 'breathdot', 'poisonnuke',
     'malodot', 'nectardot', 'cursedot',
     'icenuke', 'chaotic', 'blooddot', 'pandemicdot', 'afflictiondot', 'aedot', 'conenuke', 'rain' }

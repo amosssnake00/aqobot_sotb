@@ -335,7 +335,7 @@ function base:initSpellLines()
             if spells_from_db and #spells_from_db > 0 then
                 local num_picked = 0
                 local pick_limit = entry.selection_options.Limit or entry.selection_options.Pick or 1 -- Default to picking 1. Limit takes precedence if set by criteria.
-                                
+
                 -- If num_to_pick_explicit was set (from addNSpells) and no specific Pick/Limit in selection_options, use it.
                 if pick_limit == 1 and entry.num_to_pick_explicit and entry.num_to_pick_explicit > 1 then
                     pick_limit = entry.num_to_pick_explicit
@@ -350,7 +350,7 @@ function base:initSpellLines()
                     merged_options.Level = spell_data_from_db.level -- Override level from DB
                     -- Map other DB fields to fields expected by abilities.Spell:new() or that Ability:setSpellData() uses
                     merged_options.MyCastTime = spell_data_from_db.cast_time_ms
-                    merged_options.Duration = spell_data_from_db.duration_ticks 
+                    merged_options.Duration = spell_data_from_db.duration_ticks
                     merged_options.DurationTotalSeconds = spell_data_from_db.duration_seconds
                     merged_options.Mana = spell_data_from_db.mana_cost
                     -- Add any other direct mappings as needed based on abilities.Spell:new() and Ability:setSpellData()
@@ -381,7 +381,7 @@ function base:initSpellLines()
                         merged_options.TargetType = spell_data_from_db.target_type
                         merged_options.Skill = spell_data_from_db.skill
                         merged_options.MyRange = spell_data_from_db.range
-                        
+
                         -- If original_options had Gems table, try to assign a specific Gem
                         if entry.original_options and entry.original_options.Gems and entry.original_options.Gems[i] then
                             merged_options.Gem = entry.original_options.Gems[i]
@@ -398,7 +398,7 @@ function base:initSpellLines()
                 logger.warn(string.format("No spells found in database for group '%s' with given criteria.", entry.group))
                 -- Ensure the group exists as an empty table or nil if it was expected to be populated
                 -- If pick_limit > 1, it implies a table was expected.
-                if (entry.selection_options.Limit and entry.selection_options.Limit > 1) or 
+                if (entry.selection_options.Limit and entry.selection_options.Limit > 1) or
                    (entry.selection_options.Pick and entry.selection_options.Pick > 1) or
                    (entry.num_to_pick_explicit and entry.num_to_pick_explicit > 1) then
                     if not self.spells[entry.group] then self.spells[entry.group] = {} end
@@ -1458,7 +1458,7 @@ function base:checkMemmedSpells()
 
     local num_gems_total = mq.TLO.Me.NumGems() or 8
     local reserved_swap_gem_idx = state.swapGem -- This is now num_gems_total by default
-    
+
     local gem_assignments = {} -- Stores the target Ability object for each gem slot
     local gem_is_fixed = {}    -- Flags if a gem slot was explicitly assigned by a spell's .Gem property
 
@@ -1539,7 +1539,7 @@ function base:checkMemmedSpells()
     -- Memorization Execution
     for i = 1, num_gems_total do
         local spell_to_mem = gem_assignments[i]
-        
+
         if spell_to_mem and spell_to_mem.Name then -- Check if it's a valid spell object
             local current_spell_in_gem_tlo = mq.TLO.Me.Gem(i)
             local current_spell_name_in_gem = current_spell_in_gem_tlo.Name()
