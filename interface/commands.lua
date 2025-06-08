@@ -212,13 +212,13 @@ function commands.commandHandler(...)
                     if populate_ok then
                         logger.info("Spell DB: Population process finished.")
                     else
-                        logger.error("Spell DB: Population process encountered errors.")
+                        logger.info("Spell DB: Population process encountered errors.")
                     end
                 else
-                    logger.error("Spell DB: Initialization failed.")
+                    logger.info("Spell DB: Initialization failed.")
                 end
             else
-                logger.error("Spell DB: SQLite library not available. Cannot populate database.")
+                logger.info("Spell DB: SQLite library not available. Cannot populate database.")
             end
         else
             logger.info("Usage: /aqo spelldb populate [max_spell_id]")

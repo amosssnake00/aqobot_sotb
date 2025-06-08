@@ -1,3 +1,4 @@
+local mq = require('mq')
 local spelldb = {}
 
 -- Retry constants for database population
@@ -40,7 +41,6 @@ spelldb.COLUMNS = {
     ae_range          = "REAL",
     push_back         = "REAL",
     range             = "REAL",
-    hate_override     = "INTEGER",
     endurance_cost    = "INTEGER"
 }
 
@@ -149,7 +149,7 @@ function spelldb.populate_spell_database(max_spell_id)
         for id = 1, max_spell_id do
             local spell_tlo = mq.TLO.Spell(id)
 
-            if spell_tlo.IsValid() then
+            if spell_tlo then
                 local level = spell_tlo.Level()
                 if level == 255 or (level >= 1 and level <= 200) then -- Class spells (1-200) or AA/Disc spells (255)
                     local spell_data = {}
@@ -157,8 +157,8 @@ function spelldb.populate_spell_database(max_spell_id)
                     spell_data.name = spell_tlo.Name()
                     spell_data.level = level
                     spell_data.category = spell_tlo.Category()
-                    spell_data.subcategory = spell_tlo.SubCategory()
-                    spell_data.description = spell_tlo.Desc()
+                    spell_data.subcategory = spell_tlo.Subcategory()
+                    spell_data.description = spell_tlo.Description()
                     spell_data.target_type = spell_tlo.TargetType()
                     spell_data.cast_time_ms = spell_tlo.MyCastTime()
                     spell_data.duration_ticks = spell_tlo.Duration()
@@ -170,7 +170,6 @@ function spelldb.populate_spell_database(max_spell_id)
                     spell_data.ae_range = spell_tlo.AERange()
                     spell_data.push_back = spell_tlo.PushBack()
                     spell_data.range = spell_tlo.MyRange()
-                    spell_data.hate_override = spell_tlo.HateOverride()
                     spell_data.endurance_cost = spell_tlo.EnduranceCost()
                     
                     if not spell_data.name then
