@@ -379,6 +379,14 @@ local config = {
         tlo = 'PullMaxLevel',
         tlotype = 'int',
     },
+    MOBSEVAL = {
+        value = 100,
+        tip = 'The maximum amount of mobs to evaluate in pull radius',
+        label = 'Amount of mobs to check',
+        type = 'inputint',
+        tlo = 'MobsEval',
+        tlotype = 'int',
+    },
     GROUPWATCHWHO = {
         value = 'healer',
         tip = 'Who to watch mana/endurance for, to decide whether to hold pulls and med',
@@ -396,7 +404,14 @@ local config = {
         tlo = 'GroupStayClose',
         tlotype = 'bool',
     },
-
+    WAITFORCORPSES = {
+        value = false,
+        tip = 'Toggle whether puller should hold pulls if a group/raid/dannet member is dead nearby',
+        label = 'Wait for Corpses',
+        type = 'checkbox',
+        tlo = 'WaitForCorpses',
+        tlotype = 'bool',
+    },
     RECOVERPCT = {
         value = 70,
         tip = 'Percent mana or endurance to trigger recover abilities',
@@ -660,7 +675,7 @@ local configByCategory = {
     Assist = { 'MODE', 'ASSIST', 'AUTOASSISTAT', 'ASSISTNAMES', 'SWITCHWITHMA', 'STICKCOMMAND', 'RESISTSTOPCOUNT', 'NUKEMANAMIN', 'DOTMANAMIN' },
     Camp = { 'CAMPRADIUS', 'CAMPRETURN', 'CHASETARGET', 'CHASEDISTANCE', 'CHASESTOPDISTANCE', 'CHASEPAUSED' },
     Burn = { 'BURNALWAYS', 'BURNALLNAMED', 'BURNCOUNT', 'BURNPCT', 'USEGLYPH', 'USEINTENSITY' },
-    Pull = { 'PULLRADIUS', 'PULLPATH', 'PULLLOW', 'PULLHIGH', 'PULLMINLEVEL', 'PULLMAXLEVEL', 'PULLARC', 'GROUPWATCHWHO', 'GROUPSTAYCLOSE', 'PULLWITH', 'PULLLEVELPRIORITY' },
+    Pull = { 'PULLRADIUS', 'PULLPATH', 'PULLLOW', 'PULLHIGH', 'PULLMINLEVEL', 'PULLMAXLEVEL', 'PULLARC', 'GROUPWATCHWHO', 'GROUPSTAYCLOSE', 'WAITFORCORPSES','PULLWITH', 'PULLLEVELPRIORITY', 'MOBSEVAL' },
     Heal = { 'HEALPCT', 'PANICHEALPCT', 'HOTHEALPCT', 'GROUPHEALPCT', 'GROUPHEALMIN', 'XTARGETHEAL', 'REZGROUP', 'REZRAID', 'REZINCOMBAT', 'PRIORITYTARGET', 'INTERRUPTFULLHP', 'INTERRUPTFORHEALS', 'ANNOUNCEHEALS', 'ANNOUNCEDEATHS' },
     Tank = { 'MAINTANK', 'OFFTANK' },
     Rest = { 'MEDCOMBAT', 'RECOVERPCT', 'MEDHPSTART', 'MEDHPSTOP', 'MEDMANASTART', 'MEDMANASTOP', 'MEDENDSTART', 'MEDENDSTOP', 'MANASTONESTART', 'MANASTONESTARTHP', 'MANASTONESTOPHP', 'MANASTONETIME' },

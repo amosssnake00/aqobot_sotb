@@ -171,7 +171,7 @@ local function doLooting()
         logger.info('doLooting: Character is feigning, skipping loot.')
         return
     end
-    logger.info('doLooting: Entered function.')
+    -- logger.info('doLooting: Entered function.')
     -- if true then return end --the fuck you are looting the corpse unrezzed...again!
     local myCorpse = mq.TLO.Spawn('pccorpse ' .. mq.TLO.Me.CleanName() .. '\'s corpse radius 100')
     if mq.TLO.SpawnCount('pccorpse ' .. mq.TLO.Me.CleanName() .. '\'s corpse radius 100')() > 1 and reloadTimer:expired() then

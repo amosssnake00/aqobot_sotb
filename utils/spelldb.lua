@@ -1,3 +1,4 @@
+local mq = require('mq')
 local spelldb = {}
 
 -- Retry constants for database population
@@ -40,7 +41,6 @@ spelldb.COLUMNS = {
     ae_range          = "REAL",
     push_back         = "REAL",
     range             = "REAL",
-    hate_override     = "INTEGER",
     endurance_cost    = "INTEGER"
 }
 
@@ -111,7 +111,7 @@ function spelldb.populate_spell_database(max_spell_id)
     if not db then return false end
 
     max_spell_id = max_spell_id or 50000 -- Default to checking up to spell ID 50000
-
+    
     local attempts = 0
     local transaction_successful = false
     local total_spells_processed_across_retries = 0
@@ -126,7 +126,7 @@ function spelldb.populate_spell_database(max_spell_id)
         local spell_processing_error_occured_this_attempt = false
 
         -- Try to get a write lock earlier.
-        local begin_result = db:exec("BEGIN IMMEDIATE TRANSACTION;")
+        local begin_result = db:exec("BEGIN IMMEDIATE TRANSACTION;") 
         if begin_result ~= sqlite3.OK then
             local errcode = db:errcode()
             if (errcode == sqlite3.BUSY or errcode == sqlite3.LOCKED) and attempts < spelldb.MAX_POPULATE_RETRIES then
@@ -140,7 +140,7 @@ function spelldb.populate_spell_database(max_spell_id)
                 return false -- Non-retryable error or max retries hit for BEGIN
             end
         end
-
+        
         print(string.format("Spell DB Population: Began transaction (attempt %d/%d). Processing spells up to ID %d...", attempts, spelldb.MAX_POPULATE_RETRIES, max_spell_id))
 
         local insert_sql_template = nil
@@ -149,7 +149,7 @@ function spelldb.populate_spell_database(max_spell_id)
         for id = 1, max_spell_id do
             local spell_tlo = mq.TLO.Spell(id)
 
-            if spell_tlo.IsValid() then
+            if spell_tlo then
                 local level = spell_tlo.Level()
                 if level == 255 or (level >= 1 and level <= 200) then -- Class spells (1-200) or AA/Disc spells (255)
                     local spell_data = {}
@@ -157,8 +157,8 @@ function spelldb.populate_spell_database(max_spell_id)
                     spell_data.name = spell_tlo.Name()
                     spell_data.level = level
                     spell_data.category = spell_tlo.Category()
-                    spell_data.subcategory = spell_tlo.SubCategory()
-                    spell_data.description = spell_tlo.Desc()
+                    spell_data.subcategory = spell_tlo.Subcategory()
+                    spell_data.description = spell_tlo.Description()
                     spell_data.target_type = spell_tlo.TargetType()
                     spell_data.cast_time_ms = spell_tlo.MyCastTime()
                     spell_data.duration_ticks = spell_tlo.Duration()
@@ -170,9 +170,8 @@ function spelldb.populate_spell_database(max_spell_id)
                     spell_data.ae_range = spell_tlo.AERange()
                     spell_data.push_back = spell_tlo.PushBack()
                     spell_data.range = spell_tlo.MyRange()
-                    spell_data.hate_override = spell_tlo.HateOverride()
                     spell_data.endurance_cost = spell_tlo.EnduranceCost()
-
+                    
                     if not spell_data.name then
                         goto continue_spell_loop
                     end
@@ -205,23 +204,13 @@ function spelldb.populate_spell_database(max_spell_id)
                     for col_name, _ in pairs(spelldb.COLUMNS) do
                         bind_params[":" .. col_name] = spell_data[col_name]
                     end
-
-                    local all_params_bound = true
-                    for col_name_placeholder, value_to_bind in pairs(bind_params) do
-                        -- col_name_placeholder is like ":spell_id", value_to_bind is the actual data
-                        local bind_ok, err_msg_bind = stmt:bind(col_name_placeholder, value_to_bind)
-                        if not bind_ok then
-                            print(string.format("ERROR: Failed to bind parameter %s for spell ID %d (%s): %s",
-                                                col_name_placeholder, spell_data.spell_id, spell_data.name or "N/A", err_msg_bind or stmt:errmsg()))
-                            current_attempt_spells_errored = current_attempt_spells_errored + 1
-                            all_params_bound = false
-                            break -- Stop binding for this spell if one fails
-                        end
-                    end
-
-                    if not all_params_bound then
-                        stmt:finalize()
-                        goto continue_spell_loop -- Skip to the next spell ID
+                    
+                    local bind_result, bind_err = stmt:bind_values(bind_params)
+                    if not bind_result then
+                         print(string.format("ERROR: Failed to bind values for spell ID %d (%s): %s", id, spell_data.name or "N/A", bind_err or stmt:errmsg()))
+                         current_attempt_spells_errored = current_attempt_spells_errored + 1
+                         stmt:finalize()
+                         goto continue_spell_loop
                     end
 
                     local exec_result, exec_err = stmt:step()
@@ -262,7 +251,7 @@ function spelldb.populate_spell_database(max_spell_id)
             end
             goto continue_transaction_attempt
         end
-
+        
         local commit_result = db:exec("COMMIT;")
         if commit_result == sqlite3.OK then
             transaction_successful = true
@@ -281,7 +270,7 @@ function spelldb.populate_spell_database(max_spell_id)
                 if mq and mq.delay then mq.delay(delay_ms) else print("mq.delay not available for retry delay") end
             else
                 print(string.format("ERROR: Failed to commit transaction after %d attempts: %s (Code: %d)", attempts, db:errmsg(), errcode))
-                return false
+                return false 
             end
         end
         ::continue_transaction_attempt::
