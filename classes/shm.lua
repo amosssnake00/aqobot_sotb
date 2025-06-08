@@ -570,7 +570,7 @@ Shaman.SpellLines = {
     { -- single agi buff
         Group = 'singleagi',
         Spells = { 'Nimble', 'Spirit of Cat', 'Feet like Cat' },
-        Options = { }
+        Options = {}
     },
     { -- group agi buff
         Group = 'groupagi',
@@ -579,7 +579,12 @@ Shaman.SpellLines = {
     },
     { -- single sta buff
         Group = 'singlesta',
-        Spells = { 'Talisman of the Boar','Health', 'Spirit of Ox', 'Spirit of Bear' },
+        Spells = { 'Talisman of the Boar', 'Health', 'Spirit of Ox', 'Spirit of Bear' },
+        Options = {}
+    },
+    { -- single sta buff
+        Group = 'groupsta',
+        Spells = { 'Talisman of Fortitude' },
         Options = { alias = 'STA' }
     },
     { -- single cha buff

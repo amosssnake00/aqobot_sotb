@@ -376,95 +376,6 @@ local pullRadarTimer = timer:new(1000)
     return pull_id
 end ]]
 
---loc ${s_WorkSpawn.X} ${s_WorkSpawn.Y}
-local pull_count = 'npc targetable nopet radius %d'                    -- zradius 50'
-local pull_spawn = '%d, npc targetable nopet radius %d'                -- zradius 50'
-local pull_count_camp = 'npc targetable nopet loc %d %d radius %d'     -- zradius 50'
-local pull_spawn_camp = '%d, npc targetable nopet loc %d %d radius %d' -- zradius 50'
-local pc_near = 'pc radius 30 loc %d %d'
----Search for pullable mobs within the configured pull radius.
----Sets common.pullMobID to the mob ID of the first matching spawn.
-
-function pull.pullRadar()
-    if not pullRadarTimer:expired() then
-        logger.debug(logger.flags.routines.pull,
-            ('pullRadarTimer not expired! Remaining: %s'):format(pullRadarTimer:remaining()))
-        return 0
-    end
-    pullRadarTimer:reset()
-    local pull_radius_count
-    local pull_radius = config.get('PULLRADIUS')
-    local pull_level_priority = config.get('PULLLEVELPRIORITY')
-    -- local max_radius = math.max(pull_radius, math.max(config.get('PULLHIGH'), config.get('PULLLOW')))
-    local max_radius = pull_radius
-    if not pull_radius then return 0 end
-    if camp.Active then
-        pull_radius_count = mq.TLO.SpawnCount(pull_count_camp:format(camp.X, camp.Y, max_radius))()
-        logger.debug(logger.flags.routines.pull,
-            ('%s: %s'):format(pull_radius_count or 0, pull_count_camp:format(camp.X, camp.Y, max_radius)))
-    else
-        pull_radius_count = mq.TLO.SpawnCount(pull_count:format(max_radius))()
-        -- error here
-        logger.debug(logger.flags.routines.pull, ('%s: %s'):format(pull_radius_count or 0, pull_count:format(max_radius)))
-    end
-    local shortest_path = config.get('PULLPATH')
-    local pull_id = 0
-    local pull_level_priority_max = 0
-    if pull_radius_count > 0 then
-        local zone_sn = mq.TLO.Zone.ShortName()
-        for i = 1, pull_radius_count do
-            -- try not to iterate through the whole world if there's a pretty large pull radius
-            if i > config.get('MOBSEVAL') then
-                logger.debug(logger.flags.routines.pull, ('too many mobs %s > MobsEval!'):format(pull_radius_count))
-                break
-            end
-            local mob
-            if camp.Active then
-                mob = mq.TLO.NearestSpawn(pull_spawn_camp:format(i, camp.X, camp.Y, max_radius))
-            else
-                mob = mq.TLO.NearestSpawn(pull_spawn:format(i, max_radius))
-            end
-            if validatePull(mob, 0, zone_sn) then
-                local path_len = checkPathLength(mob)
-                if path_len > -1 then
-                    -- local path_len = mq.TLO.Navigation.PathLength(string.format('id %s', mob.ID()))()
-                    -- if  then
-                    -- TODO: check for people nearby, check level, check z radius if high/low differ
-                    --local pc_near_count = mq.TLO.SpawnCount(pc_near:format(mob.X(), mob.Y()))
-                    --if pc_near_count == 0 then
-                    local dist3d = mob.Distance3D()
-                    if mob.LineOfSight() or (dist3d and path_len < dist3d + 50) then
-                        -- don't bother to check path length if mob already in los.
-                        -- if path length is within 50 of distance3d then its probably safe to pull also
-                        state.pullMobID = mob.ID()
-                        return mob.ID()
-                    elseif not pull_level_priority and path_len < shortest_path then
-                        logger.debug(logger.flags.routines.pull,
-                            ("Found closer pull, %s < %s"):format(path_len, shortest_path))
-                        shortest_path = path_len
-                        pull_id = mob.ID()
-                    elseif pull_level_priority and mob.Level() > pull_level_priority_max then
-                        logger.debug(logger.flags.routines.pull,
-                            ("Found higher level pull, %s < %s"):format(pull_level_priority_max, mob.Level()))
-                        pull_level_priority_max = mob.Level()
-                        shortest_path = path_len
-                        pull_id = mob.ID()
-                    elseif pull_level_priority and mob.Level() == pull_level_priority_max and path_len < shortest_path then
-                        logger.debug(logger.flags.routines.pull,
-                            ("Found closer pull (L %s), %s < %s"):format(pull_level_priority_max, path_len, shortest_path))
-                        shortest_path = path_len
-                        pull_level_priority_max = mob.Level()
-                        pull_id = mob.ID()
-                    end
-                end
-            end
-        end
-    end
-    if pull_id ~= 0 then
-        state.pullMobID = pull_id
-    end
-    return pull_id
-end
 
 local function getPullRange()
     local melee_range = 100
@@ -506,6 +417,100 @@ local function getPullRange()
     end
     return melee_range
 end
+
+
+--loc ${s_WorkSpawn.X} ${s_WorkSpawn.Y}
+local pull_count = 'npc targetable nopet radius %d'                    -- zradius 50'
+local pull_spawn = '%d, npc targetable nopet radius %d'                -- zradius 50'
+local pull_count_camp = 'npc targetable nopet loc %d %d radius %d'     -- zradius 50'
+local pull_spawn_camp = '%d, npc targetable nopet loc %d %d radius %d' -- zradius 50'
+local pc_near = 'pc radius 30 loc %d %d'
+---Search for pullable mobs within the configured pull radius.
+---Sets common.pullMobID to the mob ID of the first matching spawn.
+
+function pull.pullRadar()
+    if not pullRadarTimer:expired() then
+        logger.debug(logger.flags.routines.pull,
+            ('pullRadarTimer not expired! Remaining: %s'):format(pullRadarTimer:remaining()))
+        return 0
+    end
+    pullRadarTimer:reset()
+    local pull_radius_count
+    local pull_radius = config.get('PULLRADIUS')
+    local pull_level_priority = config.get('PULLLEVELPRIORITY')
+    -- local max_radius = math.max(pull_radius, math.max(config.get('PULLHIGH'), config.get('PULLLOW')))
+    local max_radius = pull_radius
+    if not pull_radius then return 0 end
+    if camp.Active then
+        pull_radius_count = mq.TLO.SpawnCount(pull_count_camp:format(camp.X, camp.Y, max_radius))()
+        logger.debug(logger.flags.routines.pull,
+            ('%s: %s'):format(pull_radius_count or 0, pull_count_camp:format(camp.X, camp.Y, max_radius)))
+    else
+        pull_radius_count = mq.TLO.SpawnCount(pull_count:format(max_radius))()
+        -- error here
+        logger.debug(logger.flags.routines.pull, ('%s: %s'):format(pull_radius_count or 0, pull_count:format(max_radius)))
+    end
+    local shortest_path = config.get('PULLPATH')
+    local pull_id = 0
+    local pull_level_priority_max = 0
+    if pull_radius_count > 0 then
+        local pullRange = getPullRange()
+        local zone_sn = mq.TLO.Zone.ShortName()
+        for i = 1, pull_radius_count do
+            -- try not to iterate through the whole world if there's a pretty large pull radius
+            if i > config.get('MOBSEVAL') then
+                logger.debug(logger.flags.routines.pull, ('too many mobs %s > MobsEval!'):format(pull_radius_count))
+                break
+            end
+            local mob
+            if camp.Active then
+                mob = mq.TLO.NearestSpawn(pull_spawn_camp:format(i, camp.X, camp.Y, max_radius))
+            else
+                mob = mq.TLO.NearestSpawn(pull_spawn:format(i, max_radius))
+            end
+            if validatePull(mob, 0, zone_sn) then
+                local path_len = checkPathLength(mob)
+                local dist3d = mob.Distance3D()
+                if (mob.LineOfSight() and dist3d < (pullRange - 30)) or (dist3d and path_len < dist3d + 50) then
+                    -- don't bother to check path length if mob already in los and pullrange, never mind of a path exists.
+                    -- if path length is within 50 of distance3d then its probably safe to pull also
+                    state.pullMobID = mob.ID()
+                    return mob.ID()
+                elseif path_len > -1 then
+                    -- local path_len = mq.TLO.Navigation.PathLength(string.format('id %s', mob.ID()))()
+                    -- if  then
+                    -- TODO: check for people nearby, check level, check z radius if high/low differ
+                    --local pc_near_count = mq.TLO.SpawnCount(pc_near:format(mob.X(), mob.Y()))
+                    --if pc_near_count == 0 then
+
+                    if not pull_level_priority and path_len < shortest_path then
+                        logger.debug(logger.flags.routines.pull,
+                            ("Found closer pull, %s < %s"):format(path_len, shortest_path))
+                        shortest_path = path_len
+                        pull_id = mob.ID()
+                    elseif pull_level_priority and mob.Level() > pull_level_priority_max then
+                        logger.debug(logger.flags.routines.pull,
+                            ("Found higher level pull, %s < %s"):format(pull_level_priority_max, mob.Level()))
+                        pull_level_priority_max = mob.Level()
+                        shortest_path = path_len
+                        pull_id = mob.ID()
+                    elseif pull_level_priority and mob.Level() == pull_level_priority_max and path_len < shortest_path then
+                        logger.debug(logger.flags.routines.pull,
+                            ("Found closer pull (L %s), %s < %s"):format(pull_level_priority_max, path_len, shortest_path))
+                        shortest_path = path_len
+                        pull_level_priority_max = mob.Level()
+                        pull_id = mob.ID()
+                    end
+                end
+            end
+        end
+    end
+    if pull_id ~= 0 then
+        state.pullMobID = pull_id
+    end
+    return pull_id
+end
+
 
 
 

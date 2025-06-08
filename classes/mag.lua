@@ -775,7 +775,13 @@ Magician.SpellLines = {
         },
         Options = { opt = 'USEFIRENUKES' }
     },
-
+    {
+        Group = 'malo',
+        Spells = {
+            'Malosinia', 
+        },
+        Options = { opt = 'USEMALO' }
+    },
     {
         Group = 'modrod',
         Spells = {
@@ -784,6 +790,7 @@ Magician.SpellLines = {
             'Wand of Frozen Modulation',    -- [[MAG/112 - Mana: 6994 - Cast: 4,5s - Recast 1,5s  - Duration: 0s - Resist: n/a - Target: Self - Effects: 1: Summon: [Item 150436] x 1 ]]
             'Wand of Burning Modulation',   -- [[MAG/107 - Mana: 5828 - Cast: 4,5s - Recast 1,5s  - Duration: 0s - Resist: n/a - Target: Self - Effects: 1: Summon: [Item 99838] x 1 ]]
             'Wand of Dark Modulation',      -- [[MAG/102 - Mana: 4960 - Cast: 4,5s - Recast 1,5s  - Duration: 0s - Resist: n/a - Target: Self - Effects: 1: Summon: [Item 99782] x 1 ]]
+            'Modulating Rod',
         },
         Options = { opt = 'USEMODRODS', summonMinimum = 1, nodmz = true, pause = true }
     },

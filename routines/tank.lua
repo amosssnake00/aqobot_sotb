@@ -24,18 +24,27 @@ local campBuffer = 20
 -- Checks if the current target is a pet and determines if its owner is a PC or NPC.
 -- Outputs the result to the MQ console.
 -- @return boolean
+
+
 function IsPcPet(mob)
     if not mob() then
         return false
     end
+    local mobCleanName = mob.CleanName()
     if mob.Owner.Type() ~= nil and mob.Owner.Type() == 'PC' then
         return true
     elseif mob.Owner.Type() ~= nil then
         return false
     else
+        local mobSurName = mob.Surname() or 'none'
+        if (mobSurName:find("'s Pet") or 0) > 0 or (mobSurName:find("'s Doppelganger") or 0) > 0 then
+            logger.debug(logger.flags.routines.tank, 'Pet or Doppelganger!')
+            return true
+        end
         -- No direct owner, check the target's name for "`s pet" pattern
-        local potentialOwnerName = mob.CleanName():match("^(.-)`s pet$") or mob.CleanName():match("^(.-)'s pet$")
+        local potentialOwnerName = mobCleanName:match("^(.-)`s pet$") or mobCleanName:match("^(.-)'s pet$") or ""
         if potentialOwnerName and potentialOwnerName ~= "" then
+            logger.debug(logger.flags.routines.tank, 'checking owner (%s) of mob!', potentialOwnerName)
             -- Check if the potential owner is a PC or NPC
             if mq.TLO.Spawn(potentialOwnerName).Type() == 'PC' then
                 logger.debug(logger.flags.routines.tank, 'owner of target is a PC!')

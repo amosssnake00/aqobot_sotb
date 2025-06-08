@@ -614,7 +614,7 @@ end
 function Bard:findNextSong()
     if tryAlliance() then return nil end
     if castSynergy() then return nil end
-    if not mq.TLO.Target.Snared() and Bard:isEnabled('USESNARE') and ((mq.TLO.Target.PctHPs() or 100) < 30) then
+    if not mq.TLO.Target.Snared() and Bard:isEnabled('USESNARE') and ((mq.TLO.Target.PctHPs() or 100) < 40) then
         return Bard.spells.snare
     end
 
