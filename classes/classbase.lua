@@ -1391,12 +1391,7 @@ function base:useEpic()
 end
 
 function base:mainLoop()
-    if config.get('LOOTMOBS') and state.assistMobID > 0 and not state.lootBeforePull then
-        -- some attempt at forcing a round of looting before beginning another pull,
-        -- otherwise, depending where we are in the loop when a mob dies, we might go
-        -- directly into another pull before trying to loot what we just killed.
-        state.lootBeforePull = true
-    end
+
     if not state.pullStatus or state.pullStatus == constants.pullStates.PULLED then
         if state.pullStatus == constants.pullStates.PULLED then pull.clearPullVars('classloop') end
         if state.rebuff then buffing.buff(self) end
@@ -1444,7 +1439,7 @@ function base:mainLoop()
         -- check whether we need to go chasing after the chase target, may happen while fighting
         common.checkChase()
     end
-    if not state.actionTaken and not state.medding and mode.currentMode:isPullMode() and not self:hold() and not state.lootBeforePull then
+    if not state.actionTaken and not state.medding and mode.currentMode:isPullMode() and not self:hold() then
         pull.pullMob()
     end
 end

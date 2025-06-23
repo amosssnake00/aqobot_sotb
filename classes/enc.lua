@@ -114,7 +114,7 @@ Enchanter.SpellLines = {
     },
     { -- 9 ticks. Slot 3
         Group = 'mezst',
-        Spells = { 'Flummox', 'Addle', 'Deceive', 'Delude', 'Bewilder', 'Confound', 'Mislead', 'Baffle', --[[emu cutoff]] 'Felicity', 'Bliss', 'Sleep', 'Apathy', 'Euphoria', 'Entrance', 'Mesmerization', 'Enthrall', 'Mesmerize' },
+        Spells = { 'Flummox', 'Addle', 'Deceive', 'Delude', 'Bewilder', 'Confound', 'Mislead', 'Baffle', --[[emu cutoff]]'Euphoria', 'Felicity', 'Bliss', 'Sleep', 'Apathy',  'Entrance', 'Mesmerization', 'Enthrall', 'Mesmerize' },
         Options = {
             Gem = 3,
             precast = function()
@@ -289,7 +289,7 @@ Enchanter.SpellLines = {
             end
         }
     },
-    { Group = 'keigroup', Spells = { 'Voice of Preordination', 'Voice of Perception', 'Voice of Sagacity', 'Voice of Perspicacity', 'Voice of Precognition', 'Voice of Foresight', 'Voice of Premeditation', 'Voice of Forethought', 'Unified Alacrity', 'Voice of Clairvoyance', 'Voice of Quellious', 'Koadic\'s Endless Intellect' }, Options = { alias = 'KEI', selfbuff = true, opt = 'USEKEI' } },
+    { Group = 'keigroup', Spells = { 'Voice of Preordination', 'Voice of Perception', 'Voice of Sagacity', 'Voice of Perspicacity', 'Voice of Precognition', 'Voice of Foresight', 'Voice of Premeditation', 'Voice of Forethought', 'Unified Alacrity', 'Voice of Clairvoyance', 'Voice of Quellious', 'Tranquility','Koadic\'s Endless Intellect' }, Options = { alias = 'KEI', selfbuff = true, opt = 'USEKEI' } },
     {
         Group = 'kei',
         Spells = { 'Preordination', 'Scrying Visions', 'Sagacity', 'Foresight', 'Premiditation', 'Forethought', 'Clairovoyance', 'Clarity', 'Breeze' },

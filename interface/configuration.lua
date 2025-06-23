@@ -519,24 +519,6 @@ local config = {
     },
 
     -- Other settings
-    LOOTMOBS = {
-        value = true,
-        tip = 'Toggle looting of mob corpses on or off for emu',
-        label = 'Loot Mobs',
-        type = 'checkbox',
-        emu = true,
-        tlo = 'LootMobs',
-        tlotype = 'bool',
-    },
-    LOOTCOMBAT = {
-        value = false,
-        tip = 'Toggle looting of mob corpses during combat on or off for emu',
-        label = 'Loot In Combat',
-        type = 'checkbox',
-        emu = true,
-        tlo = 'LootCombat',
-        tlotype = 'bool',
-    },
 
     MAINTANK = {
         value = false,
@@ -666,7 +648,7 @@ function config.getAll()
     return configMap
 end
 
-local categories = { 'Assist', 'Camp', 'Burn', 'Heal', 'Pull', 'Tank', 'Rest', 'Loot', 'Debug' }
+local categories = { 'Assist', 'Camp', 'Burn', 'Heal', 'Pull', 'Tank', 'Rest', 'Debug' }
 function config.categories()
     return categories
 end
@@ -679,7 +661,6 @@ local configByCategory = {
     Heal = { 'HEALPCT', 'PANICHEALPCT', 'HOTHEALPCT', 'GROUPHEALPCT', 'GROUPHEALMIN', 'XTARGETHEAL', 'REZGROUP', 'REZRAID', 'REZINCOMBAT', 'PRIORITYTARGET', 'INTERRUPTFULLHP', 'INTERRUPTFORHEALS', 'ANNOUNCEHEALS', 'ANNOUNCEDEATHS' },
     Tank = { 'MAINTANK', 'OFFTANK' },
     Rest = { 'MEDCOMBAT', 'RECOVERPCT', 'MEDHPSTART', 'MEDHPSTOP', 'MEDMANASTART', 'MEDMANASTOP', 'MEDENDSTART', 'MEDENDSTOP', 'MANASTONESTART', 'MANASTONESTARTHP', 'MANASTONESTOPHP', 'MANASTONETIME' },
-    Loot = { 'LOOTMOBS', 'LOOTCOMBAT' },
     Debug = { 'TIMESTAMPS', 'OPACITY' },
 }
 function config.getByCategory(category)

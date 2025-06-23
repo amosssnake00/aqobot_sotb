@@ -9,6 +9,7 @@ local abilities = require('ability')
 local mode = require('mode')
 local state = require('state')
 local widgets = require('libaqo.widgets')
+local petfocusSwap = 0
 
 local Necromancer = class:new()
 
@@ -880,8 +881,22 @@ Necromancer.SpellLines = {
             'Cavorting Bones',       -- [[NEC/1 - Mana: 15 - Cast: 5s - Recast 4s - Duration: 0s - Resist: n/a - Target: Self- Effects: Consumes: Bone Chips x 1 1: Summon Pet: PCPetNecS01L001Skel2Ice ]]
 
         },
-        Options = { postcast = function() common.petClicky() end }
-    },
+        Options = { 
+            precast = function() 
+                if mq.TLO.FindItem('Sphere of Swirling Flame')() then
+                    petfocusSwap = mq.TLO.Me.Inventory(11).ID() or 0
+                    mq.cmd('/exchange "Sphere of Swirling Flame" 11')
+                    mq.delay(200)
+                end
+            end,
+            postcast = function() 
+                common.petClicky() 
+                if petfocusSwap ~= 0 then
+                    mq.cmdf('/exchange %s 11', petfocusSwap)
+                    mq.delay(200)
+                end
+            end }
+         },
 
     {
         Group = 'pethaste',

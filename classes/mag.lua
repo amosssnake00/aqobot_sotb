@@ -8,7 +8,7 @@ local abilities = require('ability')
 local castUtils = require('utils.cast')
 local common = require('common')
 local state = require('state')
-
+local petfocusSwap = 0
 local Magician = class:new()
 
 --[[
@@ -224,6 +224,7 @@ Magician.SpellLines = {
             'Spear of Molten Arcronite',                    -- [[MAG/110 - Mana: 5390 - Cast: 3,5s - Recast 9s  - Duration: 0s - Resist: Fire  - Target: Line of Sight - Effects: 1: Decrease Current HP by 32704 ]]
             'Spear of Molten Shieldstone', --[[emu cutoff]] -- [[MAG/105 - Mana: 4487 - Cast: 3,5s - Recast 9s  - Duration: 0s - Resist: Fire  - Target: Line of Sight - Effects: 1: Decrease Current HP by 26967 ]]
             'Spear of Ro',                                  -- [[MAG/70 - Mana: 684 - Cast: 7s - Recast 1,5s  - Duration: 0s - Resist: Fire  - Target: Line of Sight - Effects: 1: Decrease Current HP by 3119 ]]
+            'Star Strike',
             'Bolt of Jerikor',
             'Sun Vortex',                                   -- [[MAG/65 - Mana: 395 - Cast: 6,35s - Recast 1,5s  - Duration: 0s - Resist: Fire  - Target: Single - Effects: Push: 0,5 1: Decrease Current HP by 1600 ]]
             'Firebolt of Tallon',                           -- [[MAG/61 - Mana: 515 - Cast: 7s - Recast 1,5s  - Duration: 0s - Resist: Fire  - Target: Line of Sight - Effects: 1: Decrease Current HP by 2100 ]]
@@ -472,6 +473,13 @@ Magician.SpellLines = {
             'Elementalkin: Water',                   -- [[MAG/2 - Mana: 40 - Cast: 6s - Recast 1,5s  - Duration: 0s - Resist: n/a - Target: Self - Effects: Consumes: Malachite x 1 1: Summon Pet: PCPetMagS01L002ElemWat ]]
         },
         Options = {
+            precast = function() 
+                if mq.TLO.FindItem('Sphere of Swirling Flame')() then
+                    petfocusSwap = mq.TLO.Me.Inventory(11).ID() or 0
+                    mq.cmd('/exchange "Sphere of Swirling Flame" 11')
+                    mq.delay(200)
+                end
+            end,
             postcast = function()
                 mq.delay(10000, function() return mq.TLO.Pet.ID() > 0 end)
                 mq.delay(1500, function() return not mq.TLO.Me.SpellInCooldown() end)
@@ -480,6 +488,10 @@ Magician.SpellLines = {
                 if mq.TLO.FindItem('Glyphwielder\'s Ascendant Gloves of the Summoner')() then
                     mq.cmd('/useitem "Glyphwielder\'s Ascendant Gloves of the Summoner"')
                     mq.delay(3000, function() return not mq.TLO.Me.Casting() end)
+                end
+                if petfocusSwap ~= 0 then
+                    mq.cmdf('/exchange %s 11', petfocusSwap)
+                    mq.delay(200)
                 end
             end
         }
@@ -509,6 +521,13 @@ Magician.SpellLines = {
             'Elementalkin: Air',                   -- [[MAG/4 - Mana: 40 - Cast: 6s - Recast 1,5s  - Duration: 0s - Resist: n/a - Target: Self - Effects: Consumes: Malachite x 1 1: Summon Pet: PCPetMagS01L004ElemAir ]]
         },
         Options = {
+            precast = function() 
+                if mq.TLO.FindItem('Sphere of Swirling Flame')() then
+                    petfocusSwap = mq.TLO.Me.Inventory(11).ID() or 0
+                    mq.cmd('/exchange "Sphere of Swirling Flame" 11')
+                    mq.delay(200)
+                end
+            end,
             postcast = function()
                 mq.delay(10000, function() return mq.TLO.Pet.ID() > 0 end)
                 mq.delay(1500, function() return not mq.TLO.Me.SpellInCooldown() end)
@@ -517,6 +536,10 @@ Magician.SpellLines = {
                 if mq.TLO.FindItem('Glyphwielder\'s Ascendant Gloves of the Summoner')() then
                     mq.cmd('/useitem "Glyphwielder\'s Ascendant Gloves of the Summoner"')
                     mq.delay(3000, function() return not mq.TLO.Me.Casting() end)
+                end
+                if petfocusSwap ~= 0 then
+                    mq.cmdf('/exchange %s 11', petfocusSwap)
+                    mq.delay(200)
                 end
             end
         }
@@ -546,6 +569,13 @@ Magician.SpellLines = {
             'Elementalkin: Earth',                   -- [[MAG/5 - Mana: 40 - Cast: 6s - Recast 1,5s  - Duration: 0s - Resist: n/a - Target: Self - Effects: Consumes: Malachite x 1 1: Summon Pet: PCPetMagS01L005ElemErf ]]
         },
         Options = {
+            precast = function() 
+                if mq.TLO.FindItem('Sphere of Swirling Flame')() then
+                    petfocusSwap = mq.TLO.Me.Inventory(11).ID() or 0
+                    mq.cmd('/exchange "Sphere of Swirling Flame" 11')
+                    mq.delay(200)
+                end
+            end,
             postcast = function()
                 mq.delay(10000, function() return mq.TLO.Pet.ID() > 0 end)
                 mq.delay(1500, function() return not mq.TLO.Me.SpellInCooldown() end)
@@ -554,6 +584,10 @@ Magician.SpellLines = {
                 if mq.TLO.FindItem('Glyphwielder\'s Ascendant Gloves of the Summoner')() then
                     mq.cmd('/useitem "Glyphwielder\'s Ascendant Gloves of the Summoner"')
                     mq.delay(3000, function() return not mq.TLO.Me.Casting() end)
+                end
+                if petfocusSwap ~= 0 then
+                    mq.cmdf('/exchange %s 11', petfocusSwap)
+                    mq.delay(200)
                 end
             end
         }
@@ -583,6 +617,13 @@ Magician.SpellLines = {
             'Elementalkin: Fire',                   -- [[MAG/3 - Mana: 40 - Cast: 6s - Recast 1,5s  - Duration: 0s - Resist: n/a - Target: Self - Effects: Consumes: Malachite x 1 1: Summon Pet: PCPetMagS01L003ElemHeat ]]
         },
         Options = {
+            precast = function() 
+                if mq.TLO.FindItem('Sphere of Swirling Flame')() then
+                    petfocusSwap = mq.TLO.Me.Inventory(11).ID() or 0
+                    mq.cmd('/exchange "Sphere of Swirling Flame" 11')
+                    mq.delay(200)
+                end
+            end,
             postcast = function()
                 mq.delay(10000, function() return mq.TLO.Pet.ID() > 0 end)
                 mq.delay(1500, function() return not mq.TLO.Me.SpellInCooldown() end)
@@ -591,6 +632,10 @@ Magician.SpellLines = {
                 if mq.TLO.FindItem('Glyphwielder\'s Ascendant Gloves of the Summoner')() then
                     mq.cmd('/useitem "Glyphwielder\'s Ascendant Gloves of the Summoner"')
                     mq.delay(3000, function() return not mq.TLO.Me.Casting() end)
+                end
+                if petfocusSwap ~= 0 then
+                    mq.cmdf('/exchange %s 11', petfocusSwap)
+                    mq.delay(200)
                 end
             end
         }

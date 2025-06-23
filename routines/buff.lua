@@ -182,7 +182,7 @@ local function buffActors(base, combat)
                         if spawn() then
                             spawn.DoTarget()
                             mq.delay(1000, function() return mq.TLO.Target.BuffsPopulated() end)
-                            if mq.TLO.Target and mq.TLO.Target.ID() == spawn.ID() and not mq.TLO.Target.Buff(availableBuffs[aBuff])() and mq.TLO.Target.Distance() < 60 then
+                            if mq.TLO.Target.ID() and spawn.ID() and mq.TLO.Target.Distance() and mq.TLO.Target.ID() == spawn.ID() and not mq.TLO.Target.Buff(availableBuffs[aBuff])() and mq.TLO.Target.Distance() < 60 then
                                 -- if abilities.use(theBuff, base, true, true) then return true end
                                 if abilities.use(theBuff, base, true, false) then return true end
                             end

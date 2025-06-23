@@ -11,7 +11,6 @@ local config = require('interface.configuration')
 local ui = require('interface.ui')
 local tlo = require('interface.tlo')
 
-local loot = require('utils.lootutils')
 local movement = require('utils.movement')
 local timer = require('libaqo.timer')
 
@@ -160,47 +159,8 @@ local function buffSafetyCheck()
     end
 end
 
-local lootMyCorpseTimer = timer:new(2000)
-local reloadTimer = timer:new(60000)
-local function doLooting()
-    if true then return end --the fuck you are looting the corpse unrezzed...again!
-    local myCorpse = mq.TLO.Spawn('pccorpse ' .. mq.TLO.Me.CleanName() .. '\'s corpse radius 100')
-    if mq.TLO.SpawnCount('pccorpse ' .. mq.TLO.Me.CleanName() .. '\'s corpse radius 100')() > 1 and reloadTimer:expired() then
-        mq.cmd('/reload')
-        mq.delay(5000)
-        reloadTimer:reset()
-    end
-    -- if not mq.TLO.Me.Combat() and mq.TLO.Me.CombatState() ~= 'COMBAT' and myCorpse() and lootMyCorpseTimer:expired() then
-    if myCorpse() and not mq.TLO.Me.Combat() and lootMyCorpseTimer:expired() then
-        lootMyCorpseTimer:reset()
-        myCorpse.DoTarget()
-        if mq.TLO.Target.Type() == 'Corpse' then
-            mq.cmd('/keypress CONSIDER')
-            mq.delay(500)
-            mq.doevents('eventCannotRezNew')
-            if state.cannotRez then
-                state.cannotRez = nil
-                mq.cmd('/corpse')
-                movement.navToTarget(nil, 10000)
-                if (mq.TLO.Target.Distance3D() or 100) > 10 then return end
-                loot.lootMyCorpse()
-                if mq.TLO.Cursor() then mq.cmd('/autoinv') end
-                state.actionTaken = true
-                return
-            end
-        end
-    end
-    if config.get('LOOTMOBS') and (state.mobCount == 0 or config.get('LOOTCOMBAT')) and not state.pullStatus then
-        state.actionTaken = loot.lootMobs(1)
-        if state.lootBeforePull then state.lootBeforePull = false end
-    end
-end
-
 local function handleStates(class)
     -- Async state handling
-    --if state.looting then loot.lootMobs() return true end
-    --if state.selling then loot.sellStuff() return true end
-    --if state.banking then loot.bankStuff() return true end
     if not state.handlePositioningState() then return true end
     if not state.handleMemSpell() then return true end
     if not state.handleCastingState(class) then return true end
@@ -241,9 +201,9 @@ local function main()
                     -- do active combat assist things when not paused and not invis
                     checkFD()
                     common.checkCursor()
-                    if state.emu then
+                   --[[  if state.emu then
                         doLooting()
-                    end
+                    end ]]
                     if not state.actionTaken then
                         class:mainLoop()
                     end

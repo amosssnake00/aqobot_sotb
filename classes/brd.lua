@@ -191,7 +191,7 @@ Bard.SpellLines = {
     -- Voice of Suja, charm
     -- Zinnia's Melodic Binding, PB slow
     -- haste song doesn't stack with enc haste?
-    { Group = 'overhaste',    Spells = { 'Ancient: Call of Power', 'Yelhun\'s Mystic Call', 'Rizlona\'s Call of Flame', 'Warsong of the Vah Shir', 'Battlecry of the Vah Shir' },                                                                                       Options = { Gem = function(
+    { Group = 'overhaste',    Spells = { 'Ancient: Call of Power', 'Eriki\'s Psalm of Power', 'Yelhun\'s Mystic Call', 'Rizlona\'s Call of Flame', 'Warsong of the Vah Shir', 'Battlecry of the Vah Shir' },                                                                                       Options = { Gem = function(
         lvl) return state.emu and 1 or nil end } },
     { Group = 'bardhaste',    Spells = { 'Verse of Veeshan', 'Composition of Ervaj' },                                                                                                                                                                                  Options = { Gem = function(
         lvl) return state.emu and 5 or nil end } },

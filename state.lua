@@ -245,7 +245,6 @@ function state.resetHealState()
     state.healToUse = nil
 end
 
-state.corpseToLoot = nil
 
 function state.handleMoveToCorpseState()
 

@@ -7,6 +7,7 @@ local abilities = require('ability')
 local constants = require('constants')
 local common = require('common')
 local state = require('state')
+local petfocusSwap = 0
 
 local BeastLord = class:new()
 
@@ -215,8 +216,21 @@ BeastLord.SpellLines = {
     {
         Group = 'pet',
         Spells = { 'Spirit of Shae', 'Spirit of Panthea', 'Spirit of Blizzent', 'Spirit of Akalit', 'Spirit of Avalit', 'Spirit of Lachemit', 'Spirit of Kolos', 'Spirit of Averc', --[[emu cutoff]] 'Spirit of Rashara', 'Spirit of Alladnu', 'Spirit of Sorsha', 'Spirit of Yekan', 'Spirit of Herikol', 'Spirit of Keshuval', 'Spirit of Khaliz', 'Spirit of Sharik' },
-        Options = { opt = 'SUMMONPET', Gem = function(lvl) return lvl <= 60 and 6 or nil end, postcast = function()
-            common.petClicky() end }
+        Options = { opt = 'SUMMONPET', Gem = function(lvl) return lvl <= 60 and 6 or nil end, 
+        precast = function() 
+            if mq.TLO.FindItem('Sphere of Swirling Flame')() then
+                petfocusSwap = mq.TLO.Me.Inventory(11).ID() or 0
+                mq.cmd('/exchange "Sphere of Swirling Flame" 11')
+                mq.delay(200)
+            end
+        end,
+        postcast = function() 
+            common.petClicky() 
+            if petfocusSwap ~= 0 then
+                mq.cmdf('/exchange %s 11', petfocusSwap)
+                mq.delay(200)
+            end
+        end  }
     },
     { Group = 'petrune',     Spells = { 'Auspice of Valia', 'Auspice of Kildrukaun', 'Auspice of Esianti', 'Auspice of Eternity', 'Auspice of Shadows', --[[emu cutoff]] } },                                                                                                                                                                                                                                                                                                      -- (pet rune) / Sympathetic Warder (pet healproc)
     { Group = 'petheal',     Spells = { 'Salve of Homer', 'Salve of Jaegir', 'Salve of Tobart', 'Salve of Artikla', 'Salve of Clorith', 'Salve of Blezon', 'Salve of Yubai', 'Salve of Sevna', --[[emu cutoff]] 'Healing of Mikkity', 'Healing of Sorsha', 'Yekan\'s Recovery', 'Herikol\'s Soothing', 'Keshuval\'s Rejuvenation', 'Sharik\'s Replenishing' }, Options = { opt = 'HEALPET', pet = 50, heal = true } },                                                             -- (Pet heal)

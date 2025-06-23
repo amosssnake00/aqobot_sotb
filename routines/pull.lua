@@ -29,6 +29,64 @@ local polygon = config.get('POLYGON')
 -- pull arc left 90
 -- pull arc right 180
 
+---
+-- Calculates the compass angle in degrees of a target point relative to a center point.
+-- Assumes EverQuest's coordinate system: 0/360=North, 90=East, 180=South, 270=West.
+-- @param center_x The x-coordinate of the center point.
+-- @param center_y The y-coordinate of the center point.
+-- @param target_x The x-coordinate of the target point.
+-- @param target_y The y-coordinate of the target point.
+-- @return number The angle in degrees, normalized to [0, 360).
+local function getCompassAngle(center_x, center_y, target_x, target_y)
+    -- This is the only line that changed.
+    -- By subtracting target from center for X, we invert the axis to match the server's coordinate system.
+    local dx = center_x - target_x 
+    local dy = target_y - center_y
+    
+    -- atan2 returns angle in radians from positive x-axis (East), counter-clockwise.
+    local angle_rad = math.atan2(dy, dx)
+    local angle_deg = math.deg(angle_rad)
+    
+    -- Convert the mathematical angle to a compass heading.
+    local compass_heading = (450 - angle_deg) % 360
+    
+    return compass_heading
+end
+
+---
+-- Checks if a target point is located within a given angular sector (defined by two angles).
+-- Handles cases where the angular range crosses the 360-degree mark.
+-- @param center table: A table with x and y keys for the origin point (e.g., {x=0, y=0}).
+-- @param target table: A table with x and y keys for the point to check.
+-- @param start_angle number: The starting angle of the sector in degrees (0-360).
+-- @param end_angle number: The ending angle of the sector in degrees (0-360).
+-- @return boolean: True if the point is within the sector, false otherwise.
+local function isPointInSector(center, target, start_angle, end_angle)
+    -- Calculate the actual angle of the target relative to the center
+    local target_angle = getCompassAngle(center.x, center.y, target.x, target.y)
+
+    -- Normalize boundary angles to ensure they are within the [0, 360) range
+    local s = (start_angle % 360 + 360) % 360
+    local e = (end_angle % 360 + 360) % 360
+
+    -- Check for the wrap-around case (e.g., a range from 315 to 45 degrees)
+    if s > e then
+        -- If the range crosses 0/360, the target angle must be either
+        -- greater than the start OR smaller than the end.
+        if target_angle >= s or target_angle <= e then
+            return true
+        end
+    else
+        -- This is the normal case where the range does not cross 0/360.
+        if target_angle >= s and target_angle <= e then
+            return true
+        end
+    end
+    
+    return false
+end
+
+
 -- false invalid, true valid
 ---Determine whether the pull spawn is within the configured pull arc, if there is one.
 ---@param pull_spawn MQSpawn @The MQ Spawn to check.
@@ -38,11 +96,12 @@ local function checkMobAngle(pull_spawn)
     if pull_arc == 360 or pull_arc == 0 then return true end
     -- TODO: pull arcs without camp set???
     if not camp.Active then return true end
-    local direction_to_mob = pull_spawn.HeadingTo(camp.Y, camp.X).Degrees()
+    local direction_to_mob = getCompassAngle(camp.X, camp.Y, pull_spawn.X(), pull_spawn.Y())
+    -- local direction_to_mob = pull_spawn.HeadingTo(camp.Y, camp.X).Degrees()
     if not direction_to_mob then return false end
     -- switching from non-puller mode to puller mode, the camp may not be updated yet
     if not (camp.PullArcLeft and camp.PullArcRight) then return false end
-    logger.debug(logger.flags.routines.pull, 'arcleft: %s, arcright: %s, dirtomob: %s', camp.PullArcLeft,
+    logger.debug(logger.flags.routines.pull, 'mob id: %s, arcleft: %s, arcright: %s, dirtomob: %s',pull_spawn.ID(), camp.PullArcLeft,
         camp.PullArcRight, direction_to_mob)
     if camp.PullArcLeft >= camp.PullArcRight then
         if direction_to_mob < camp.PullArcLeft and direction_to_mob > camp.PullArcRight then return false end
@@ -212,6 +271,7 @@ end
 ---@return boolean @Returns true if the spawn meets all the criteria for pulling, otherwise false.
 local function validatePull(pull_spawn, path_len, zone_sn)
     local mob_id = pull_spawn.ID()
+    if path_len < 0 then return false end
     if not mob_id or mob_id == 0 or PULL_TARGET_SKIP[mob_id] or pull_spawn.Type() == 'Corpse' or pull_spawn.Surname() ~= '' then
         logger.debug(logger.flags.routines.pull, 'Invalid mob ID %s (type=%s, skip=%s)', mob_id, pull_spawn.Type(),
             PULL_TARGET_SKIP[mob_id])
@@ -435,6 +495,7 @@ function pull.pullRadar()
         return 0
     end
     pullRadarTimer:reset()
+    state.pullMobID = nil
     local pull_radius_count
     local pull_radius = config.get('PULLRADIUS')
     local pull_level_priority = config.get('PULLLEVELPRIORITY')
@@ -471,12 +532,14 @@ function pull.pullRadar()
             if validatePull(mob, 0, zone_sn) then
                 local path_len = checkPathLength(mob)
                 local dist3d = mob.Distance3D()
-                if (mob.LineOfSight() and dist3d < (pullRange - 30)) or (dist3d and path_len < dist3d + 50) then
+                if (mob.LineOfSight() and dist3d < (pullRange - 30)) or (dist3d and path_len < dist3d + 50 and path_len > -1) then
                     -- don't bother to check path length if mob already in los and pullrange, never mind of a path exists.
                     -- if path length is within 50 of distance3d then its probably safe to pull also
                     state.pullMobID = mob.ID()
+                    logger.debug(logger.flags.routines.pull, ('fetching nearby mob: %s'):format(mob.ID()))
                     return mob.ID()
                 elseif path_len > -1 then
+                    logger.debug(logger.flags.routines.pull, ('fetching mob in pullpath range: %s %s'):format(mob.ID(), path_len))
                     -- local path_len = mq.TLO.Navigation.PathLength(string.format('id %s', mob.ID()))()
                     -- if  then
                     -- TODO: check for people nearby, check level, check z radius if high/low differ
@@ -726,11 +789,6 @@ function pull.pullMob()
             -- let this fall through to pull validation which already checks groupwatch stuff
             --return
         end
-    end
-    if state.emu and config.get('LOOTMOBS') and mq.TLO.SpawnCount('npccorpse radius ' .. config.get('CAMPRADIUS') .. ' zradius 10')() > 0 then
-        logger.debug(logger.flags.routines.pull, 'Not pulling due to lootable corpses nearby')
-        pull.clearPullVars('pullMob-lootablecorpses')
-        return
     end
     -- if currently assisting or tanking something, or stuff is on xtarget, then don't start new pulling things
     if not pull_state and (state.assistMobID ~= 0 or state.tankMobID ~= 0 or common.hostileXTargets()) then

@@ -82,7 +82,13 @@ Warrior.Abilities = {
     {
         Type = 'Disc',
         Group = 'provoke1',
-        Names = { 'Mortimus\' Roar', 'Namdrows\' Roar', 'Mock', 'Bazu Bellow', 'Ancient: Chaos Cry', 'Bellow of the Mastruq', 'Incite', 'Berate', 'Bellow' },
+        Names = { 'Mortimus\' Roar', 'Namdrows\' Roar', 'Mock', 'Ancient: Chaos Cry', 'Bellow of the Mastruq', 'Incite', 'Berate', 'Bellow' },
+        Options = { tanking = true, condition = conditions.withinMeleeDistance }
+    },
+    {
+        Type = 'Disc',
+        Group = 'provoke2',
+        Names = { 'Infuriate', 'Bristle', 'Mock', 'Bazu Bellow' },
         Options = { tanking = true, condition = conditions.withinMeleeDistance }
     },
     --[[ {
@@ -324,14 +330,14 @@ Warrior.Abilities = {
                     conditions.withinMeleeDistance()
             end
         }
-    }, -- once Slam working, use { and not string.find("Ogre Troll Vah Shir Barbarian", mq.TLO.Me.Race()) } in the condition to select slam or kick
+    }, 
     {
         Type = 'Skill',
         Name = 'Kick',
         Options = {
             dps = true,
             condition = function()
-                return mq.TLO.Me.Inventory('offhand').Type() ~= 'Shield' and
+                return mq.TLO.Me.Inventory('offhand').Type() ~= 'Shield' and 
                     conditions.withinMeleeDistance()
             end
         }

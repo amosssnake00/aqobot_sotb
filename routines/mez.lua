@@ -55,7 +55,7 @@ function mez.doSingle(mez_spell)
                 local spellData = mq.TLO.Spell(mez_spell.CastName)
                 local maxLevel = spellData.Max(1)() or mq.TLO.Me.Level()
                 -- if id ~= state.assistMobID and mob.Level() <= maxLevel and mob.Type() == 'NPC' then
-                if mob.Level() <= maxLevel and mob.Type() == 'NPC' then
+                if mob.Level and mob.Level() <= maxLevel and mob.Type() == 'NPC' then
                     mq.cmd('/attack off')
                     mq.delay(100, function() return not mq.TLO.Me.Combat() end)
                     mob.DoTarget()

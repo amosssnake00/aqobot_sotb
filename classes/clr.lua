@@ -202,7 +202,7 @@ Cleric.SpellLines = {
     },
     { -- Group heal with cure component. Slot 8
         Group = 'grouphealcure',
-        Spells = { 'Word of Greater Vivification', 'Word of Greater Rejuvenation', 'Word of Greater Replenishment', 'Word of Greater Restoration', 'Word of Greater Reformation', 'Word of Reformation', 'Word of Rehabilitation', 'Word of Resurgence', --[[emu cutoff]]'Word of Restoration', 'Word of Vivification', 'Word of Replenishment', 'Word of Redemption' },
+        Spells = { 'Word of Greater Vivification', 'Word of Greater Rejuvenation', 'Word of Greater Replenishment', 'Word of Greater Restoration', 'Word of Greater Reformation', 'Word of Reformation', 'Word of Rehabilitation', 'Word of Resurgence', --[[emu cutoff]]'Word of Vivification', 'Word of Restoration', 'Word of Replenishment', 'Word of Redemption' },
         Options = { alias = 'GROUPHEAL', Gem = function(lvl) return (lvl <= 70 and 8) or
             (Cleric:isEnabled('USESPLASH') and 8) or nil end, threshold = 3, regular = true, single = true, group = true, pct = 70, cure = true, Disease = true, Poison = true, Curse = true }
     },
