@@ -2,6 +2,7 @@ local helpers = {}
 
 -- Split a string using the provided separator, | by default
 function helpers.split(input, sep)
+    if not input or type(input) ~= "string" then return {} end
     if sep == nil then
         sep = "|"
     end
@@ -13,6 +14,7 @@ function helpers.split(input, sep)
 end
 
 function helpers.splitSet(input, sep)
+    if not input or type(input) ~= "string" then return {} end
     if sep == nil then
         sep = "|"
     end
@@ -30,6 +32,9 @@ end
 ---@param y2 number @The Y value of the second coordinate.
 ---@return number @Returns the distance between the two points.
 function helpers.distance(x1, y1, x2, y2)
+    if not (x1 and y1 and x2 and y2) then return 0 end
+      if type(x1) ~= "number" or type(y1) ~= "number" or
+         type(x2) ~= "number" or type(y2) ~= "number" then return 0 end
     return (x2 - x1) ^ 2 + (y2 - y1) ^ 2
 end
 

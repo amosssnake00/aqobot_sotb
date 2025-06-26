@@ -54,7 +54,7 @@ function status.send(class)
     local buffs = {}
     for i = 1, 42 do
         local aBuff = mq.TLO.Me.Buff(i)
-        if aBuff() and not aBuff.Spell.Beneficial() and not ignoredebuffs[aBuff.Name()] then
+        if aBuff() and aBuff.Spell() and not aBuff.Spell.Beneficial() and not ignoredebuffs[aBuff.Name()] then
             local buffData = { Name = aBuff.Name(), Duration = aBuff.Duration.TotalSeconds() }
             if aBuff.CounterNumber() and (aBuff.CounterNumber() or 0) > 0 then
                 buffData.CounterNumber = aBuff.CounterNumber()
@@ -73,7 +73,7 @@ function status.send(class)
     local songs = {}
     for i = 1, 20 do
         local aSong = mq.TLO.Me.Song(i)
-        if aSong() and not aSong.Spell.Beneficial() then
+        if aSong() and aSong.Spell() and not aSong.Spell.Beneficial() then
             local songData = { Name = aSong.Name(), Duration = aSong.Duration.TotalSeconds() }
             if aSong.CounterNumber() and (aSong.CounterNumber() or 0) > 0 then
                 songData.CounterNumber = aSong.CounterNumber()

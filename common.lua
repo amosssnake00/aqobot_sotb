@@ -33,7 +33,7 @@ end
 local function getSpell(spellName)
     local spell = mq.TLO.Spell(spellName)
     local rankname = spell.RankName()
-    if not mq.TLO.Me.Book(rankname)() then return nil end
+    if not rankname or not mq.TLO.Me.Book(rankname)() then return nil end
     if state.ActAsLevel and spell.Level() > state.ActAsLevel then return nil end
     return { ID = spell.ID(), Name = rankname, Ref = spell, Level = spell.Level(), BaseName = spell.BaseName() }
 end
@@ -159,7 +159,7 @@ end
 function common.clearToBuff()
     -- return mq.TLO.Me.CombatState() ~= 'COMBAT' and not common.hostileXTargets() and not common.amIDead() and not state.forceEngage
     return mq.TLO.Me.CombatState() ~= 'COMBAT' and not mq.TLO.Spawn('npc radius ' .. config.get('CAMPRADIUS'))
-    .Aggressive() and not common.amIDead() and not state.forceEngage
+        .Aggressive() and not common.amIDead() and not state.forceEngage
 end
 
 ---Determine whether currently in control of the character, i.e. not CC'd, stunned, mezzed, etc.
@@ -173,7 +173,7 @@ end
 function common.isBlockingWindowOpen()
     -- check blocking windows -- BigBankWnd, MerchantWnd, GiveWnd, TradeWnd
     return mq.TLO.Window('BigBankWnd').Open() or mq.TLO.Window('MerchantWnd').Open() or mq.TLO.Window('GiveWnd').Open() or
-    mq.TLO.Window('TradeWnd').Open() or mq.TLO.Window('LootWnd').Open()
+        mq.TLO.Window('TradeWnd').Open() or mq.TLO.Window('LootWnd').Open()
 end
 
 -- Movement Functions
@@ -184,14 +184,6 @@ function common.checkChase()
     if mode.currentMode:getName() ~= 'chase' then return end
     --if not checkChaseTimer:expired() then return end
     --checkChaseTimer:reset()
-    if mq.TLO.Stick.Active() or mq.TLO.Me.Combat() or (mq.TLO.Me.AutoFire() and mq.TLO.Target.Type() == 'NPC') or (state.class ~= 'BRD' and mq.TLO.Me.Casting()) or mq.TLO.Window('SpellBookWnd').Open() then
-        if logger.flags.common.chase then
-            logger.debug(logger.flags.common.chase,
-                'Not chasing due to one of: Stick.Active=%s, Me.Combat=%s, Me.AutoFire=%s, Me.Casting=%s',
-                mq.TLO.Stick.Active(), mq.TLO.Me.Combat(), mq.TLO.Me.AutoFire, mq.TLO.Me.Casting())
-        end
-        return
-    end
     local chase_spawn = mq.TLO.Spawn('pc =' .. config.get('CHASETARGET'))
     local me_x = mq.TLO.Me.X()
     local me_y = mq.TLO.Me.Y()
@@ -201,8 +193,22 @@ function common.checkChase()
         logger.debug(logger.flags.common.chase, 'Not chasing due to invalid chase spawn X=%s,Y=%s', chase_x, chase_y)
         return
     end
+    if mq.TLO.Stick.Active() or mq.TLO.Me.Combat() or (mq.TLO.Me.AutoFire() and mq.TLO.Target.Type() == 'NPC') or (state.class ~= 'BRD' and mq.TLO.Me.Casting()) or mq.TLO.Window('SpellBookWnd').Open() then
+        if helpers.distance(me_x, me_y, chase_x, chase_y) > (config.get('CAMPRADIUS') ^ 2) then
+            logger.debug(logger.flags.common.chase, 'Getting too far (>CAMPRADIUS) from chase target)')
+        else
+            if logger.flags.common.chase then
+                logger.debug(logger.flags.common.chase,
+                    'Not chasing due to one of: Stick.Active=%s, Me.Combat=%s, Me.AutoFire=%s, Me.Casting=%s',
+                    mq.TLO.Stick.Active(), mq.TLO.Me.Combat(), mq.TLO.Me.AutoFire, mq.TLO.Me.Casting())
+            end
+            return
+        end
+    end
+
     if helpers.distance(me_x, me_y, chase_x, chase_y) > (config.get('CHASEDISTANCE') ^ 2) then
         if mq.TLO.Me.Sitting() then mq.cmd('/stand') end
+        if mq.TLO.Window('SpellBookWnd').Open() then mq.TLO.Window('SpellBookWnd').DoClose() end
         if not movement.navToSpawn('pc =' .. config.get('CHASETARGET'), 'dist=' .. config.get('CHASESTOPDISTANCE')) then
             local chaseSpawn = mq.TLO.Spawn('pc ' .. config.get('CHASETARGET'))
             if not mq.TLO.Navigation.Active() and chaseSpawn.LineOfSight() then
@@ -271,7 +277,7 @@ function common.checkCombatBuffs()
     if not mq.TLO.Me.Buff('Geomantra')() then
         local charm = mq.TLO.Me.Inventory('Charm')
         local charmSpell = charm.Clicky.Spell()
-        if charmSpell and charmSpell:lower():find('geomantra') then
+        if charmSpell and tostring(charmSpell):lower():find('geomantra') then
             abilities.use(abilities.Item:new({ Name = charm(), ID = charm.ID() }))
         end
     end
