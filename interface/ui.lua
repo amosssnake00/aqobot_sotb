@@ -1096,10 +1096,10 @@ local function drawSavePolygonSetPopup()
             ImGui.Separator()
             
             ImGui.Text('Set Name:')
-            polygonSetName = ImGui.InputText('##setname', polygonSetName, 20)
+            polygonSetName = ImGui.InputText('##setname', polygonSetName)
             
             ImGui.Text('Note (optional):')
-            polygonSetNote = ImGui.InputText('##setnote', polygonSetNote, 100)
+            polygonSetNote = ImGui.InputText('##setnote', polygonSetNote)
             
             ImGui.Separator()
             
