@@ -24,6 +24,12 @@ function pull.init(_class)
         for i, point in ipairs(class.polygonPoints) do
             polygonPoints[i] = {point[1], point[2]}
         end
+        
+        -- Reorder points for optimal coverage if we have enough points
+        if #polygonPoints >= 3 then
+            polygonPoints = reorderPolygonPoints(polygonPoints)
+        end
+        
         local centerAndRadius = calculatePolygonCenterAndRadius(polygonPoints)
         if centerAndRadius then
             polygonCenter = centerAndRadius
@@ -167,6 +173,70 @@ local function checkPathLength(pull_spawn)
     return path_len
 end
 
+---Reorders polygon points to form a convex hull for maximum area coverage.
+---Uses a simplified convex hull algorithm to find the optimal point ordering.
+---@param points table @A table of points, where each point is a table {x_coord, y_coord}.
+---@return table @A table of reordered vertices forming the convex hull.
+local function reorderPolygonPoints(points)
+    if #points < 3 then return points end
+    
+    -- Find the bottom-most point (and leftmost in case of tie)
+    local start = 1
+    for i = 2, #points do
+        local curr = points[i]
+        local lowest = points[start]
+        if curr[2] < lowest[2] or (curr[2] == lowest[2] and curr[1] < lowest[1]) then
+            start = i
+        end
+    end
+    
+    -- Swap the starting point to index 1
+    if start ~= 1 then
+        points[1], points[start] = points[start], points[1]
+    end
+    
+    local startPoint = points[1]
+    
+    -- Function to calculate polar angle from start point
+    local function polarAngle(p1, p2)
+        local dx = p2[1] - p1[1]
+        local dy = p2[2] - p1[2]
+        return math.atan2(dy, dx)
+    end
+    
+    -- Function to calculate squared distance
+    local function distanceSquared(p1, p2)
+        local dx = p2[1] - p1[1]
+        local dy = p2[2] - p1[2]
+        return dx * dx + dy * dy
+    end
+    
+    -- Sort points by polar angle with respect to start point
+    local otherPoints = {}
+    for i = 2, #points do
+        table.insert(otherPoints, points[i])
+    end
+    
+    table.sort(otherPoints, function(a, b)
+        local angleA = polarAngle(startPoint, a)
+        local angleB = polarAngle(startPoint, b)
+        if math.abs(angleA - angleB) < 1e-9 then
+            -- If angles are equal, sort by distance (closer first)
+            return distanceSquared(startPoint, a) < distanceSquared(startPoint, b)
+        end
+        return angleA < angleB
+    end)
+    
+    -- Build ordered hull points
+    local orderedPoints = {startPoint}
+    for _, point in ipairs(otherPoints) do
+        table.insert(orderedPoints, point)
+    end
+    
+    logger.debug(logger.flags.routines.pull, 'Reordered %d polygon points for optimal coverage', #orderedPoints)
+    return orderedPoints
+end
+
 ---Checks if a point is inside a polygon using the Ray Casting algorithm.
 ---@param point_x number @The x-coordinate of the point to check.
 ---@param point_y number @The y-coordinate of the point to check.
@@ -288,6 +358,11 @@ function pull.addPolygonPoint(x, y)
     if not x or not y then return false end
     table.insert(polygonPoints, {x, y})
     
+    -- Reorder points for optimal coverage if we have enough points
+    if #polygonPoints >= 3 then
+        polygonPoints = reorderPolygonPoints(polygonPoints)
+    end
+    
     -- Recalculate center and radius
     local centerAndRadius = calculatePolygonCenterAndRadius(polygonPoints)
     if centerAndRadius then
@@ -318,6 +393,11 @@ end
 function pull.removePolygonPoint(index)
     if not index or index < 1 or index > #polygonPoints then return end
     table.remove(polygonPoints, index)
+    
+    -- Reorder points for optimal coverage if we still have enough points
+    if #polygonPoints >= 3 then
+        polygonPoints = reorderPolygonPoints(polygonPoints)
+    end
     
     -- Recalculate center and radius
     local centerAndRadius = calculatePolygonCenterAndRadius(polygonPoints)
@@ -447,6 +527,11 @@ function pull.loadPolygonSet(setName)
     -- Load points from set
     for i, point in ipairs(set.points) do
         polygonPoints[i] = {point[1], point[2]}
+    end
+    
+    -- Reorder points for optimal coverage if we have enough points
+    if #polygonPoints >= 3 then
+        polygonPoints = reorderPolygonPoints(polygonPoints)
     end
     
     -- Recalculate center and radius
