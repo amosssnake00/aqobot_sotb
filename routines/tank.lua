@@ -8,7 +8,7 @@ local movement = require('utils.movement')
 local timer = require('libaqo.timer')
 local mode = require('mode')
 local state = require('state')
-
+local common = require('common')
 local tank = {}
 
 function tank.init()
@@ -33,7 +33,7 @@ function IsPcPet(mob)
     local mobCleanName = mob.CleanName()
     if mob.Owner.Type() ~= nil and mob.Owner.Type() == 'PC' then
         return true
-    elseif mob.Owner.Type() ~= nil then
+    elseif mob.Owner.Type() ~= nil or not mob() then
         return false
     else
         local mobSurName = mob.Surname() or 'none'
@@ -88,8 +88,11 @@ function tank.findMobToTank()
             state.tankMobID = 0
             logger.debug(logger.flags.routines.tank, 'Cleared target due to pet on target')
         end
+        common.dismountForCombat()
         tank.stickToMob()
-        if not mq.TLO.Me.Combat() then mq.cmd('/attack on') end
+        if not mq.TLO.Me.Combat() then 
+            mq.cmd('/attack on') 
+        end
         return false
     else
         state.tankMobID = 0
@@ -249,6 +252,7 @@ function tank.tankMob()
         return false
     end
     --movement.stop()
+    common.dismountForCombat()
     if mq.TLO.Navigation.Active() then mq.cmd('/squelch /nav stop') end
     mq.cmd('/multiline ; /stand ; /squelch /face fast')
     if not mq.TLO.Me.Combat() and not state.dontAttack then

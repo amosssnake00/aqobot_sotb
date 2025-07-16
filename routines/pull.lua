@@ -16,6 +16,25 @@ local pull = {}
 
 function pull.init(_class)
     class = _class
+    
+    -- Load polygon points from class settings
+    if class.polygonPoints and #class.polygonPoints > 0 then
+        -- Create a deep copy to avoid reference issues
+        polygonPoints = {}
+        for i, point in ipairs(class.polygonPoints) do
+            polygonPoints[i] = {point[1], point[2]}
+        end
+        local centerAndRadius = calculatePolygonCenterAndRadius(polygonPoints)
+        if centerAndRadius then
+            polygonCenter = centerAndRadius
+            polygonRadius = centerAndRadius.radius
+        end
+        -- Draw markers for loaded polygon points
+        pull.drawAllPolygonMarkers()
+    else
+        -- No polygon points defined, clear any existing markers
+        mq.cmd('/squelch /maploc remove')
+    end
 end
 
 -- Pull Functions
@@ -24,10 +43,12 @@ local PULL_TARGET_SKIP = {}
 
 local pull_range = nil
 
-local polygon = config.get('POLYGON')
--- mob at 135, SE
--- pull arc left 90
--- pull arc right 180
+-- Polygon pull points - stored as {{x1,y1}, {x2,y2}, ...}
+local polygonPoints = {}
+local polygonCenter = nil
+local polygonRadius = nil
+
+-- No longer need local polygon sets - using config system
 
 ---
 -- Calculates the compass angle in degrees of a target point relative to a center point.
@@ -38,6 +59,7 @@ local polygon = config.get('POLYGON')
 -- @param target_y The y-coordinate of the target point.
 -- @return number The angle in degrees, normalized to [0, 360).
 local function getCompassAngle(center_x, center_y, target_x, target_y)
+    -- This is the only line that changed.
     -- By subtracting target from center for X, we invert the axis to match the server's coordinate system.
     local dx = center_x - target_x 
     local dy = target_y - center_y
@@ -207,60 +229,337 @@ local function isPointInPolygon(point_x, point_y, polygon)
     return inside
 end
 
---- Calculates the center and radius based on the longest segment of a polygon.
---- The center is the midpoint of the longest segment.
---- The radius is half the length of this longest segment.
+--- Calculates the centroid (center) of a polygon and the radius to encompass all points.
+--- The center is the average of all vertices.
+--- The radius is the distance from center to the furthest vertex.
 --- @param polygon_points table @A table of ordered vertices, e.g., {{x1,y1}, {x2,y2}, ...}.
 --- @return table|nil @A table {x, y, radius} or nil if not enough points.
 local function calculatePolygonCenterAndRadius(polygon_points)
-    if not polygon_points or #polygon_points < 2 then -- Need at least 2 points to form a segment
+    if not polygon_points or #polygon_points < 2 then
         logger.debug(logger.flags.routines.pull, 'Polygon has less than 2 points for center calculation.')
         return nil
     end
 
-    local max_distance_sq = 0
-    local p1_longest, p2_longest = nil, nil
-
-    if #polygon_points == 2 then -- Only one segment possible
-        p1_longest = polygon_points[1]
-        p2_longest = polygon_points[2]
-        if not p1_longest or not p2_longest or not p1_longest[1] or not p1_longest[2] or not p2_longest[1] or not p2_longest[2] then
-            logger.debug(logger.flags.routines.pull, 'Invalid point format in 2-point polygon for center calculation.')
+    -- Calculate centroid (average of all vertices)
+    local sum_x, sum_y = 0, 0
+    for i = 1, #polygon_points do
+        local point = polygon_points[i]
+        if not point or not point[1] or not point[2] then
+            logger.debug(logger.flags.routines.pull, 'Invalid point format in polygon at index %d.', i)
             return nil
         end
-        max_distance_sq = (p2_longest[1] - p1_longest[1]) ^ 2 + (p2_longest[2] - p1_longest[2]) ^ 2
-    else -- More than 2 points, find the longest segment
-        for i = 1, #polygon_points - 1 do
-            for j = i + 1, #polygon_points do
-                local p1_seg = polygon_points[i]
-                local p2_seg = polygon_points[j]
-                if not p1_seg or not p2_seg or not p1_seg[1] or not p1_seg[2] or not p2_seg[1] or not p2_seg[2] then
-                    logger.debug(logger.flags.routines.pull,
-                        'Invalid point format in polygon for center calculation at indices %d, %d.', i, j)
-                    -- Optionally skip this pair or return nil early
-                    goto continue_outer_loop
-                end
-                local seg_dist_sq = (p2_seg[1] - p1_seg[1]) ^ 2 + (p2_seg[2] - p1_seg[2]) ^ 2
-                if seg_dist_sq > max_distance_sq then
-                    max_distance_sq = seg_dist_sq
-                    p1_longest = p1_seg
-                    p2_longest = p2_seg
-                end
-            end
-            ::continue_outer_loop::
+        sum_x = sum_x + point[1]
+        sum_y = sum_y + point[2]
+    end
+    
+    local center_x = sum_x / #polygon_points
+    local center_y = sum_y / #polygon_points
+    
+    -- Find the maximum distance from center to any vertex (this becomes our radius)
+    local max_distance_sq = 0
+    for i = 1, #polygon_points do
+        local point = polygon_points[i]
+        local dist_sq = (point[1] - center_x) ^ 2 + (point[2] - center_y) ^ 2
+        if dist_sq > max_distance_sq then
+            max_distance_sq = dist_sq
         end
     end
+    
+    local radius = math.sqrt(max_distance_sq)
+    logger.debug(logger.flags.routines.pull, 'polygon center %d, %d + radius %d.', center_x, center_y, radius)
+    return { x = center_x, y = center_y, radius = radius }
+end
 
-    if not p1_longest or not p2_longest then -- Should not happen if #polygon_points >= 2 and points are valid
-        logger.debug(logger.flags.routines.pull, 'Could not determine longest segment for polygon center calculation.')
-        return nil
+---Add a point to the polygon using current target position, or specified coordinates
+---@param x number|nil @The x coordinate of the point (optional, uses current target if nil, or current pos if no target)
+---@param y number|nil @The y coordinate of the point (optional, uses current target if nil, or current pos if no target)
+function pull.addPolygonPoint(x, y)
+    -- If no coordinates provided, use current target position
+    if not x or not y then
+        local target = mq.TLO.Target
+        if not target() then
+            logger.info('No target selected for polygon point, using current position')
+            x, y = mq.TLO.Me.X(), mq.TLO.Me.Y()
+        else
+            x, y = target.X(), target.Y()
+        end
     end
+    
+    if not x or not y then return false end
+    table.insert(polygonPoints, {x, y})
+    
+    -- Recalculate center and radius
+    local centerAndRadius = calculatePolygonCenterAndRadius(polygonPoints)
+    if centerAndRadius then
+        polygonCenter = centerAndRadius
+        polygonRadius = centerAndRadius.radius
+    end
+    
+    -- Remove all markers and re-add them (to ensure clean state)
+    mq.cmd('/squelch /maploc remove')
+    pull.drawAllPolygonMarkers()
+    pull.redrawCampMarkers()
+    
+    -- Save to class settings
+    if class then
+        -- Create a deep copy to ensure proper persistence
+        class.polygonPoints = {}
+        for i, point in ipairs(polygonPoints) do
+            class.polygonPoints[i] = {point[1], point[2]}
+        end
+        class:saveSettings()
+    end
+    
+    return true
+end
 
-    local center_x = (p1_longest[1] + p2_longest[1]) / 2
-    local center_y = (p1_longest[2] + p2_longest[2]) / 2
-    local derived_radius = math.sqrt(max_distance_sq) / 2
+---Remove a point from the polygon by index
+---@param index number @The index of the point to remove
+function pull.removePolygonPoint(index)
+    if not index or index < 1 or index > #polygonPoints then return end
+    table.remove(polygonPoints, index)
+    
+    -- Recalculate center and radius
+    local centerAndRadius = calculatePolygonCenterAndRadius(polygonPoints)
+    if centerAndRadius then
+        polygonCenter = centerAndRadius
+        polygonRadius = centerAndRadius.radius
+    else
+        polygonCenter = nil
+        polygonRadius = nil
+    end
+    
+    -- Remove all markers and re-add remaining ones
+    mq.cmd('/squelch /maploc remove')
+    pull.drawAllPolygonMarkers()
+    pull.redrawCampMarkers()
+    
+    -- Save to class settings
+    if class then
+        -- Create a deep copy to ensure proper persistence
+        class.polygonPoints = {}
+        for i, point in ipairs(polygonPoints) do
+            class.polygonPoints[i] = {point[1], point[2]}
+        end
+        class:saveSettings()
+    end
+end
 
-    return { x = center_x, y = center_y, radius = derived_radius }
+---Clear all polygon points
+function pull.clearPolygon()
+    polygonPoints = {}
+    polygonCenter = nil
+    polygonRadius = nil
+    
+    -- Remove all map markers
+    mq.cmd('/squelch /maploc remove')
+    pull.redrawCampMarkers()
+    
+    -- Save to class settings
+    if class then
+        -- Create a deep copy to ensure proper persistence
+        class.polygonPoints = {}
+        for i, point in ipairs(polygonPoints) do
+            class.polygonPoints[i] = {point[1], point[2]}
+        end
+        class:saveSettings()
+    end
+end
+
+---List all polygon points
+function pull.listPolygonPoints()
+    if #polygonPoints == 0 then
+        logger.info('No polygon points defined')
+        return
+    end
+    
+    logger.info('Polygon points:')
+    for i, point in ipairs(polygonPoints) do
+        logger.info('  %d: %.2f, %.2f', i, point[1], point[2])
+    end
+    
+    if polygonCenter then
+        logger.info('Center: %.2f, %.2f (radius: %.2f)', polygonCenter.x, polygonCenter.y, polygonRadius)
+    end
+end
+
+---Get polygon points for UI display
+---@return table @Array of polygon points
+function pull.getPolygonPoints()
+    return polygonPoints
+end
+
+---Debug function to check polygon points
+function pull.debugPolygonPoints()
+    logger.info('=== POLYGON POINTS DEBUG ===')
+    logger.info('Local polygonPoints table has %d entries', #polygonPoints)
+    for i, point in ipairs(polygonPoints) do
+        logger.info('  Point %d: %.2f, %.2f', i, point[1], point[2])
+    end
+    if class and class.polygonPoints then
+        logger.info('Class polygonPoints table has %d entries', #class.polygonPoints)
+        for i, point in ipairs(class.polygonPoints) do
+            logger.info('  Class Point %d: %.2f, %.2f', i, point[1], point[2])
+        end
+    else
+        logger.info('Class polygonPoints is nil or empty')
+    end
+    logger.info('=== END DEBUG ===')
+end
+
+---Save current polygon points as a named set
+---@param setName string @Name for the polygon set
+---@param note string @Optional description/note
+function pull.savePolygonSet(setName, note)
+    if #polygonPoints == 0 then
+        logger.info('No polygon points to save')
+        return false
+    end
+    
+    if not setName or setName == '' then
+        logger.info('Set name cannot be empty')
+        return false
+    end
+    
+    local zone = mq.TLO.Zone.ShortName()
+    local pointsCopy = {}
+    for i, point in ipairs(polygonPoints) do
+        pointsCopy[i] = {point[1], point[2]}
+    end
+    
+    config.addPolygonSet(setName, zone, note, pointsCopy)
+    logger.info('Saved polygon set "%s" with %d points for zone %s', setName, #pointsCopy, zone)
+    return true
+end
+
+---Load a polygon set by name
+---@param setName string @Name of the polygon set to load
+function pull.loadPolygonSet(setName)
+    local set = config.getPolygonSet(setName)
+    if not set then
+        logger.info('Polygon set "%s" not found', setName)
+        return false
+    end
+    
+    -- Clear current points
+    polygonPoints = {}
+    
+    -- Load points from set
+    for i, point in ipairs(set.points) do
+        polygonPoints[i] = {point[1], point[2]}
+    end
+    
+    -- Recalculate center and radius
+    local centerAndRadius = calculatePolygonCenterAndRadius(polygonPoints)
+    if centerAndRadius then
+        polygonCenter = centerAndRadius
+        polygonRadius = centerAndRadius.radius
+    else
+        polygonCenter = nil
+        polygonRadius = nil
+    end
+    
+    -- Update current polygon points in class
+    if class then
+        class.polygonPoints = {}
+        for i, point in ipairs(polygonPoints) do
+            class.polygonPoints[i] = {point[1], point[2]}
+        end
+        class:saveSettings()
+    end
+    
+    -- Redraw markers
+    mq.cmd('/squelch /maploc remove')
+    pull.drawAllPolygonMarkers()
+    pull.redrawCampMarkers()
+    
+    logger.info('Loaded polygon set "%s" with %d points', setName, #polygonPoints)
+    return true
+end
+
+---Get polygon sets for current zone
+---@return table @Array of polygon sets for current zone
+function pull.getPolygonSetsForZone()
+    local zone = mq.TLO.Zone.ShortName()
+    local zoneSets = {}
+    local allSets = config.getPolygonSets()
+    
+    for setName, set in pairs(allSets) do
+        if set.zone == zone then
+            table.insert(zoneSets, {
+                name = setName,
+                note = set.note,
+                count = set.count,
+                timestamp = set.timestamp,
+                zone = set.zone
+            })
+        end
+    end
+    
+    -- Sort by timestamp (newest first)
+    table.sort(zoneSets, function(a, b) return a.timestamp > b.timestamp end)
+    
+    return zoneSets
+end
+
+---Get all polygon sets
+---@return table @All polygon sets
+function pull.getAllPolygonSets()
+    local sets = {}
+    local allSets = config.getPolygonSets()
+    
+    for setName, set in pairs(allSets) do
+        table.insert(sets, {
+            name = setName,
+            note = set.note,
+            count = set.count,
+            timestamp = set.timestamp,
+            zone = set.zone
+        })
+    end
+    
+    -- Sort by zone, then timestamp
+    table.sort(sets, function(a, b) 
+        if a.zone == b.zone then
+            return a.timestamp > b.timestamp
+        end
+        return a.zone < b.zone
+    end)
+    
+    return sets
+end
+
+---Delete a polygon set
+---@param setName string @Name of the polygon set to delete
+function pull.deletePolygonSet(setName)
+    if config.removePolygonSet(setName) then
+        logger.info('Deleted polygon set "%s"', setName)
+        return true
+    else
+        logger.info('Polygon set "%s" not found', setName)
+        return false
+    end
+end
+
+---Draw map markers for all polygon points
+function pull.drawAllPolygonMarkers()
+    if #polygonPoints == 0 then return end
+    
+    local z = mq.TLO.Me.Z()
+    for i, point in ipairs(polygonPoints) do
+        local label = 'polygon_' .. i
+        mq.cmdf('/squelch /maploc size 10 width 2 radius 5 color 255 128 0 rcolor 255 51 255 %s %s %s label %s', 
+            point[2], point[1], z, label)
+    end
+end
+
+---Redraw camp markers if camp is active
+function pull.redrawCampMarkers()
+    if not camp.Active then return end
+    
+    -- Redraw camp radius marker
+    mq.cmdf('/squelch /maploc size 10 width 1 color 255 0 0 radius %s rcolor 255 0 0 %s %s %s',
+        config.get('CAMPRADIUS'), camp.Y + 1, camp.X + 1, camp.Z)
 end
 
 ---Validate that the spawn is good for pulling
@@ -277,9 +576,16 @@ local function validatePull(pull_spawn, path_len, zone_sn)
         return false
     end
     if config.get('POLYGONPULL_ENABLED') then
-        return checkZRadius(pull_spawn) and checkMobLevel(pull_spawn) and
-            not config.ignoresContains(zone_sn, pull_spawn.CleanName()) and
-            isPointInPolygon(mq.TLO.Spawn(mob_id).X(), mq.TLO.Spawn(mob_id).Y(), polygon)
+        -- If no polygon points defined, fall back to regular radius + arc pulling
+        local usePolygon = #polygonPoints >= 3
+        if usePolygon then
+            return checkZRadius(pull_spawn) and checkMobLevel(pull_spawn) and
+                not config.ignoresContains(zone_sn, pull_spawn.CleanName()) and
+                isPointInPolygon(mq.TLO.Spawn(mob_id).X(), mq.TLO.Spawn(mob_id).Y(), polygonPoints)
+        else
+            logger.debug(logger.flags.routines.pull, 'not enough polygon points to determine area')
+            return false
+        end
     else
         return checkMobAngle(pull_spawn) and checkZRadius(pull_spawn) and checkMobLevel(pull_spawn) and
             not config.ignoresContains(zone_sn, pull_spawn.CleanName())
@@ -499,16 +805,27 @@ function pull.pullRadar()
     local pull_radius = config.get('PULLRADIUS')
     local pull_level_priority = config.get('PULLLEVELPRIORITY')
     -- local max_radius = math.max(pull_radius, math.max(config.get('PULLHIGH'), config.get('PULLLOW')))
-    local max_radius = pull_radius
+    local search_x, search_y
+    
     if not pull_radius then return 0 end
-    if camp.Active then
-        pull_radius_count = mq.TLO.SpawnCount(pull_count_camp:format(camp.X, camp.Y, max_radius))()
+    
+    -- Use polygon center and radius if polygon mode is enabled and polygon is defined
+    if config.get('POLYGONPULL_ENABLED') and polygonCenter and polygonRadius then
+        search_x = polygonCenter.x
+        search_y = polygonCenter.y
+        pull_radius_count = mq.TLO.SpawnCount(pull_count_camp:format(search_x, search_y, polygonRadius))()
         logger.debug(logger.flags.routines.pull,
-            ('%s: %s'):format(pull_radius_count or 0, pull_count_camp:format(camp.X, camp.Y, max_radius)))
-    else
-        pull_radius_count = mq.TLO.SpawnCount(pull_count:format(max_radius))()
+            ('%s: %s (polygon mode)'):format(pull_radius_count or 0, pull_count_camp:format(search_x, search_y, polygonRadius)))
+    elseif camp.Active then --puller tank
+        search_x = camp.X
+        search_y = camp.Y
+        pull_radius_count = mq.TLO.SpawnCount(pull_count_camp:format(search_x, search_y, pull_radius))()
+        logger.debug(logger.flags.routines.pull,
+            ('%s: %s'):format(pull_radius_count or 0, pull_count_camp:format(search_x, search_y, pull_radius)))
+    else -- hnunter tank
+        pull_radius_count = mq.TLO.SpawnCount(pull_count:format(pull_radius))()
         -- error here
-        logger.debug(logger.flags.routines.pull, ('%s: %s'):format(pull_radius_count or 0, pull_count:format(max_radius)))
+        logger.debug(logger.flags.routines.pull, ('%s: %s'):format(pull_radius_count or 0, pull_count:format(pull_radius)))
     end
     local shortest_path = config.get('PULLPATH')
     local pull_id = 0
@@ -523,10 +840,13 @@ function pull.pullRadar()
                 break
             end
             local mob
-            if camp.Active then
-                mob = mq.TLO.NearestSpawn(pull_spawn_camp:format(i, camp.X, camp.Y, max_radius))
+            if config.get('POLYGONPULL_ENABLED') and polygonCenter and polygonRadius then
+                -- Use polygon center for search
+                mob = mq.TLO.NearestSpawn(pull_spawn_camp:format(i, search_x, search_y, polygonRadius))
+            elseif camp.Active then
+                mob = mq.TLO.NearestSpawn(pull_spawn_camp:format(i, search_x, search_y, pull_radius))
             else
-                mob = mq.TLO.NearestSpawn(pull_spawn:format(i, max_radius))
+                mob = mq.TLO.NearestSpawn(pull_spawn:format(i, pull_radius))
             end
             if validatePull(mob, 0, zone_sn) then
                 local path_len = checkPathLength(mob)
@@ -667,6 +987,7 @@ local function pullEngage(pull_spawn)
         mq.cmd('/squelch /face fast')
         mq.cmd('/squelch /stand')
         mq.cmd('/squelch /stick front loose moveback 10')
+        common.dismountForCombat()
         mq.cmd('/attack on')
         state.pullStatus = constants.pullStates.WAIT_FOR_AGGRO
     else

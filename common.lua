@@ -9,14 +9,13 @@ local abilities = require('ability')
 local constants = require('constants')
 local mode = require('mode')
 local state = require('state')
-
+-- Remove circular dependency - will get mount from state.classInstance instead
 local common = {}
 
 local familiar = mq.TLO.Familiar and mq.TLO.Familiar.Stat.Item.ID() or mq.TLO.FindItem('Personal Hemic Source').ID()
 -- Familiar: Personal Hemic Source
 local illusion = mq.TLO.Illusion and mq.TLO.Illusion.Stat.Item.ID() or mq.TLO.FindItem('Jann\'s Veil').ID()
 -- Illusion Benefit Greater Jann
-local mount = mq.TLO.Mount and mq.TLO.Mount.Stat.Item.ID() or mq.TLO.FindItem('Golden Owlbear Saddle').ID()
 -- Mount Blessing Meda
 
 -- Generic Helper Functions
@@ -283,8 +282,18 @@ function common.checkCombatBuffs()
     end
 end
 
+---Dismount for combat if using instant AA mount abilities
+function common.dismountForCombat()
+    --logger.info('\arshould dismount: [%s] [%s]\ax',state.classInstance.customMountType, mq.TLO.Me.Mount() )
+    if state.classInstance and state.classInstance.customMountType == 'aa' and mq.TLO.Me.Mount() then
+        mq.cmd('/dismount')
+    end
+end
+
 ---Check and cast any missing familiar, illusion or mount buffs. Removes illusion and dismounts after casting.
 function common.checkItemBuffs()
+    local mount = (state.classInstance and state.classInstance.customMount) or mq.TLO.Mount and mq.TLO.Mount.Stat.Item.ID() or mq.TLO.FindItem('Golden Owlbear Saddle').ID()
+    local mountType = (state.classInstance and state.classInstance.customMountType) or 'item'
     if familiar and familiar > 0 and not mq.TLO.Me.Buff('Familiar:')() then
         local familiarItem = mq.TLO.FindItem(familiar)
         abilities.use(abilities.Item:new({ Name = familiarItem(), ID = familiarItem.ID() }))
@@ -297,12 +306,28 @@ function common.checkItemBuffs()
         mq.delay(500 + illusionItem.CastTime())
         mq.cmd('/removebuff illusion:')
     end
-    if mount and mount > 0 and not mq.TLO.Me.Buff('Mount Blessing')() and mq.TLO.Me.CanMount() then
-        local mountItem = mq.TLO.FindItem(mount)
-        -- TODO: ignore stat mount of no blessing
-        abilities.use(abilities.Item:new({ Name = mountItem(), ID = mountItem.ID() }))
-        mq.delay(500 + mountItem.CastTime())
-        mq.cmdf('/removebuff %s', mountItem.Clicky())
+    if mount and config.get('USEMOUNT') and (not mq.TLO.Me.Buff('Mount Blessing')() or (state.emu and not (mq.TLO.Me.Buff('Summon Horse') or  mq.TLO.Me.Buff('Summon Drogmor')))) and mq.TLO.Me.CanMount() then
+        if mountType == 'aa' then
+            -- AA ability (Paladin/SK instant cast abilities)
+            local aaAbility = mq.TLO.Me.AltAbility(mount)
+            if aaAbility() then
+                abilities.use(abilities.AA:new({ Name = aaAbility.Name(), ID = aaAbility.ID() }))
+                mq.delay(250) -- AA abilities are typically instant
+                if config.get('AUTODISMOUNT') then
+                    mq.cmd('/dismount')
+                end
+            end
+        elseif mount > 0 then
+            -- Regular mount item
+            local mountItem = mq.TLO.FindItem(mount)
+            if mountItem() then
+                abilities.use(abilities.Item:new({ Name = mountItem(), ID = mountItem.ID() }))
+                mq.delay(500 + mountItem.CastTime())
+                if config.get('AUTODISMOUNT') then
+                    mq.cmdf('/removebuff %s', mountItem.Clicky())
+                end
+            end
+        end
     end
 end
 

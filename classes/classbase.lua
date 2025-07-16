@@ -63,6 +63,7 @@ local state     = require('state')
 ---@field debuffOrder               table   #Priority ordered list of debuff types
 ---@field rezAbility?               Ability #
 ---@field epic?                     string  # name of epic
+---@field mount                     table   #User added items used as mount
 ---Request handling / Buff Begging
 ---@field requests                  table   #Stores pending requests received from other characters
 ---@field requestAliases            table   #Aliases which can be used for requesting buffs
@@ -590,6 +591,9 @@ function base:loadSettings()
     self.debuffOrder = settings.debuffOrder
     self.customAbilities = settings.customAbilities or {}
     self.customOptions = settings.customOptions or {}
+    self.customMount = settings.customMount
+    self.customMountType = settings.customMountType
+    self.polygonPoints = settings.polygonPoints or {}
     if doSave then self:saveSettings() end
 end
 
@@ -609,6 +613,9 @@ function base:saveSettings()
         customAbilities = self.customAbilities,
         customOptions = self.customOptions,
         debuffOrder = self.debuffOrder,
+        customMount = self.customMount,
+        customMountType = self.customMountType,
+        polygonPoints = self.polygonPoints,
     })
 end
 

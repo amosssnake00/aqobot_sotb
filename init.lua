@@ -24,6 +24,9 @@ ui.setConsole(CONSOLE)
 
 local class = require('classes.' .. mq.TLO.Me.Class.ShortName():lower())
 
+-- Store class instance in state for access by common.lua
+state.classInstance = class
+
 local aqo = {}
 
 local routines = { 'assist', 'buff', 'camp', 'conditions', 'cure', 'debuff', 'events', 'heal', 'mez', 'pull', 'tank' }
@@ -43,6 +46,7 @@ local function init()
     state.currentZone = mq.TLO.Zone.ID()
     state.subscription = mq.TLO.Me.Subscription()
     config.loadIgnores()
+    config.loadPolygonSets()
 
     if state.emu then
         mq.cmd('/hidecorpse looted')

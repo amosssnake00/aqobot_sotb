@@ -202,17 +202,23 @@ function camp.setCamp(reset)
             camp.ZoneID = mq.TLO.Zone.ID()
         end
         if mode:isPullMode() then
-            if config.get('PULLARC') > 0 and config.get('PULLARC') < 360 then
-                setPullAngles()
-                drawMapLoc(camp.X, camp.Y, camp.Z, camp.PullArcLeft, '0 0 255')
-                drawMapLoc(camp.X, camp.Y, camp.Z, camp.PullArcRight, '0 0 255')
-                drawMapLoc(camp.X, camp.Y, camp.Z, camp.Heading, '255 0 0')
+            -- Only draw pull arc/radius markers if polygon pull is not enabled
+            if not config.get('POLYGONPULL_ENABLED') then
+                if config.get('PULLARC') > 0 and config.get('PULLARC') < 360 then
+                    setPullAngles()
+                    drawMapLoc(camp.X, camp.Y, camp.Z, camp.PullArcLeft, '0 0 255')
+                    drawMapLoc(camp.X, camp.Y, camp.Z, camp.PullArcRight, '0 0 255')
+                    drawMapLoc(camp.X, camp.Y, camp.Z, camp.Heading, '255 0 0')
+                else
+                    camp.PullArcLeft = 0
+                    camp.PullArcRight = 0
+                end
+                mq.cmdf('/squelch /maploc size 10 width 1 color 0 0 255 radius %s rcolor 0 0 255 %s %s %s',
+                    config.get('PULLRADIUS'), camp.Y, camp.X, camp.Z)
             else
                 camp.PullArcLeft = 0
                 camp.PullArcRight = 0
             end
-            mq.cmdf('/squelch /maploc size 10 width 1 color 0 0 255 radius %s rcolor 0 0 255 %s %s %s',
-                config.get('PULLRADIUS'), camp.Y, camp.X, camp.Z)
         else
             camp.PullArcLeft = 0
             camp.PullArcRight = 0
@@ -221,6 +227,12 @@ function camp.setCamp(reset)
             config.get('CAMPRADIUS'), camp.Heading)
         mq.cmdf('/squelch /maploc size 10 width 1 color 255 0 0 radius %s rcolor 255 0 0 %s %s %s',
             config.get('CAMPRADIUS'), camp.Y + 1, camp.X + 1, camp.Z)
+        
+        -- Redraw polygon markers if polygon pull is enabled
+        if config.get('POLYGONPULL_ENABLED') then
+            local pull = require('routines.pull')
+            pull.drawAllPolygonMarkers()
+        end
     elseif camp.Active then
         camp.Active = false
         mq.cmd('/squelch /mapf campradius 0')
@@ -243,23 +255,34 @@ function camp.setCampCustom(X, Y, Z, Heading, ZoneID)
     camp.Heading = tonumber(Heading)
     camp.ZoneID = tonumber(ZoneID)
     if mode:isPullMode() then
-        if config.get('PULLARC') > 0 and config.get('PULLARC') < 360 then
-            setPullAngles()
-            drawMapLoc(camp.X, camp.Y, camp.Z, camp.PullArcLeft, '0 0 255')
-            drawMapLoc(camp.X, camp.Y, camp.Z, camp.PullArcRight, '0 0 255')
-            drawMapLoc(camp.X, camp.Y, camp.Z, camp.Heading, '255 0 0')
+        -- Only draw pull arc/radius markers if polygon pull is not enabled
+        if not config.get('POLYGONPULL_ENABLED') then
+            if config.get('PULLARC') > 0 and config.get('PULLARC') < 360 then
+                setPullAngles()
+                drawMapLoc(camp.X, camp.Y, camp.Z, camp.PullArcLeft, '0 0 255')
+                drawMapLoc(camp.X, camp.Y, camp.Z, camp.PullArcRight, '0 0 255')
+                drawMapLoc(camp.X, camp.Y, camp.Z, camp.Heading, '255 0 0')
+            else
+                camp.PullArcLeft = 0
+                camp.PullArcRight = 0
+            end
+            mq.cmdf('/squelch /maploc size 10 width 1 color 0 0 255 radius %s rcolor 0 0 255 %s %s %s',
+                config.get('PULLRADIUS'), camp.Y, camp.X, camp.Z)
         else
             camp.PullArcLeft = 0
             camp.PullArcRight = 0
         end
-        mq.cmdf('/squelch /maploc size 10 width 1 color 0 0 255 radius %s rcolor 0 0 255 %s %s %s',
-            config.get('PULLRADIUS'), camp.Y, camp.X, camp.Z)
+    end
 
-
-        logger.info('Camp set to \ayX: %.02f Y: %.02f Z: %.02f R: %s H: %.02f\ax', camp.X, camp.Y, camp.Z,
-            config.get('CAMPRADIUS'), camp.Heading)
-        mq.cmdf('/squelch /maploc size 10 width 1 color 255 0 0 radius %s rcolor 255 0 0 %s %s %s',
-            config.get('CAMPRADIUS'), camp.Y + 1, camp.X + 1, camp.Z)
+    logger.info('Camp set to \ayX: %.02f Y: %.02f Z: %.02f R: %s H: %.02f\ax', camp.X, camp.Y, camp.Z,
+        config.get('CAMPRADIUS'), camp.Heading)
+    mq.cmdf('/squelch /maploc size 10 width 1 color 255 0 0 radius %s rcolor 255 0 0 %s %s %s',
+        config.get('CAMPRADIUS'), camp.Y + 1, camp.X + 1, camp.Z)
+    
+    -- Redraw polygon markers if polygon pull is enabled
+    if config.get('POLYGONPULL_ENABLED') then
+        local pull = require('routines.pull')
+        pull.drawAllPolygonMarkers()
     end
 end
 

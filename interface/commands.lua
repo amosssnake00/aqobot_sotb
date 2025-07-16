@@ -430,6 +430,64 @@ function commands.commandHandler(...)
     elseif opt == 'TIMERS' then
         local header = { script = 'aqo', server = mq.TLO.EverQuest.Server() }
         actor.actor:send(header, { id = 'commands', })
+    elseif opt == 'ADDMOUNT' then
+        local itemName = mq.TLO.Cursor()
+        if not itemName then
+            itemName = args[2]
+        end
+        if itemName then
+            local item = mq.TLO.FindItem('=' .. itemName)
+            local aaAbility = mq.TLO.Me.AltAbility(itemName)
+            
+            if item() and item.Clicky() then
+                class.customMount = item.ID()
+                class.customMountType = 'item'
+                logger.info('Set custom mount to item: \ag%s\ax (ID: %s)', itemName, item.ID())
+                class:saveSettings()
+            elseif aaAbility() then
+                class.customMount = itemName  -- Store name for AA abilities
+                class.customMountType = 'aa'
+                logger.info('Set custom mount to AA: \ag%s\ax (ID: %s)', itemName, aaAbility.ID())
+                class:saveSettings()
+            else
+                logger.info('Item or AA \ag%s\ax not found or not usable', itemName)
+            end
+        else
+            logger.info('addmount Usage:\n\tPlace mount item on cursor\n\t/%s addmount\n\tOr: /%s addmount "Item Name" or "AA Name"', state.class, state.class)
+        end
+    elseif opt == 'ADDPOLYGONPOINT' then
+        local x = tonumber(args[2])
+        local y = tonumber(args[3])
+        local pull = require('routines.pull')
+        if x and y then
+            pull.addPolygonPoint(x, y)
+            logger.info('Added polygon point at \ag%.2f, %.2f\ax', x, y)
+        else
+            if pull.addPolygonPoint() then
+                logger.info('Added polygon point using current target position')
+            else
+                logger.info('Failed to add polygon point - that should not happen')
+            end
+        end
+    elseif opt == 'CLEARPOLYGON' then
+        local pull = require('routines.pull')
+        pull.clearPolygon()
+        logger.info('Cleared all polygon points')
+    elseif opt == 'LISTPOLYGON' then
+        local pull = require('routines.pull')
+        pull.listPolygonPoints()
+    elseif opt == 'DEBUGPOLYGON' then
+        local pull = require('routines.pull')
+        pull.debugPolygonPoints()
+    elseif opt == 'REMOVEPOLYGONPOINT' then
+        local index = tonumber(args[2])
+        if index then
+            local pull = require('routines.pull')
+            pull.removePolygonPoint(index)
+            logger.info('Removed polygon point at index \ag%d\ax', index)
+        else
+            logger.info('Usage: /%s removepolygonpoint <index>', state.class)
+        end
     elseif opt == 'GETTINGSTARTED' then
         state.ShowGettingStarted = true
     else

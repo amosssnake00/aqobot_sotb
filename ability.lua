@@ -100,6 +100,7 @@ local IsReady = {
 ---@field combatbuff? boolean       # If true, the ability will be added to Class.combatBuffs
 ---@field aurabuff? boolean         # If true, the ability will be added to Class.auras
 ---@field petbuff? boolean          # If true, the ability will be added to Class.petBuffs
+
 --- Deprecated
 ---@field quick? boolean            # flag the ability as used for quick burns. Use first, second, third instead
 ---@field long? boolean             # flag the ability as used for long burns. Use first, second, third instead

@@ -7,6 +7,7 @@ local movement = require('utils.movement')
 local timer = require('libaqo.timer')
 local mode = require('mode')
 local state = require('state')
+local common = require('common')
 
 local assist = {}
 local class
@@ -305,7 +306,7 @@ function assist.engage()
         end
         stickTimer:reset()
     end
-    if not mq.TLO.Me.Combat() and mq.TLO.Target() and not state.dontAttack then
+    if not mq.TLO.Me.Combat() and mq.TLO.Target() and not state.dontAttack then    
         mq.cmd('/attack on')
     elseif state.dontAttack and state.enrageTimer:expired() then
         state.dontAttack = false
@@ -324,6 +325,7 @@ function assist.doAssist(reset_timers, returnAfterAnnounce)
     if state.assistMobID == 0 then return false end
     if not state.medding or not config.get('MEDCOMBAT') then
         if class:isAbilityEnabled('USEMELEE') then
+            common.dismountForCombat()
             assist.getCombatPosition()
             if state.assistMobID and state.assistMobID > 0 and not mq.TLO.Me.Combat() and class.beforeEngage then
                 class:beforeEngage()
@@ -381,6 +383,7 @@ function assist.attack(skip_no_los)
         stickTimer:reset()
     end
     if not mq.TLO.Me.Combat() and mq.TLO.Target() and not state.dontAttack then
+        common.dismountForCombat()
         mq.cmd('/attack on')
     elseif state.dontAttack and state.enrageTimer:expired() then
         state.dontAttack = false

@@ -21,6 +21,12 @@ local abilityGUIOpen, shouldDrawAbilityGUI = false, false
 local clickyManagerOpen, shouldDrawClickyManager = false, false
 local helpGUIOpen, shouldDrawHelpGUI = false, false
 local buffGUIOpen, showBuffGUI = false, false
+local savePolygonSetOpen, shouldDrawSavePolygonSet = false, false
+local loadPolygonSetOpen, shouldDrawLoadPolygonSet = false, false
+
+-- Polygon set UI state
+local polygonSetName = ''
+local polygonSetNote = ''
 
 -- UI constants
 local MINIMUM_WIDTH = 430
@@ -219,7 +225,6 @@ local function drawBurnTab()
     if class.drawBurnTab then class:drawBurnTab() end
 end
 
--- TODO: enable polygon pull, add 3 points to enter, when 3+ entered, add one point (until 10) - do center calc when polygon changes
 local function drawPullTab()
     local x, _ = ImGui.GetContentRegionAvail()
     local buttonWidth = (x / 2) - 4
@@ -238,6 +243,53 @@ local function drawPullTab()
     if current_radius ~= config.get('PULLRADIUS') or current_pullarc ~= config.get('PULLARC') then
         pull.clearPullVars('configupdate')
         camp.setCamp()
+    end
+    
+    -- Polygon Points Management
+    if config.get('POLYGONPULL_ENABLED') then
+        -- ImGui.Separator()
+        ImGui.Text('Polygon Points:')
+        
+      
+        -- Display polygon points with delete buttons
+        local polygonPoints = pull.getPolygonPoints()
+        if polygonPoints and #polygonPoints > 0 then
+            for i, point in ipairs(polygonPoints) do
+                ImGui.BeginGroup()
+                ImGui.Text(string.format('%d: %.1f, %.1f', i, point[1], point[2]))
+                ImGui.PushID('delete_' .. i)
+                ImGui.SameLine()
+                if ImGui.Button('Delete', 60, BUTTON_HEIGHT - 2) then
+                    mq.cmdf('/%s removepolygonpoint %d', state.class, i)
+                end
+                ImGui.PopID()
+                ImGui.EndGroup()
+            end
+        else
+            ImGui.Text('No polygon points defined')
+        end
+
+        -- Save/Load polygon sets
+        local buttonWidth2 = (x / 2) - 4
+        if ImGui.Button('Save Set', buttonWidth2, BUTTON_HEIGHT) then
+            savePolygonSetOpen = true
+        end
+        ImGui.SameLine()
+        if ImGui.Button('Load Set', buttonWidth2, BUTTON_HEIGHT) then
+            loadPolygonSetOpen = true
+        end
+        
+        -- Add polygon point button
+        local buttonWidth3 = (x / 3) - 6
+        if ImGui.Button('Add Point (Target)', buttonWidth3, BUTTON_HEIGHT) then
+            mq.cmdf('/%s addpolygonpoint', state.class)
+        end
+        if ImGui.Button('List Points', buttonWidth3, BUTTON_HEIGHT) then
+            mq.cmdf('/%s listpolygon', state.class)
+        end
+        if ImGui.Button('Clear All', buttonWidth3, BUTTON_HEIGHT) then
+            mq.cmdf('/%s clearpolygon', state.class)
+        end
     end
 end
 
@@ -1031,6 +1083,115 @@ local function drawHelpWindow()
     end
 end
 
+local function drawSavePolygonSetPopup()
+    if savePolygonSetOpen then
+        ImGui.SetNextWindowSize(400, 200, ImGuiCond.FirstUseEver)
+        savePolygonSetOpen, shouldDrawSavePolygonSet = ImGui.Begin(('Save Polygon Set##AQOBOTUI%s'):format(state.class), savePolygonSetOpen, ImGuiWindowFlags.AlwaysAutoResize)
+        if shouldDrawSavePolygonSet then
+            local zone = mq.TLO.Zone.ShortName()
+            local pointCount = #pull.getPolygonPoints()
+            
+            ImGui.Text(string.format('Zone: %s', zone))
+            ImGui.Text(string.format('Points: %d', pointCount))
+            ImGui.Separator()
+            
+            ImGui.Text('Set Name:')
+            polygonSetName = ImGui.InputText('##setname', polygonSetName, 20)
+            
+            ImGui.Text('Note (optional):')
+            polygonSetNote = ImGui.InputText('##setnote', polygonSetNote, 100)
+            
+            ImGui.Separator()
+            
+            local buttonWidth = 80
+            if ImGui.Button('Save', buttonWidth, BUTTON_HEIGHT) then
+                if polygonSetName and polygonSetName ~= '' then
+                    if pull.savePolygonSet(polygonSetName, polygonSetNote) then
+                        logger.info('Saved polygon set "%s"', polygonSetName)
+                        polygonSetName = ''
+                        polygonSetNote = ''
+                        savePolygonSetOpen = false
+                    end
+                else
+                    logger.info('Set name cannot be empty')
+                end
+            end
+            
+            ImGui.SameLine()
+            if ImGui.Button('Cancel', buttonWidth, BUTTON_HEIGHT) then
+                polygonSetName = ''
+                polygonSetNote = ''
+                savePolygonSetOpen = false
+            end
+        end
+        ImGui.End()
+    end
+end
+
+local function drawLoadPolygonSetPopup()
+    if loadPolygonSetOpen then
+        ImGui.SetNextWindowSize(500, 400, ImGuiCond.FirstUseEver)
+        loadPolygonSetOpen, shouldDrawLoadPolygonSet = ImGui.Begin(('Load Polygon Set##AQOBOTUI%s'):format(state.class), loadPolygonSetOpen)
+        if shouldDrawLoadPolygonSet then
+            local zone = mq.TLO.Zone.ShortName()
+            local zoneSets = pull.getPolygonSetsForZone()
+            
+            ImGui.Text(string.format('Current Zone: %s', zone))
+            ImGui.Separator()
+            
+            if #zoneSets == 0 then
+                ImGui.Text('No polygon sets found for this zone.')
+            else
+                if ImGui.BeginTable('polygonsets', 4, bit32.bor(ImGuiTableFlags.RowBg, ImGuiTableFlags.Borders, ImGuiTableFlags.ScrollY)) then
+                    ImGui.TableSetupColumn('Name', ImGuiTableColumnFlags.WidthFixed, 120)
+                    ImGui.TableSetupColumn('Points', ImGuiTableColumnFlags.WidthFixed, 60)
+                    ImGui.TableSetupColumn('Note', ImGuiTableColumnFlags.WidthStretch)
+                    ImGui.TableSetupColumn('Actions', ImGuiTableColumnFlags.WidthFixed, 120)
+                    ImGui.TableSetupScrollFreeze(0, 1)
+                    ImGui.TableHeadersRow()
+                    
+                    for i, set in ipairs(zoneSets) do
+                        ImGui.TableNextRow()
+                        
+                        ImGui.TableSetColumnIndex(0)
+                        ImGui.Text(set.name)
+                        
+                        ImGui.TableSetColumnIndex(1)
+                        ImGui.Text(tostring(set.count))
+                        
+                        ImGui.TableSetColumnIndex(2)
+                        ImGui.Text(set.note or '')
+                        
+                        ImGui.TableSetColumnIndex(3)
+                        ImGui.PushID(set.name)
+                        if ImGui.Button('Load', 50, BUTTON_HEIGHT - 2) then
+                            if pull.loadPolygonSet(set.name) then
+                                logger.info('Loaded polygon set "%s"', set.name)
+                                loadPolygonSetOpen = false
+                            end
+                        end
+                        ImGui.SameLine()
+                        if ImGui.Button('Del', 40, BUTTON_HEIGHT - 2) then
+                            if pull.deletePolygonSet(set.name) then
+                                logger.info('Deleted polygon set "%s"', set.name)
+                            end
+                        end
+                        ImGui.PopID()
+                    end
+                    
+                    ImGui.EndTable()
+                end
+            end
+            
+            ImGui.Separator()
+            if ImGui.Button('Close', 80, BUTTON_HEIGHT) then
+                loadPolygonSetOpen = false
+            end
+        end
+        ImGui.End()
+    end
+end
+
 -- ImGui main function for rendering the UI window
 function ui.main()
     if not openGUI then return end
@@ -1093,6 +1254,8 @@ function ui.main()
     drawClickyManager()
     drawHelpWindow()
     drawBuffLists()
+    drawSavePolygonSetPopup()
+    drawLoadPolygonSetPopup()
     popStyles()
 end
 

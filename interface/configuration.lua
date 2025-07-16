@@ -387,6 +387,14 @@ local config = {
         tlo = 'MobsEval',
         tlotype = 'int',
     },
+    POLYGONPULL_ENABLED = {
+        value = false,
+        tip = 'Enable polygon-based pulling instead of radius+arc pulling',
+        label = 'Polygon Pull',
+        type = 'checkbox',
+        tlo = 'PolygonPullEnabled',
+        tlotype = 'bool',
+    },
     GROUPWATCHWHO = {
         value = 'healer',
         tip = 'Who to watch mana/endurance for, to decide whether to hold pulls and med',
@@ -516,6 +524,22 @@ local config = {
         emu = true,
         tlo = 'ManastoneTime',
         tlotype = 'int',
+    },
+    USEMOUNT = {
+        value = true,
+        tip = 'Toggle casting mount buffs',
+        label = 'Use Mount',
+        type = 'checkbox',
+        tlo = 'UseMount',
+        tlotype = 'bool',
+    },
+    AUTODISMOUNT = {
+        value = true,
+        tip = 'Automatically dismount after casting mount buff',
+        label = 'Auto Dismount',
+        type = 'checkbox',
+        tlo = 'AutoDismount',
+        tlotype = 'bool',
     },
 
     -- Other settings
@@ -657,10 +681,10 @@ local configByCategory = {
     Assist = { 'MODE', 'ASSIST', 'AUTOASSISTAT', 'ASSISTNAMES', 'SWITCHWITHMA', 'STICKCOMMAND', 'RESISTSTOPCOUNT', 'NUKEMANAMIN', 'DOTMANAMIN' },
     Camp = { 'CAMPRADIUS', 'CAMPRETURN', 'CHASETARGET', 'CHASEDISTANCE', 'CHASESTOPDISTANCE', 'CHASEPAUSED' },
     Burn = { 'BURNALWAYS', 'BURNALLNAMED', 'BURNCOUNT', 'BURNPCT', 'USEGLYPH', 'USEINTENSITY' },
-    Pull = { 'PULLRADIUS', 'PULLPATH', 'PULLLOW', 'PULLHIGH', 'PULLMINLEVEL', 'PULLMAXLEVEL', 'PULLARC', 'GROUPWATCHWHO', 'GROUPSTAYCLOSE', 'WAITFORCORPSES','PULLWITH', 'PULLLEVELPRIORITY', 'MOBSEVAL' },
+    Pull = { 'PULLRADIUS', 'PULLPATH', 'PULLLOW', 'PULLHIGH', 'PULLMINLEVEL', 'PULLMAXLEVEL', 'PULLARC', 'GROUPWATCHWHO', 'GROUPSTAYCLOSE', 'WAITFORCORPSES','PULLWITH', 'PULLLEVELPRIORITY', 'MOBSEVAL', 'POLYGONPULL_ENABLED' },
     Heal = { 'HEALPCT', 'PANICHEALPCT', 'HOTHEALPCT', 'GROUPHEALPCT', 'GROUPHEALMIN', 'XTARGETHEAL', 'REZGROUP', 'REZRAID', 'REZINCOMBAT', 'PRIORITYTARGET', 'INTERRUPTFULLHP', 'INTERRUPTFORHEALS', 'ANNOUNCEHEALS', 'ANNOUNCEDEATHS' },
     Tank = { 'MAINTANK', 'OFFTANK' },
-    Rest = { 'MEDCOMBAT', 'RECOVERPCT', 'MEDHPSTART', 'MEDHPSTOP', 'MEDMANASTART', 'MEDMANASTOP', 'MEDENDSTART', 'MEDENDSTOP', 'MANASTONESTART', 'MANASTONESTARTHP', 'MANASTONESTOPHP', 'MANASTONETIME' },
+    Rest = { 'MEDCOMBAT', 'RECOVERPCT', 'MEDHPSTART', 'MEDHPSTOP', 'MEDMANASTART', 'MEDMANASTOP', 'MEDENDSTART', 'MEDENDSTOP', 'MANASTONESTART', 'MANASTONESTARTHP', 'MANASTONESTOPHP', 'MANASTONETIME', 'USEMOUNT', 'AUTODISMOUNT' },
     Debug = { 'TIMESTAMPS', 'OPACITY' },
 }
 function config.getByCategory(category)
@@ -731,6 +755,7 @@ function config.loadSettings()
 end
 
 local ignores = {}
+local polygonSets = {}
 
 ---Load mob ignore lists file
 function config.loadIgnores()
@@ -779,6 +804,47 @@ end
 
 function config.ignoresContains(zone_short_name, mob_name)
     return ignores[zone_short_name:lower()] and ignores[zone_short_name:lower()][mob_name]
+end
+
+---Load polygon sets file
+function config.loadPolygonSets()
+    local polygon_file = ('%s/aqo/%s'):format(mq.configDir, 'aqo_polygon_sets.lua')
+    if config.fileExists(polygon_file) then
+        polygonSets = assert(loadfile(polygon_file))()
+    end
+end
+
+function config.savePolygonSets()
+    local polygon_file = ('%s/aqo/%s'):format(mq.configDir, 'aqo_polygon_sets.lua')
+    mq.pickle(polygon_file, polygonSets)
+end
+
+function config.getPolygonSets()
+    return polygonSets
+end
+
+function config.addPolygonSet(setName, zone, note, points)
+    polygonSets[setName] = {
+        zone = zone,
+        note = note or '',
+        points = points,
+        timestamp = os.time(),
+        count = #points
+    }
+    config.savePolygonSets()
+end
+
+function config.removePolygonSet(setName)
+    if polygonSets[setName] then
+        polygonSets[setName] = nil
+        config.savePolygonSets()
+        return true
+    end
+    return false
+end
+
+function config.getPolygonSet(setName)
+    return polygonSets[setName]
 end
 
 return config
