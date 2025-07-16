@@ -38,7 +38,6 @@ local polygon = config.get('POLYGON')
 -- @param target_y The y-coordinate of the target point.
 -- @return number The angle in degrees, normalized to [0, 360).
 local function getCompassAngle(center_x, center_y, target_x, target_y)
-    -- This is the only line that changed.
     -- By subtracting target from center for X, we invert the axis to match the server's coordinate system.
     local dx = center_x - target_x 
     local dy = target_y - center_y
@@ -96,8 +95,8 @@ local function checkMobAngle(pull_spawn)
     if pull_arc == 360 or pull_arc == 0 then return true end
     -- TODO: pull arcs without camp set???
     if not camp.Active then return true end
-    local direction_to_mob = getCompassAngle(camp.X, camp.Y, pull_spawn.X(), pull_spawn.Y())
-    -- local direction_to_mob = pull_spawn.HeadingTo(camp.Y, camp.X).Degrees()
+    --local direction_to_mob = getCompassAngle(camp.X, camp.Y, pull_spawn.X(), pull_spawn.Y())
+    local direction_to_mob = pull_spawn.HeadingTo(camp.Y, camp.X).Degrees()
     if not direction_to_mob then return false end
     -- switching from non-puller mode to puller mode, the camp may not be updated yet
     if not (camp.PullArcLeft and camp.PullArcRight) then return false end
