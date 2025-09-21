@@ -269,9 +269,10 @@ Cleric.SpellLines = {
     },
     {
         Group = 'singleaego',
-        Spells = { 'Reliance', --[[emu cutoff]] 'Conviction', 'Virtue', 'Aegolism', 'Temperance', 'Bravery', 'Courage' },
-        Options = { classes = { CLR = true, WAR = true, SHD = true, PAL = true }, alias = 'SINGLEAEGO', selfbuff = function() return not
+        Spells = { 'Reliance', --[[emu cutoff]] 'Conviction', 'Virtue', 'Aegolism', 'Temperance', 'Resolution', 'Bravery', 'Courage' },
+        Options = {  alias = 'SINGLEAEGO', selfbuff = function() return not
             Cleric.spells.groupaego and true or false end }
+            --classes = { CLR = true, WAR = true, SHD = true, PAL = true, RNG = true },
     },
     {
         Group = 'groupsymbol',
@@ -300,7 +301,7 @@ Cleric.SpellLines = {
         Options = { opt = 'USENUKES', emu = false }
     },
     { Group = 'grouphotcure', Spells = { 'Avowed Acquittal', 'Devout Acquittal', 'Sincere Acquittal', 'Merciful Acquittal', 'Ardent Acquittal', --[[emu cutoff]] },                                 Options = { opt = 'USEHOTGROUP', grouphot = true, emu = false } },
-    { Group = 'grouphot',   Spells = { 'Elixir of Realization', 'Elixir of Benevolence', 'Elixir of Transcendence', 'Elixir of Wulthan', 'Elixir of the Seas', --[[emu cutoff]] 'Elixir of Divinity' }, Options = { Gem = function(
+    { Group = 'grouphot',   Spells = { 'Elixir of Realization', 'Elixir of Benevolence', 'Elixir of Transcendence', 'Elixir of Wulthan', 'Elixir of the Seas', --[[emu cutoff]] 'Elixir of Divinity', 'Ethereal Elixir' }, Options = { Gem = function(
         lvl) return lvl <= 70 and 7 or nil end, opt = 'USEHOTGROUP', grouphot = true } },
     { Group = 'hot',        Spells = { --[[emu cutoff]] 'Pious Elixir', 'Supernal Elixir', 'Pious Elixir', 'Holy Elixir', 'Celestial Healing', 'Celestial Health', 'Celestial Remedy' },            Options = { Gem = function(
         lvl) return lvl <= 70 and 3 or nil end, opt = 'USEHOT', hot = true, alias = 'HOT' } },
@@ -311,8 +312,8 @@ Cleric.SpellLines = {
     {
         Group = 'mark',
         Spells = { 'Mark of Thormir', 'Mark of Ezra', 'Mark of Wenglawks', 'Mark of Shandral', 'Mark of the Vicarum', --[[emu cutoff]] 'Mark of the Blameless', 'Mark of the Righteous', 'Mark of Kings', 'Mark of Karn', 'Mark of Retribution' },
-        Options = { opt = 'USEDEBUFF', debuff = true, Gem = function(lvl) return lvl <= 70 and 9 or nil end, condition = function() return
-            mq.TLO.Target.Named() end }
+        Options = { opt = 'USEDEBUFF', debuff = true, Gem = function(lvl) return lvl <= 70 and 9 or nil end}
+        -- , condition = function() return mq.TLO.Target.Named() end 
     },
     { Group = 'yaulp',   Spells = { 'Yaulp V', 'Yaulp VI' },                                                                                                                                                                       Options = { combat = true, ooc = false, opt = 'USEYAULP', selfbuff = true } },
     { Group = 'hammerpet', Spells = { 'Unswerving Hammer of Justice' },                                                                                                                                                            Options = { Gem = function(
@@ -411,11 +412,6 @@ Cleric.Abilities = {
         Type = 'AA',
         Name = 'Divine Arbitration',
         Options = { heal = true, panic = true, grouppanic = true }
-    },
-    {
-        Type = 'AA',
-        Name = 'Radiant Cure',
-        Options = { cure = true, all = true, self = true }
     },
     {
         Type = 'AA',

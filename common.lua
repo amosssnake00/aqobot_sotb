@@ -37,7 +37,7 @@ local function getSpell(spellName)
     return { ID = spell.ID(), Name = rankname, Ref = spell, Level = spell.Level(), BaseName = spell.BaseName() }
 end
 
-function common.getBestSpell(spells, options, spellGroup)
+function common.getBestSpell(spells, options, spellGroup, targetId)
     local currentBest = nil
     for i, spellName in ipairs(spells) do
         local bestSpell = getSpell(spellName)
@@ -47,17 +47,49 @@ function common.getBestSpell(spells, options, spellGroup)
             for key, value in pairs(options) do
                 bestSpell[key] = value
             end
-            if not options.searchbylevel then
-                logger.info('[%s] Found Spell: %s (%s)', spellGroup, bestSpell.Ref.Link(), bestSpell.Level)
-                return abilities.Spell:new(bestSpell)
-            else
-                currentBest = (not currentBest or bestSpell.Level >= currentBest.Level) and bestSpell or currentBest
+            
+            -- If targetId provided, check if spell stacks and target doesn't already have it
+            local stacksTarget = true
+            if targetId and targetId > 0 then
+                local targetSpawn = mq.TLO.Spawn('id ' .. targetId)
+                stacksTarget = bestSpell.Ref.StacksSpawn(targetId)() and not targetSpawn.Buff(bestSpell.Name)()
+            end
+            
+            if stacksTarget then
+                if not options.searchbylevel then
+                    logger.info('[%s] Found Spell: %s (%s)', spellGroup, bestSpell.Ref.Link(), bestSpell.Level)
+                    return abilities.Spell:new(bestSpell)
+                else
+                    currentBest = (not currentBest or bestSpell.Level >= currentBest.Level) and bestSpell or currentBest
+                end
             end
         end
     end
     if currentBest then
         logger.info('[%s] Found Spell: %s (%s)', spellGroup, currentBest.Ref.Link(), currentBest.Level)
         return abilities.Spell:new(currentBest)
+    end
+    return nil
+end
+
+---Get best spell from a spell group that will stack on target. Used for buff optimization.
+---@param spellGroup string #The spell group name
+---@param class table #The class object containing SpellLines
+---@param targetId number #The target ID to check stacking against
+---@return table|nil #Returns the best stacking spell or nil
+function common.getBestStackingSpell(spellGroup, class, targetId)
+    if not targetId or targetId == 0 then return nil end
+    
+    -- Find the SpellLine for this group
+    for _, line in ipairs(class.SpellLines) do
+        if line.Group == spellGroup then
+            -- Use getBestSpell with targetId to find first stacking spell
+            local stackingSpell = common.getBestSpell(line.Spells, line.Options, spellGroup, targetId)
+            if stackingSpell then
+                return stackingSpell
+            end
+            break
+        end
     end
     return nil
 end
@@ -192,8 +224,10 @@ function common.checkChase()
         logger.debug(logger.flags.common.chase, 'Not chasing due to invalid chase spawn X=%s,Y=%s', chase_x, chase_y)
         return
     end
+    
+    local distToChase = helpers.distance(me_x, me_y, chase_x, chase_y)
     if mq.TLO.Stick.Active() or mq.TLO.Me.Combat() or (mq.TLO.Me.AutoFire() and mq.TLO.Target.Type() == 'NPC') or (state.class ~= 'BRD' and mq.TLO.Me.Casting()) or mq.TLO.Window('SpellBookWnd').Open() then
-        if helpers.distance(me_x, me_y, chase_x, chase_y) > (config.get('CAMPRADIUS') ^ 2) then
+        if distToChase > (config.get('CAMPRADIUS') ^ 2) then
             logger.debug(logger.flags.common.chase, 'Getting too far (>CAMPRADIUS) from chase target)')
         else
             if logger.flags.common.chase then
@@ -205,7 +239,7 @@ function common.checkChase()
         end
     end
 
-    if helpers.distance(me_x, me_y, chase_x, chase_y) > (config.get('CHASEDISTANCE') ^ 2) then
+    if distToChase > (config.get('CHASEDISTANCE') ^ 2) then
         if mq.TLO.Me.Sitting() then mq.cmd('/stand') end
         if mq.TLO.Window('SpellBookWnd').Open() then mq.TLO.Window('SpellBookWnd').DoClose() end
         if not movement.navToSpawn('pc =' .. config.get('CHASETARGET'), 'dist=' .. config.get('CHASESTOPDISTANCE')) then
@@ -306,7 +340,19 @@ function common.checkItemBuffs()
         mq.delay(500 + illusionItem.CastTime())
         mq.cmd('/removebuff illusion:')
     end
-    if mount and config.get('USEMOUNT') and (not mq.TLO.Me.Buff('Mount Blessing')() or (state.emu and not (mq.TLO.Me.Buff('Summon Horse') or  mq.TLO.Me.Buff('Summon Drogmor')))) and mq.TLO.Me.CanMount() then
+    -- Zones where mounting is possible but CanMount() may not be reliable
+    local mountableZones = { 'riftseekers', 'provinggrounds', 'thenest' }
+    local currentZone = mq.TLO.Zone.ShortName():lower()
+    local zoneAllowsMount = false
+    for _, zone in ipairs(mountableZones) do
+        if currentZone == zone then
+            zoneAllowsMount = true
+            break
+        end
+    end
+    local canMountInZone = mq.TLO.Me.CanMount() or zoneAllowsMount
+    
+    if mount and config.get('USEMOUNT') and (not mq.TLO.Me.Buff('Mount Blessing')() or (state.emu and not (mq.TLO.Me.Buff('Summon Horse') or  mq.TLO.Me.Buff('Summon Drogmor')))) and canMountInZone then
         if mountType == 'aa' then
             -- AA ability (Paladin/SK instant cast abilities)
             local aaAbility = mq.TLO.Me.AltAbility(mount)
@@ -387,7 +433,9 @@ end
 ---Sit down to med if the conditions for resting are met.
 function common.rest()
     if not config.get('MEDCOMBAT') and (mq.TLO.Me.CombatState() == 'COMBAT' or state.assistMobID ~= 0) then return end
-    if state.mobCount > 0 and (mode.currentMode:isTankMode() or mq.TLO.Group.MainTank() == mq.TLO.Me.CleanName() or config.get('MAINTANK')) then return end
+    if state.mobCount > 0 and (mode.currentMode:isTankMode() or mq.TLO.Group.MainTank() == mq.TLO.Me.CleanName() or config.get('MAINTANK')) then 
+        state.medding = false
+        return end
     -- try to avoid just constant stand/sit, mainly for dumb bard sitting between every song
     if state.sitTimer:expired() then
         if (mq.TLO.Group.MainAssist.State() == 'SIT' or (config.get('ASSIST') == 'actor' and mq.TLO.Spawn(('id %s'):format(state.actorTankID)).State() == 'SIT')) and not mq.TLO.Me.Sitting() then

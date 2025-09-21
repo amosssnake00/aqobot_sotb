@@ -24,11 +24,11 @@ local state = {
     targets = {},
     mobCount = 0,
     mobCountNoPets = 0,
-    mezImmunes = {},
+    mezImmunes = setmetatable({}, {__mode = 'k'}), -- weak keys for auto cleanup
     mezTargetName = nil,
     mezTargetID = 0,
     subscription = 'GOLD',
-    resists = {},
+    resists = setmetatable({}, {__mode = 'k'}), -- weak keys for auto cleanup
     medding = false,
     swapGem = 8,
     justZonedTimer = timer:new(2000),
@@ -37,13 +37,20 @@ local state = {
     nuketimer = timer:new(0),
     sitTimer = timer:new(10000),
     fadeTimer = timer:new(10000),
+    currentZone = 0, -- Track zone changes for cleanup
     -- ActAsLevel = 65
     -- testCures = true,
     -- ShowGettingStarted = true,
 }
 
+-- Helper function for efficient table clearing
+local function clearTable(t)
+    for k in pairs(t) do t[k] = nil end
+end
+
 function state.resetCombatState(debug, caller)
     logger.debug(debug, 'Resetting combatState. pullState before=%s. caller=%s', state.pullState, caller)
+    logger.debug(debug, 'ASSIST_DEBUG: Clearing assistMobID in resetCombatState (was %s, caller=%s)', state.assistMobID, caller)
     state.burnActive = false
     state.burnActiveTimer:reset(0)
     state.burnNow = false
@@ -51,12 +58,12 @@ function state.resetCombatState(debug, caller)
     state.tankMobID = 0
     state.pullMobID = 0
     state.pullStatus = nil
-    state.targets = {}
+    clearTable(state.targets) -- Clear in place instead of creating new table
     state.mobCount = 0
     state.mobCountNoPets = 0
     state.mezTargetName = nil
     state.mezTargetID = 0
-    state.resists = {}
+    clearTable(state.resists) -- Clear in place instead of creating new table
 end
 
 state.actionTaken = false
@@ -98,6 +105,10 @@ function state.handleQueuedAction()
             return false
         end
     else
+        -- Ensure queuedAction is nil'ed when timer expires
+        if state.queuedAction then
+            state.queuedAction = nil
+        end
         return true
     end
 end
@@ -256,6 +267,31 @@ end
 
 function state.handleLootingState()
 
+end
+
+-- Zone change memory cleanup
+function state.handleZoneChange()
+    local currentZoneID = mq.TLO.Zone.ID()
+    if state.currentZone ~= currentZoneID then
+        logger.info('Zone change detected (%d -> %d), cleaning up memory', state.currentZone, currentZoneID)
+        state.currentZone = currentZoneID
+        
+        -- Clear zone-specific containers to prevent memory leaks
+        clearTable(state.mezImmunes)
+        clearTable(state.resists)
+        clearTable(state.targets)
+        
+        -- Reset combat state
+        logger.debug(logger.flags.zone, 'ASSIST_DEBUG: Clearing assistMobID in handleZoneChange (was %s)', state.assistMobID)
+        state.assistMobID = 0
+        state.tankMobID = 0
+        state.pullMobID = 0
+        state.mobCount = 0
+        state.mobCountNoPets = 0
+        
+        -- Force garbage collection after zone change
+        collectgarbage('collect')
+    end
 end
 
 return state

@@ -14,6 +14,118 @@ local state = require('state')
 local class
 local pull = {}
 
+-- Polygon pull points - stored as {{x1,y1}, {x2,y2}, ...}
+local polygonPoints = {}
+local polygonCenter = nil
+local polygonRadius = nil
+local polygonZ = nil
+
+---Reorders polygon points to form a convex hull for maximum area coverage.
+---Uses a simplified convex hull algorithm to find the optimal point ordering.
+---@param points table @A table of points, where each point is a table {x_coord, y_coord}.
+---@return table @A table of reordered vertices forming the convex hull.
+local function reorderPolygonPoints(points)
+    if #points < 3 then return points end
+    
+    -- Find the bottom-most point (and leftmost in case of tie)
+    local start = 1
+    for i = 2, #points do
+        local curr = points[i]
+        local lowest = points[start]
+        if curr[2] < lowest[2] or (curr[2] == lowest[2] and curr[1] < lowest[1]) then
+            start = i
+        end
+    end
+    
+    -- Swap the starting point to index 1
+    if start ~= 1 then
+        points[1], points[start] = points[start], points[1]
+    end
+    
+    local startPoint = points[1]
+    
+    -- Function to calculate polar angle from start point
+    local function polarAngle(p1, p2)
+        local dx = p2[1] - p1[1]
+        local dy = p2[2] - p1[2]
+        return math.atan2(dy, dx)
+    end
+    
+    -- Function to calculate squared distance
+    local function distanceSquared(p1, p2)
+        local dx = p2[1] - p1[1]
+        local dy = p2[2] - p1[2]
+        return dx * dx + dy * dy
+    end
+    
+    -- Sort points by polar angle with respect to start point
+    local otherPoints = {}
+    for i = 2, #points do
+        table.insert(otherPoints, points[i])
+    end
+    
+    table.sort(otherPoints, function(a, b)
+        local angleA = polarAngle(startPoint, a)
+        local angleB = polarAngle(startPoint, b)
+        if math.abs(angleA - angleB) < 1e-9 then
+            -- If angles are equal, sort by distance (closer first)
+            return distanceSquared(startPoint, a) < distanceSquared(startPoint, b)
+        end
+        return angleA < angleB
+    end)
+    
+    -- Build ordered hull points
+    local orderedPoints = {startPoint}
+    for _, point in ipairs(otherPoints) do
+        table.insert(orderedPoints, point)
+    end
+    
+    logger.debug(logger.flags.routines.pull, 'Reordered %d polygon points for optimal coverage', #orderedPoints)
+    return orderedPoints
+end
+
+
+--- Calculates the centroid (center) of a polygon and the radius to encompass all points.
+--- The center is the average of all vertices.
+--- The radius is the distance from center to the furthest vertex.
+--- @param polygon_points table @A table of ordered vertices, e.g., {{x1,y1}, {x2,y2}, ...}.
+--- @return table|nil @A table {x, y, radius} or nil if not enough points.
+local function calculatePolygonCenterAndRadius(polygon_points)
+    if not polygon_points or #polygon_points < 2 then
+        logger.debug(logger.flags.routines.pull, 'Polygon has less than 2 points for center calculation.')
+        return nil
+    end
+
+    -- Calculate centroid (average of all vertices)
+    local sum_x, sum_y = 0, 0
+    for i = 1, #polygon_points do
+        local point = polygon_points[i]
+        if not point or not point[1] or not point[2] then
+            logger.debug(logger.flags.routines.pull, 'Invalid point format in polygon at index %d.', i)
+            return nil
+        end
+        sum_x = sum_x + point[1]
+        sum_y = sum_y + point[2]
+    end
+    
+    local center_x = sum_x / #polygon_points
+    local center_y = sum_y / #polygon_points
+    
+    -- Find the maximum distance from center to any vertex (this becomes our radius)
+    local max_distance_sq = 0
+    for i = 1, #polygon_points do
+        local point = polygon_points[i]
+        local dist_sq = (point[1] - center_x) ^ 2 + (point[2] - center_y) ^ 2
+        if dist_sq > max_distance_sq then
+            max_distance_sq = dist_sq
+        end
+    end
+    
+    local radius = math.sqrt(max_distance_sq)
+    logger.debug(logger.flags.routines.pull, 'polygon center %d, %d + radius %d.', center_x, center_y, radius)
+    return { x = center_x, y = center_y, radius = radius }
+end
+
 function pull.init(_class)
     class = _class
     
@@ -24,6 +136,9 @@ function pull.init(_class)
         for i, point in ipairs(class.polygonPoints) do
             polygonPoints[i] = {point[1], point[2]}
         end
+        
+        -- Load polygon Z coordinate
+        polygonZ = class.polygonZ
         
         -- Reorder points for optimal coverage if we have enough points
         if #polygonPoints >= 3 then
@@ -49,10 +164,7 @@ local PULL_TARGET_SKIP = {}
 
 local pull_range = nil
 
--- Polygon pull points - stored as {{x1,y1}, {x2,y2}, ...}
-local polygonPoints = {}
-local polygonCenter = nil
-local polygonRadius = nil
+
 
 -- No longer need local polygon sets - using config system
 
@@ -173,69 +285,7 @@ local function checkPathLength(pull_spawn)
     return path_len
 end
 
----Reorders polygon points to form a convex hull for maximum area coverage.
----Uses a simplified convex hull algorithm to find the optimal point ordering.
----@param points table @A table of points, where each point is a table {x_coord, y_coord}.
----@return table @A table of reordered vertices forming the convex hull.
-local function reorderPolygonPoints(points)
-    if #points < 3 then return points end
-    
-    -- Find the bottom-most point (and leftmost in case of tie)
-    local start = 1
-    for i = 2, #points do
-        local curr = points[i]
-        local lowest = points[start]
-        if curr[2] < lowest[2] or (curr[2] == lowest[2] and curr[1] < lowest[1]) then
-            start = i
-        end
-    end
-    
-    -- Swap the starting point to index 1
-    if start ~= 1 then
-        points[1], points[start] = points[start], points[1]
-    end
-    
-    local startPoint = points[1]
-    
-    -- Function to calculate polar angle from start point
-    local function polarAngle(p1, p2)
-        local dx = p2[1] - p1[1]
-        local dy = p2[2] - p1[2]
-        return math.atan2(dy, dx)
-    end
-    
-    -- Function to calculate squared distance
-    local function distanceSquared(p1, p2)
-        local dx = p2[1] - p1[1]
-        local dy = p2[2] - p1[2]
-        return dx * dx + dy * dy
-    end
-    
-    -- Sort points by polar angle with respect to start point
-    local otherPoints = {}
-    for i = 2, #points do
-        table.insert(otherPoints, points[i])
-    end
-    
-    table.sort(otherPoints, function(a, b)
-        local angleA = polarAngle(startPoint, a)
-        local angleB = polarAngle(startPoint, b)
-        if math.abs(angleA - angleB) < 1e-9 then
-            -- If angles are equal, sort by distance (closer first)
-            return distanceSquared(startPoint, a) < distanceSquared(startPoint, b)
-        end
-        return angleA < angleB
-    end)
-    
-    -- Build ordered hull points
-    local orderedPoints = {startPoint}
-    for _, point in ipairs(otherPoints) do
-        table.insert(orderedPoints, point)
-    end
-    
-    logger.debug(logger.flags.routines.pull, 'Reordered %d polygon points for optimal coverage', #orderedPoints)
-    return orderedPoints
-end
+
 
 ---Checks if a point is inside a polygon using the Ray Casting algorithm.
 ---@param point_x number @The x-coordinate of the point to check.
@@ -299,46 +349,6 @@ local function isPointInPolygon(point_x, point_y, polygon)
     return inside
 end
 
---- Calculates the centroid (center) of a polygon and the radius to encompass all points.
---- The center is the average of all vertices.
---- The radius is the distance from center to the furthest vertex.
---- @param polygon_points table @A table of ordered vertices, e.g., {{x1,y1}, {x2,y2}, ...}.
---- @return table|nil @A table {x, y, radius} or nil if not enough points.
-local function calculatePolygonCenterAndRadius(polygon_points)
-    if not polygon_points or #polygon_points < 2 then
-        logger.debug(logger.flags.routines.pull, 'Polygon has less than 2 points for center calculation.')
-        return nil
-    end
-
-    -- Calculate centroid (average of all vertices)
-    local sum_x, sum_y = 0, 0
-    for i = 1, #polygon_points do
-        local point = polygon_points[i]
-        if not point or not point[1] or not point[2] then
-            logger.debug(logger.flags.routines.pull, 'Invalid point format in polygon at index %d.', i)
-            return nil
-        end
-        sum_x = sum_x + point[1]
-        sum_y = sum_y + point[2]
-    end
-    
-    local center_x = sum_x / #polygon_points
-    local center_y = sum_y / #polygon_points
-    
-    -- Find the maximum distance from center to any vertex (this becomes our radius)
-    local max_distance_sq = 0
-    for i = 1, #polygon_points do
-        local point = polygon_points[i]
-        local dist_sq = (point[1] - center_x) ^ 2 + (point[2] - center_y) ^ 2
-        if dist_sq > max_distance_sq then
-            max_distance_sq = dist_sq
-        end
-    end
-    
-    local radius = math.sqrt(max_distance_sq)
-    logger.debug(logger.flags.routines.pull, 'polygon center %d, %d + radius %d.', center_x, center_y, radius)
-    return { x = center_x, y = center_y, radius = radius }
-end
 
 ---Add a point to the polygon using current target position, or specified coordinates
 ---@param x number|nil @The x coordinate of the point (optional, uses current target if nil, or current pos if no target)
@@ -356,6 +366,16 @@ function pull.addPolygonPoint(x, y)
     end
     
     if not x or not y then return false end
+    
+    -- Set polygonZ when adding the first point
+    if #polygonPoints == 0 then
+        if camp.Active and camp.Z then
+            polygonZ = camp.Z
+        else
+            polygonZ = mq.TLO.Me.Z()
+        end
+    end
+    
     table.insert(polygonPoints, {x, y})
     
     -- Reorder points for optimal coverage if we have enough points
@@ -382,6 +402,7 @@ function pull.addPolygonPoint(x, y)
         for i, point in ipairs(polygonPoints) do
             class.polygonPoints[i] = {point[1], point[2]}
         end
+        class.polygonZ = polygonZ
         class:saveSettings()
     end
     
@@ -421,8 +442,51 @@ function pull.removePolygonPoint(index)
         for i, point in ipairs(polygonPoints) do
             class.polygonPoints[i] = {point[1], point[2]}
         end
+        class.polygonZ = polygonZ
         class:saveSettings()
     end
+end
+
+---Update polygon point coordinates
+function pull.updatePolygonPoint(index, x, y)
+    if not index or index < 1 or index > #polygonPoints then return false end
+    if not x or not y then return false end
+    
+    -- Update the point coordinates
+    polygonPoints[index] = {x, y}
+    
+    -- Reorder points for optimal coverage if we have enough points
+    if #polygonPoints >= 3 then
+        polygonPoints = reorderPolygonPoints(polygonPoints)
+    end
+    
+    -- Recalculate center and radius
+    local centerAndRadius = calculatePolygonCenterAndRadius(polygonPoints)
+    if centerAndRadius then
+        polygonCenter = centerAndRadius
+        polygonRadius = centerAndRadius.radius
+    else
+        polygonCenter = nil
+        polygonRadius = nil
+    end
+    
+    -- Remove all markers and re-add them
+    mq.cmd('/squelch /maploc remove')
+    pull.drawAllPolygonMarkers()
+    pull.redrawCampMarkers()
+    
+    -- Save to class settings
+    if class then
+        -- Create a deep copy to ensure proper persistence
+        class.polygonPoints = {}
+        for i, point in ipairs(polygonPoints) do
+            class.polygonPoints[i] = {point[1], point[2]}
+        end
+        class.polygonZ = polygonZ
+        class:saveSettings()
+    end
+    
+    return true
 end
 
 ---Clear all polygon points
@@ -430,6 +494,7 @@ function pull.clearPolygon()
     polygonPoints = {}
     polygonCenter = nil
     polygonRadius = nil
+    polygonZ = nil
     
     -- Remove all map markers
     mq.cmd('/squelch /maploc remove')
@@ -442,6 +507,7 @@ function pull.clearPolygon()
         for i, point in ipairs(polygonPoints) do
             class.polygonPoints[i] = {point[1], point[2]}
         end
+        class.polygonZ = polygonZ
         class:saveSettings()
     end
 end
@@ -467,6 +533,12 @@ end
 ---@return table @Array of polygon points
 function pull.getPolygonPoints()
     return polygonPoints
+end
+
+---Get polygon Z coordinate for UI display
+---@return number|nil @Z coordinate of the polygon
+function pull.getPolygonZ()
+    return polygonZ
 end
 
 ---Debug function to check polygon points
@@ -507,8 +579,8 @@ function pull.savePolygonSet(setName, note)
         pointsCopy[i] = {point[1], point[2]}
     end
     
-    config.addPolygonSet(setName, zone, note, pointsCopy)
-    logger.info('Saved polygon set "%s" with %d points for zone %s', setName, #pointsCopy, zone)
+    config.addPolygonSet(setName, zone, note, pointsCopy, polygonZ)
+    logger.info('Saved polygon set "%s" with %d points for zone %s z: %s', setName, #pointsCopy, zone, polygonZ)
     return true
 end
 
@@ -527,6 +599,20 @@ function pull.loadPolygonSet(setName)
     -- Load points from set
     for i, point in ipairs(set.points) do
         polygonPoints[i] = {point[1], point[2]}
+    end
+    
+    -- Set polygonZ for the loaded polygon set
+    if #polygonPoints > 0 then
+        -- Use saved Z coordinate if available, otherwise fallback to camp/current Z
+        if set.z then
+            polygonZ = set.z
+        elseif camp.Active and camp.Z then
+            polygonZ = camp.Z
+        else
+            polygonZ = mq.TLO.Me.Z()
+        end
+    else
+        polygonZ = nil
     end
     
     -- Reorder points for optimal coverage if we have enough points
@@ -550,6 +636,7 @@ function pull.loadPolygonSet(setName)
         for i, point in ipairs(polygonPoints) do
             class.polygonPoints[i] = {point[1], point[2]}
         end
+        class.polygonZ = polygonZ
         class:saveSettings()
     end
     
@@ -630,11 +717,16 @@ end
 function pull.drawAllPolygonMarkers()
     if #polygonPoints == 0 then return end
     
-    local z = mq.TLO.Me.Z()
+    local z = polygonZ or mq.TLO.Me.Z()
     for i, point in ipairs(polygonPoints) do
         local label = 'polygon_' .. i
         mq.cmdf('/squelch /maploc size 10 width 2 radius 5 color 255 128 0 rcolor 255 51 255 %s %s %s label %s', 
             point[2], point[1], z, label)
+    end
+    
+    -- Draw perimeter markers if enabled
+    if config.get('POLYGON_SHOW_PERIMETER') then
+        pull.drawPolygonPerimeter()
     end
 end
 
@@ -645,6 +737,84 @@ function pull.redrawCampMarkers()
     -- Redraw camp radius marker
     mq.cmdf('/squelch /maploc size 10 width 1 color 255 0 0 radius %s rcolor 255 0 0 %s %s %s',
         config.get('CAMPRADIUS'), camp.Y + 1, camp.X + 1, camp.Z)
+end
+
+---Draw perimeter markers along the polygon edges for better visibility
+function pull.drawPolygonPerimeter()
+    if #polygonPoints < 3 then return end
+    
+    local z = mq.TLO.Me.Z()
+    local safeMargin = 50  -- Distance to keep from polygon vertices
+    local maxPoints = 30
+    local validSegments = {}
+    local totalValidLength = 0
+    
+    -- Calculate valid segments (excluding areas near vertices)
+    for i = 1, #polygonPoints do
+        local nextIndex = (i % #polygonPoints) + 1
+        local p1 = polygonPoints[i]
+        local p2 = polygonPoints[nextIndex]
+        local segmentLength = math.sqrt((p2[1] - p1[1])^2 + (p2[2] - p1[2])^2)
+        
+        -- Only use segments that are longer than 2 * safeMargin (to have space between margins)
+        if segmentLength > (2 * safeMargin) then
+            local validLength = segmentLength - (2 * safeMargin)
+            totalValidLength = totalValidLength + validLength
+            
+            -- Calculate the safe start and end points on this segment
+            local marginRatio1 = safeMargin / segmentLength
+            local marginRatio2 = (segmentLength - safeMargin) / segmentLength
+            
+            local safeStart = {
+                p1[1] + (p2[1] - p1[1]) * marginRatio1,
+                p1[2] + (p2[2] - p1[2]) * marginRatio1
+            }
+            local safeEnd = {
+                p1[1] + (p2[1] - p1[1]) * marginRatio2,
+                p1[2] + (p2[2] - p1[2]) * marginRatio2
+            }
+            
+            table.insert(validSegments, {
+                safeStart = safeStart,
+                safeEnd = safeEnd,
+                length = validLength,
+                startDistance = totalValidLength - validLength
+            })
+        end
+    end
+    
+    if totalValidLength == 0 then
+        logger.debug(logger.flags.routines.pull, 'No valid segments for perimeter markers (all edges too short)')
+        return
+    end
+    
+    -- Calculate spacing for maximum 30 points across all valid segments
+    local pointSpacing = totalValidLength / maxPoints
+    local pointCount = 0
+    
+    -- Place perimeter markers in safe zones only
+    for _, segment in ipairs(validSegments) do
+        -- Calculate how many points should go in this segment
+        local segmentPoints = math.max(1, math.floor(segment.length / pointSpacing))
+        if segmentPoints > 0 then
+            for j = 1, segmentPoints do
+                if pointCount >= maxPoints then break end
+                
+                -- Calculate position along the safe segment
+                local segmentProgress = (j - 0.5) / segmentPoints  -- Center points in their spacing
+                local x = segment.safeStart[1] + (segment.safeEnd[1] - segment.safeStart[1]) * segmentProgress
+                local y = segment.safeStart[2] + (segment.safeEnd[2] - segment.safeStart[2]) * segmentProgress
+                
+                -- Place perimeter marker
+                pointCount = pointCount + 1
+                mq.cmdf('/squelch /maploc size 10 width 1 radius 2 color 0 255 255 %s %s %s',
+                    y, x, z)
+            end
+        end
+    end
+    
+    logger.debug(logger.flags.routines.pull, 'Drew %d perimeter markers in safe zones (%.1f valid length, %d segments)', 
+                pointCount, totalValidLength, #validSegments)
 end
 
 ---Validate that the spawn is good for pulling
@@ -835,7 +1005,7 @@ local function getPullRange()
         if not class.pullSpell then
             return melee_range
         else
-            return class.pullSpell.MyRange()
+            return class.pullSpell.MyRange
         end
     elseif pullWith == 'item' then
         if #class.pullClickies == 0 then return melee_range end
@@ -1057,14 +1227,55 @@ local function pullEngage(pull_spawn)
     local targethp = mq.TLO.Target.PctHPs()
     --if (tot_id > 0 and tot_id ~= mq.TLO.Me.ID()) or (targethp and targethp < 100) then --or mq.TLO.Target.PctHPs() < 100 then
     if tot_id > 0 and tot_id ~= mq.TLO.Me.ID() and tot_id ~= mq.TLO.Pet.ID() then
-        if targethp and targethp < 99 then
-            logger.info('\arPull target already engaged, skipping \ax(\at%s\ax) %s %s %s', pullMobID, tot_id,
-                mq.TLO.Me.ID(), targethp)
+        local engagementCheck = config.get('PULLENGAGEMENTCHECK')
+        local shouldSkip = false
+        local totSpawn = mq.TLO.Spawn(tot_id)
+        local totName = totSpawn.CleanName() or 'Unknown'
+        
+        logger.debug(logger.flags.routines.pull, 'Pull engagement check: pullMobID=%s tot_id=%s totName=%s targethp=%s engagementCheck=%s', 
+            pullMobID, tot_id, totName, targethp, engagementCheck)
+        
+        if engagementCheck == 'strict' then
+            -- Original behavior: skip if engaged by anyone
+            shouldSkip = true
+            logger.debug(logger.flags.routines.pull, 'Strict mode: will skip engaged mob')
+        elseif engagementCheck == 'group' then
+            -- Skip only if NOT engaged by group member
+            local isGroupMember = mq.TLO.Group.Member(totName)()
+            shouldSkip = not isGroupMember
+            logger.debug(logger.flags.routines.pull, 'Group mode: totName=%s isGroupMember=%s shouldSkip=%s', 
+                totName, isGroupMember, shouldSkip)
+        elseif engagementCheck == 'raid' then
+            -- Skip only if NOT engaged by raid member
+            local isRaidMember = mq.TLO.Raid.Member(totName)()
+            shouldSkip = not isRaidMember
+            logger.debug(logger.flags.routines.pull, 'Raid mode: totName=%s isRaidMember=%s shouldSkip=%s', 
+                totName, isRaidMember, shouldSkip)
+        elseif engagementCheck == 'dannet' then
+            -- Skip only if NOT engaged by dannet member
+            local isDanNetMember = mq.TLO.DanNet(totName)()
+            shouldSkip = not isDanNetMember
+            logger.debug(logger.flags.routines.pull, 'DanNet mode: totName=%s isDanNetMember=%s shouldSkip=%s', 
+                totName, isDanNetMember, shouldSkip)
+        elseif engagementCheck == 'ignore' then
+            -- Never skip due to engagement
+            shouldSkip = false
+            logger.debug(logger.flags.routines.pull, 'Ignore mode: will not skip engaged mob')
+        end
+        
+        if shouldSkip and targethp and targethp < 99 then
+            logger.info('\arPull target already engaged, skipping \ax(\at%s\ax) tot_id=%s totName=%s targethp=%s engagementCheck=%s', 
+                pullMobID, tot_id, totName, targethp, engagementCheck)
+            logger.debug(logger.flags.routines.pull, 'Skipping pull due to engagement check result')
             -- TODO: clear skip targets
             PULL_TARGET_SKIP[pullMobID] = 1
             pull.clearPullVars('pullEngage-hpCheck')
             return false
+        else
+            logger.debug(logger.flags.routines.pull, 'Proceeding with pull: shouldSkip=%s targethp=%s', shouldSkip, targethp)
         end
+    else
+        logger.debug(logger.flags.routines.pull, 'No engagement check needed: tot_id=%s', tot_id)
     end
     if mq.TLO.Target.Distance3D() < 35 then
         --movement.stop()

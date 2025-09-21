@@ -1,0 +1,421 @@
+---@meta
+
+-- MacroQuest Type Definitions for AQO
+
+---@alias AbilityTypes 'AA'|'Spell'|'Disc'|'Item'|'Skill'|'Clickable'
+
+---@class MQSpawn
+---@field AARank integer
+---@field AATitle string
+---@field ActorDef any
+---@field Address integer
+---@field AFK boolean
+---@field Aggressive boolean
+---@field Aggresive boolean Deprecated spelling
+---@field Animation integer
+---@field Anonymous boolean
+---@field Assist string
+---@field AssistName string
+---@field bAlwaysShowAura boolean
+---@field bBetaBuffed boolean
+---@field Binding boolean
+---@field Blind boolean
+---@field Body string
+---@field bShowHelm boolean
+---@field bStationary boolean
+---@field bTempPet boolean
+---@field Buyer boolean
+---@field bWaitingForPort boolean
+---@field CachedBuffCount integer
+---@field CanSplashLand boolean
+---@field Casting any
+---@field CeilingHeightAtCurrLocation number
+---@field Class string
+---@field CleanName string
+---@field CollisionCounter integer
+---@field ConColor string
+---@field ContractorID integer
+---@field CorpseDragCount integer
+---@field CurrentEndurance integer
+---@field CurrentHPs integer
+---@field CurrentMana integer
+---@field Dead boolean
+---@field Deity string
+---@field DisplayName string
+---@field Distance number
+---@field Distance3D number
+---@field DistanceN number
+---@field DistancePredict number
+---@field DistanceU number
+---@field DistanceW number
+---@field DistanceX number
+---@field DistanceY number
+---@field DistanceZ number
+---@field DraggingPlayer string
+---@field DragNames string
+---@field DoAssist fun(): boolean
+---@field DoFace fun(): boolean
+---@field DoTarget fun(): boolean
+---@field DoLeftClick fun(): boolean
+---@field Ducking boolean
+---@field Equipment any
+---@field EQLoc integer
+---@field FD boolean
+---@field FeetWet boolean
+---@field Feigning boolean
+---@field Following string
+---@field Fleeing boolean
+---@field FloorZ number
+---@field Gender string
+---@field GM boolean
+---@field GMRank integer
+---@field GroupLeader boolean
+---@field Guild string
+---@field GuildStatus string
+---@field Heading number
+---@field HeadingTo any
+---@field HeadingToLoc string
+---@field Height number
+---@field Holding boolean
+---@field HoldingAnimation boolean
+---@field Hovering boolean
+---@field ID integer
+---@field InPvPArea boolean
+---@field Invis boolean|integer
+---@field Invited boolean
+---@field Inviter string
+---@field IsBerserk boolean
+---@field IsPassenger boolean
+---@field IsSummoned boolean
+---@field LastCastNum integer
+---@field LastCastTime integer
+---@field Level integer
+---@field LeftClick fun(): boolean
+---@field Levitating boolean
+---@field LFG boolean
+---@field Light string
+---@field LineOfSight boolean
+---@field Linkdead boolean
+---@field Loc string
+---@field LocYX string
+---@field LocYXZ string
+---@field Look number
+---@field Mark integer
+---@field Master string
+---@field MaxEndurance integer
+---@field MaxHPs integer
+---@field MaxMana integer
+---@field MaxRange number
+---@field MaxRangeTo number
+---@field MercID integer
+---@field Mount any
+---@field Moving boolean
+---@field MQLoc string
+---@field Named boolean
+---@field NearestSpawn any
+---@field Next MQSpawn
+---@field Owner string
+---@field Prev MQSpawn
+---@field Pet MQSpawn
+---@field PctEndurance number
+---@field PctHPs number
+---@field PctMana number
+---@field PlayerState integer
+---@field Primary any
+---@field pTouchingSwitch any
+---@field Race string
+---@field RightClick fun(): boolean
+---@field Roleplaying boolean
+---@field Secondary any
+---@field SeeInvis integer
+---@field Sitting boolean
+---@field Sneaking boolean
+---@field SpawnStatus integer[]
+---@field Speed number
+---@field Standing boolean
+---@field StandState integer
+---@field State string
+---@field Stunned boolean
+---@field Stuck boolean
+---@field Suffix string
+---@field Surname string
+---@field Targetable boolean
+---@field TargetOfTarget MQSpawn
+---@field TimeBeenDead integer
+---@field Title string
+---@field Trader boolean
+---@field Type string
+---@field Underwater boolean
+---@field X number
+---@field Y number
+---@field Z number
+---@field N number
+---@field W number
+---@field U number
+---@field E number
+---@field S number
+---@field D number
+---@field FindBuff fun(self: MQSpawn, name: string): any
+
+---@alias spawn MQSpawn
+
+---@class MQSpell
+---@field ID integer
+---@field Name string
+---@field RankName string
+---@field TargetType string
+---@field MyCastTime number
+---@field Duration number
+---@field Mana integer
+---@field RecastTime number
+---@field Range number
+---@field AERange number
+---@field PushBack number
+---@field CastOnYou string
+---@field CastOnAnother string
+---@field WearOff string
+---@field CounterType string
+---@field CounterNumber integer
+---@field Stacks boolean|fun(duration: number): boolean
+---@field StacksWith boolean|fun(spell: MQSpell): boolean
+---@field WillStack boolean|fun(spell: string|integer): boolean
+---@field MyRange number
+---@field EnduranceCost integer
+---@field MaxLevel integer
+---@field Skill string
+---@field SpellType string
+---@field DurationWindow integer
+---@field HastePct number
+---@field SlowPct number
+---@field ReagentID integer|fun(index: integer): integer
+---@field ReagentCount integer|fun(index: integer): integer
+---@field NoExpendReagentID integer|fun(index: integer): integer
+---@field ResistAdj integer
+---@field ResistType string
+---@field Rank integer
+---@field RankName2 string
+---@field MinCasterLevel integer
+---@field Deletable boolean
+---@field BookIcon integer
+---@field GemIcon integer
+---@field TargetRestriction string
+---@field CasterRestriction string
+---@field TimeOfDay integer
+---@field DurationValue1 integer
+---@field Extra string
+---@field RecastTimerID integer
+---@field SPA integer|fun(index: integer): integer
+---@field CalcIndex integer
+---@field NumEffects integer
+---@field AutoCast integer
+---@field Extra string
+---@field CanMGB boolean
+---@field IsSkill boolean
+---@field Caster MQSpawn
+---@field RequiredLevel integer
+---@field EffectBase integer|fun(index: integer): integer
+---@field EffectLimit integer|fun(index: integer): integer
+---@field Description string
+---@field ResistMod integer
+
+---@class IsReady
+---@field Spell boolean|fun(spellname: string|integer): boolean
+---@field AA boolean|fun(aaname: string): boolean
+---@field Disc boolean|fun(discname: string): boolean
+---@field Item boolean|fun(itemname: string): boolean
+---@field ItemSpell boolean|fun(itemname: string): boolean
+---@field Ability boolean|fun(abilityname: string): boolean
+---@field AltAbility boolean|fun(aaname: string): boolean
+
+---@class UnitTest
+---@field name string
+---@field run fun(): boolean
+---@field assert fun(condition: boolean, message?: string)
+
+---@class IntegrationTest
+---@field name string
+---@field setup fun()
+---@field teardown fun()
+---@field run fun(): boolean
+
+---@class ScenarioTest
+---@field name string
+---@field setup fun()
+---@field teardown fun()
+---@field run fun(): boolean
+
+---@class Test10MobScenario
+---@field name string
+---@field setup fun()
+---@field teardown fun()
+---@field run fun(): boolean
+
+---@class TestFramework
+---@field tests table<string, UnitTest|IntegrationTest|ScenarioTest>
+---@field runAll fun(): boolean
+---@field runTest fun(name: string): boolean
+
+---@class TestRunner
+---@field suites table<string, TestFramework>
+---@field run fun(): boolean
+---@field report fun()
+
+-- Ability type definition (fixing duplicate fields)
+---@class Ability
+---@field Type AbilityTypes Required type of ability
+---@field ID integer|string|fun(): integer|string Required ID or function returning ID
+---@field Name string|fun(): string Required name or function returning name
+---@field CastName string Name to use when casting (overrides Name)
+---@field SpellName string Alternative spell name
+---@field CastType string Type of cast (e.g., "Spell", "AA", etc.)
+---@field TargetType string|fun(): string Target type or function returning target type
+---@field MyCastTime number|fun(): number Cast time or function returning cast time
+---@field Duration number|fun(): number Duration or function returning duration
+---@field DurationTotalSeconds number|fun(): number Total duration in seconds
+---@field RecastTime number|fun(): number Recast time
+---@field MyCastRange number|fun(): number Cast range
+---@field timer Timer Timer object for tracking cooldowns
+---@field Options table<string, any> Options table with various settings
+---@field opt string Option key to check in settings
+---@field condition fun(): boolean Condition function to check if ability should be used
+---@field aggro boolean|fun(): boolean Aggro check or function
+---@field threshold number Threshold value (e.g., HP percentage)
+---@field combat boolean|fun(): boolean Combat check or function
+---@field ooc boolean|fun(): boolean Out of combat check or function
+---@field minhp number Minimum HP to use ability
+---@field mana number|fun(): number Mana cost or function returning mana cost
+---@field endurance number|fun(): number Endurance cost or function
+---@field pet boolean|fun(): boolean Pet check or function
+---@field self boolean Use on self
+---@field regular boolean|fun(): boolean Regular use check or function
+---@field panic boolean|fun(): boolean Panic mode check or function
+---@field group boolean|fun(): boolean Group check or function
+---@field pct number Percentage threshold
+---@field classes table<string, boolean> Classes that can use this ability
+---@field CheckFor string|integer|fun(): string|integer Buff/debuff to check for
+---@field skipifbuff string|integer|fun(): string|integer Skip if this buff is present
+---@field usebelowpct number Use below this percentage
+---@field maxdistance number|fun(): number Maximum distance to target
+---@field tot boolean Target of target check
+---@field nodmz boolean Don't use in DMZ
+---@field SummonID integer|fun(): integer Summon item ID
+---@field summonMinimum integer Minimum summon count
+---@field overwritedisc boolean|fun(): boolean Overwrite discipline check
+---@field stand boolean Stand before using
+---@field sit boolean Sit after using (if sit is a boolean)
+---@field delay number|fun(): number Delay after using
+---@field precast fun() Function to run before casting
+---@field postcast fun() Function to run after casting
+---@field RemoveBuff string Buff to remove after casting
+---@field heal boolean Healing ability flag
+---@field cure boolean Cure ability flag
+---@field buff boolean Buff ability flag
+---@field debuff boolean Debuff ability flag
+---@field dot boolean DOT ability flag
+---@field rez boolean Resurrection ability flag
+---@field mez boolean Mez ability flag
+---@field burn boolean Burn ability flag
+---@field defensive boolean Defensive ability flag
+---@field aggro_ability boolean Aggro ability flag (renamed from aggro to avoid conflict)
+---@field tank boolean Tank ability flag
+---@field dps boolean DPS ability flag
+---@field ae boolean AE ability flag
+---@field fade boolean Fade ability flag
+---@field recover boolean Recovery ability flag
+---@field summon boolean Summon ability flag
+---@field dispel boolean Dispel ability flag
+---@field MaxTries integer Maximum number of cast attempts
+---@field FeignTime integer Time to feign
+---@field CastInvis boolean Can cast while invisible
+---@field Mode string Mode restriction
+---@field Reagent integer|string Reagent required
+---@field ReagentCount integer Number of reagents required
+---@field Zone string|table<string> Zone restriction(s)
+---@field NotZone string|table<string> Zone exclusion(s)
+---@field MinMobs integer Minimum number of mobs
+---@field MaxMobs integer Maximum number of mobs
+---@field MinLevel integer Minimum level to use
+---@field MaxLevel integer Maximum level to use
+---@field MyIcon integer Icon ID
+---@field Icon integer Icon ID (alias)
+---@field SpellIcon integer Spell icon ID
+---@field SpellID integer|fun(): integer Spell ID or function returning spell ID
+---@field RankName string Rank name
+---@field auto boolean Automatic use flag
+---@field active boolean Currently active flag
+---@field enabled boolean Enabled flag
+---@field priority integer Priority for sorting
+---@field stacks boolean|fun(): boolean Stacks check
+---@field stackable boolean Stackable flag
+---@field Slot integer|string Equipment slot
+---@field PetType string Pet type
+---@field CombatState string Combat state requirement
+---@field CanCast fun(): boolean Function to check if can cast
+---@field ShouldUse fun(): boolean Function to check if should use
+---@field BeforeUse fun() Function to run before use
+---@field AfterUse fun() Function to run after use
+---@field CancelCondition fun(): boolean Condition to cancel cast
+---@field SuccessCondition fun(): boolean Condition for successful cast
+---@field emu boolean EMU server flag
+---@field live boolean Live server flag
+---@field tlp boolean TLP server flag
+---@field level integer|table<integer, integer> Level requirement(s)
+
+-- Additional type aliases for clarity
+---@alias Timer {expiration: number, start_time: number, duration: number, reset: fun(duration?: number), expired: fun(): boolean, remaining: fun(): number, set: fun(duration: number)}
+
+---@class base
+---@field classOrder table Ordered list of routines to run such as tank,assist,pull
+---@field options table Collection of class specific configuration options
+---@field defaultSpellset? string The name of the default spell set for the class
+---@field SpellLines? table Collection of all spells to be searched for at startup
+---@field compositeNames? table Base names of each composite spell
+---@field spells table Collection of all known spells that may be used by the class
+---@field spellRotations? table Ordered spell rotations used in the cast routine
+---@field BYOSRotation? table Ordered DPS spell rotation used in BYOS mode
+---@field customRotation? table Ordered user defined DPS spell rotation when in BYOS mode
+---@field allDPSSpellGroups table Spell group names of all DPS spells
+---@field useCommonListProcessor? boolean
+---@field Abilities? table All AA, Disc, Skill, Item definitions
+---@field DPSAbilities table Abilities used in mash in any modes
+---@field tankAbilities table Abilities used in mash in tank modes
+---@field burnAbilities table Abilities used in burn in any modes
+---@field rangedBurnAbilities table Abilities used in burn when ranged
+---@field tankBurnAbilities table Abilities used in burn in tank modes
+---@field healAbilities table Abilities used in heal routine
+---@field AEDPSAbilities table Abilities used in ae in any mode
+---@field AETankAbilities table Abilities used in ae in tank modes
+---@field defensiveAbilities table Abilities used in aggro in non-tank modes
+---@field fadeAbilities table Abilities used in aggro in non-tank modes
+---@field aggroReducers table Abilities used in aggro in non-tank modes
+---@field recoverAbilities table Abilities used in recover
+---@field combatBuffs table Abilities used to buff during combat
+---@field auras table Class aura abilities
+---@field selfBuffs table Abilities used to buff yourself
+---@field singleBuffs table Abilities used to buff individuals by class
+---@field petBuffs table Abilities used for pet buffing
+---@field cures table Abilities used in the cure routine
+---@field debuffs table Abilities used in the debuff routine
+---@field debuffOrder table Priority ordered list of debuff types
+---@field rezAbility? Ability
+---@field epic? string Name of epic
+---@field mount table User added items used as mount
+---@field requests table Stores pending requests received from other characters
+---@field requestAliases table Aliases which can be used for requesting buffs
+---@field availableBuffs table Buffs offered through buff begging system
+---@field desiredBuffs table Buffs desired through buff begging system
+---@field clickies table Combined list of user added clickies of all types
+---@field castClickies table User added items used in the cast routine
+---@field pullClickies table User added items used to pull mobs
+---@field beforeEngage? fun() Function to execute before engaging target
+---@field resetClassTimers? fun() Function to execute to reset class specific timers
+---@field doneSinging? fun(): boolean Function to check whether currently singing a song
+---@field mashClass? fun() Function to perform class specific mash logic
+---@field aeClass? fun() Function to perform class specific AE logic
+---@field burnClass? fun() Function to perform class specific burn logic
+---@field ohShitClass? fun() Function to perform class specific ohshit logic
+---@field aggroClass? fun() Function to perform class specific aggro logic
+---@field recoverClass? fun() Function to perform class specific recover logic
+---@field checkSpellSet? fun() Function to load class spell sets
+---@field swapSpells? fun() Function to perform class specific checks for spell swapping
+---@field handleRampage? function #Function to handle being rampage tank

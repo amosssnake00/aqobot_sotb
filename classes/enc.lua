@@ -289,7 +289,7 @@ Enchanter.SpellLines = {
             end
         }
     },
-    { Group = 'keigroup', Spells = { 'Voice of Preordination', 'Voice of Perception', 'Voice of Sagacity', 'Voice of Perspicacity', 'Voice of Precognition', 'Voice of Foresight', 'Voice of Premeditation', 'Voice of Forethought', 'Unified Alacrity', 'Voice of Clairvoyance', 'Voice of Quellious', 'Tranquility','Koadic\'s Endless Intellect' }, Options = { alias = 'KEI', selfbuff = true, opt = 'USEKEI' } },
+    { Group = 'keigroup', Spells = { 'Voice of Preordination', 'Voice of Perception', 'Voice of Sagacity', 'Voice of Perspicacity', 'Voice of Precognition', 'Voice of Foresight', 'Voice of Premeditation', 'Voice of Forethought', 'Unified Alacrity', 'Voice of Clairvoyance', 'Voice of Quellious', 'Tranquility','Koadic\'s Endless Intellect', 'Boon of the Clear Mind' }, Options = { alias = 'KEI', selfbuff = true, opt = 'USEKEI' } },
     {
         Group = 'kei',
         Spells = { 'Preordination', 'Scrying Visions', 'Sagacity', 'Foresight', 'Premiditation', 'Forethought', 'Clairovoyance', 'Clarity', 'Breeze' },

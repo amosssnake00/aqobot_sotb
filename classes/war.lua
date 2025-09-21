@@ -15,7 +15,7 @@ local Warrior = class:new()
 
 ]]
 function Warrior:init()
-    self.classOrder = { 'assist', 'mash', 'ae', 'burn', 'ohshit', 'recover', 'buff', 'rest' }
+    self.classOrder = {'assist', 'mash', 'ae', 'burn', 'ohshit', 'recover', 'buff', 'rest'}
     self:initBase('WAR')
 
     -- What were these again?
@@ -52,46 +52,64 @@ function Warrior:initClassOptions()
         nil, 'UseSnare', 'bool')
 end
 
-Warrior.Abilities = {
-    {
-        Type = 'Skill',
-        Name = 'Taunt',
-        Options = { tanking = true, aggro = true, condition = conditions.lowAggroInMelee }
-    },
-    {
-        Type = 'Item',
-        Name = 'Kreljnok\'s Sword of Ancient Power',
-        Options = { dps = true, condition = conditions.withinMeleeDistance, emu = true }
-    },
-    {
-        Type = 'Item',
-        Name = 'Kreljnok\'s Sword of Eternal Power',
-        Options = { dps = true, condition = conditions.withinMeleeDistance }
-    },
-    {
-        Type = 'Item',
-        Name = 'Champion\'s Sword of Eternal Power',
-        Options = { dps = true, condition = conditions.withinMeleeDistance }
-    },
-    {
-        Type = 'Disc',
-        Group = 'defense',
-        Names = { 'Vigorous Defense', 'Primal Defense' },
-        Options = { tanking = true, emu = false }
-    },
-    {
-        Type = 'Disc',
-        Group = 'provoke1',
-        Names = { 'Mortimus\' Roar', 'Namdrows\' Roar', 'Mock', 'Ancient: Chaos Cry', 'Bellow of the Mastruq', 'Incite', 'Berate', 'Bellow' },
-        Options = { tanking = true, condition = conditions.withinMeleeDistance }
-    },
-    {
-        Type = 'Disc',
-        Group = 'provoke2',
-        Names = { 'Infuriate', 'Bristle', 'Mock', 'Bazu Bellow' },
-        Options = { tanking = true, condition = conditions.withinMeleeDistance }
-    },
-    --[[ {
+Warrior.Abilities = {{
+    Type = 'Skill',
+    Name = 'Taunt',
+    Options = {
+        tanking = true,
+        aggro = true,
+        condition = conditions.lowAggroInMelee
+    }
+}, {
+    Type = 'Item',
+    Name = 'Kreljnok\'s Sword of Ancient Power',
+    Options = {
+        dps = true,
+        condition = conditions.withinMeleeDistance,
+        emu = true
+    }
+}, {
+    Type = 'Item',
+    Name = 'Kreljnok\'s Sword of Eternal Power',
+    Options = {
+        dps = true,
+        condition = conditions.withinMeleeDistance
+    }
+}, {
+    Type = 'Item',
+    Name = 'Champion\'s Sword of Eternal Power',
+    Options = {
+        dps = true,
+        condition = conditions.withinMeleeDistance
+    }
+}, {
+    Type = 'Disc',
+    Group = 'defense',
+    Names = {'Vigorous Defense', 'Primal Defense'},
+    Options = {
+        tanking = true,
+        emu = false
+    }
+}, {
+    Type = 'Disc',
+    Group = 'provoke1',
+    Names = {'Bazu Bellow'},
+    Options = {
+        tanking = true,
+        condition = function()
+            return not mq.TLO.Target.Buff('Incite')() and conditions.withinMeleeDistance()
+        end
+    }
+}, {
+    Type = 'Disc',
+    Group = 'provoke2',
+    Names = {'Mortimus\' Roar', 'Namdrows\' Roar', 'Mock', 'Ancient: Chaos Cry', 'Bellow of the Mastruq', 'Incite',
+             'Berate', 'Bellow'},
+    Options = {
+        tanking = true,
+        condition = conditions.withinMeleeDistance
+    }
+}, --[[ {
         Type='Disc',
         Group='provoke1',
         Names={'Mortimus\' Roar', 'Namdrows\' Roar', 'Bazu Bellow', 'Bellow of the Mastruq','Bellow'},
@@ -108,366 +126,457 @@ Warrior.Abilities = {
         Group='provoke3',
         Names={'Distressing Shout', 'Twilight Shout', 'Ancient: Chaos Cry', 'Berate'},
         Options={tanking=true, condition=conditions.withinMeleeDistance}
-    }, ]]
-    {
-        Type = 'Disc',
-        Group = 'composite',
-        Names = { 'Ecliptic Shield', 'Composite Shield', 'Dissident Shield', 'Dichotomic Shield' },
-        Options = { tanking = true, emu = false }
-    },
-    {
-        Type = 'Disc',
-        Group = 'dmgabsorb',
-        Names = { 'End of the Line', 'Finish the Fight' },
-        Options = { tanking = true, emu = false }
-    },
-    {
-        Type = 'Disc',
-        Group = 'phantom',
-        Names = { 'Phantom Aggressor' },
-        Options = { tanking = true, opt = 'USEPHANTOM', emu = false }
-    },
-    {
-        Type = 'Disc',
-        Group = 'precision',
-        Names = { 'Confluent Precision' },
-        Options = { tanking = true, opt = 'USEPRECISION', emu = false }
-    },
-    {
-        Type = 'AA',
-        Name = 'Blast of Anger',
-        Options = { tanking = true, maxdistance = 100, condition = conditions.withinMaxDistance }
-    },
-    {
-        Type = 'AA',
-        Name = 'Blade Guardian',
-        Options = { tanking = true, emu = false }
-    },
-    {
-        Type = 'AA',
-        Name = 'Brace for Impact',
-        Options = { tanking = true, emu = false }
-    },
-    {
-        Type = 'AA',
-        Name = 'Call of Challenge',
-        Options = { tanking = true, opt = 'USESNARE' }
-    },
-    {
-        Type = 'AA',
-        Name = 'Grappling Strike',
-        Options = { tanking = true, opt = 'USEGRAPPLE' }
-    },
-    {
-        Type = 'AA',
-        Name = 'Warlord\'s Grasp',
-        Options = { tanking = true, opt = 'USEGRASP' }
-    },
-
-    -- ae tank
-    {
-        Type = 'Disc',
-        Group = 'roar',
-        Names = { 'Roar of Challenge' },
-        Options = { aetank = true, threshold = 2, condition = conditions.aboveMobThreshold, emu = false }
-    },
-    {
-        Type = 'Disc',
-        Group = 'expanse',
-        Names = { 'Confluent Expanse' },
-        Options = { aetank = true, opt = 'USEEXPANSE', threshold = 2, condition = conditions.aboveMobThreshold, emu = false }
-    },
-    {
-        Type = 'Disc',
-        Group = 'aewade',
-        Names = { 'Wade into Battle' },
-        Options = { aetank = true, threshold = 4, condition = conditions.aboveMobThreshold, emu = false }
-    },
-    {
-        Type = 'AA',
-        Name = 'Extended Area Taunt',
-        Options = { aetank = true, threshold = 3, condition = conditions.aboveMobThreshold }
-    },
-    {
-        Type = 'AA',
-        Name = 'Area Taunt',
-        Options = { aetank = true, threshold = 3, condition = conditions.aboveMobThreshold }
-    },
-    -- 'Razor Tongue Discipline' -- proc on taunt
-
-    -- tank burn
-    {
-        Type = 'Disc',
-        Group = 'attention',
-        Names = { 'Unconditional Attention', 'Unrelenting Attention', 'Unyielding Attention', 'Undivided Attention' },
-        Options = { tankburn = true, condition = conditions.withinMeleeDistance }
-    },
-    {
-        Type = 'Disc',
-        Group = 'defensive',
-        Names = { 'Climactic Stand', 'Resolute Stand', 'Stonewall Discipline', 'Defensive Discipline' },
-        Options = {
-            opt = 'USEDEFENSIVE',
-            first = true,
-            overwritedisc = function()
-                return not state.emu and
-                    Warrior.defense and Warrior.defense.Name or nil
-            end
-        }
-    },
-    {
-        Type = 'Disc',
-        Group = 'armorrunes',
-        Names = { 'Armor of Rallosian Runes', 'Armor of Akhevan Runes' },
-        Options = { tankburn = true, overwritedisc = Warrior.defense and Warrior.defense.Name or nil, emu = false }
-    },
-    {
-        Type = 'Disc',
-        Group = 'defenseburn',
-        Names = { 'Levincrash Defense Discipline' },
-        Options = { tankburn = true, overwritedisc = Warrior.defense and Warrior.defense.Name or nil, emu = false }
-    },
-    { -- big taunt
-        Type = 'AA',
-        Name = 'Ageless Enmity',
-        Options = { tankburn = true, aggro = true, condition = conditions.aggroBelow }
-    },
-    {
-        Type = 'AA',
-        Name = 'Projection of Fury',
-        Options = { tankburn = true, opt = 'USEPROJECTION' }
-    },
-    { -- more big aggro
-        Type = 'AA',
-        Name = 'Warlord\'s Fury',
-        Options = { tankburn = true, }
-    },
-    { -- 25% spell dmg absorb
-        Type = 'AA',
-        Name = 'Mark of the Mage Hunter',
-        Options = { tankburn = true, }
-    },
-    { -- increase incoming heals
-        Type = 'AA',
-        Name = 'Resplendent Glory',
-        Options = { tankburn = true, }
-    },
-    { -- reduce incoming melee dmg
-        Type = 'AA',
-        Name = 'Warlord\'s Bravery',
-        Options = { tankburn = true, }
-    },
-    { -- big heal and temp HP
-        Type = 'AA',
-        Name = 'Warlord\'s Tenacity',
-        Options = { tankburn = true, }
-    },
-    {
-        Type = 'AA',
-        Name = 'Spire of the Warlord',
-        Options = { tankburn = true, emu = false }
-    },
-    {
-        Type = 'AA',
-        Name = 'Fundament: Third Spire of the Warlord',
-        Options = { tankburn = true, emu = true }
-    },
-    {
-        Type = 'Disc',
-        Group = 'resolve',
-        Names = { 'Warrior\'s Resolve', 'Warrior\'s Aegis' },
-        Options = { tankburn = true, emu = false }
-    },
-    { -- 10m cd, proc every swing for 12s
-        Type = 'AA',
-        Name = 'Rage of Rallos Zek',
-        Options = { tankburn = true }
-    },
-
-    {
-        Type = 'Disc',
-        Group = 'attraction',
-        Names = { 'Forceful Attraction' },
-        Options = { opt = 'USEATTRACTION', emu = false }
-    },
-    {
-        Type = 'Disc',
-        Group = 'fortitude',
-        Names = { 'Fortitude Discipline' },
-        Options = { opt = 'USEFORTITUDE', first = true, overwritesdisc = Warrior.defense and Warrior.defense.name or nil }
-    },
-    {
-        Type = 'Disc',
-        Group = 'flash',
-        Names = { 'Flash of Anger' },
-        Options = { emu = false }
-    },
-    { -- 10min cd, 60k heal
-        Type = 'AA',
-        Name = 'Warlord\'s Resurgence',
-        Options = { key = 'resurgence' }
-    },
-
-    -- DPS
-    {
-        Type = 'Disc',
-        Group = 'vortex',
-        Names = { 'Spiraling Blades', 'Vortex Blade', 'Cyclone Blade' },
-        Options = { aedps = true, threshold = 3, condition = conditions.aboveMobThreshold }
-    },
-    {
-        Type = 'AA',
-        Name = 'Rampage',
-        Options = { aedps = true, threshold = 5, condition = conditions.aboveMobThreshold }
-    },
-    {
-        Type = 'Skill',
-        Name = 'Bash',
-        Options = {
-            dps = true,
-            condition = function()
-                return mq.TLO.Me.Inventory('offhand').Type() == 'Shield' and
-                    conditions.withinMeleeDistance()
-            end
-        }
-    }, 
-    {
-        Type = 'Skill',
-        Name = 'Kick',
-        Options = {
-            dps = true,
-            condition = function()
-                return mq.TLO.Me.Inventory('offhand').Type() ~= 'Shield' and 
-                    conditions.withinMeleeDistance()
-            end
-        }
-    },
-    {
-        Type = 'Disc',
-        Group = 'shieldbreak',
-        Names = { 'Shield Splinter' },
-        Options = { dps = true, condition = conditions.withinMeleeDistance, emu = false }
-    },
-    {
-        Type = 'Disc',
-        Group = 'throatjab',
-        Names = { 'Throat Jab' },
-        Options = { dps = true, condition = conditions.withinMeleeDistance }
-    },
-    {
-        Type = 'Disc',
-        Group = 'knucklebreak',
-        Names = { 'Knuckle Break' },
-        Options = { dps = true, condition = conditions.withinMeleeDistance, emu = false }
-    },
-    {
-        Type = 'AA',
-        Name = 'Gut Punch',
-        Options = { dps = true, condition = conditions.withinMeleeDistance }
-    },
-    {
-        Type = 'AA',
-        Name = 'Knee Strike',
-        Options = { dps = true, condition = conditions.withinMeleeDistance }
-    },
-    { -- 35s cd, timer 9, 2H attack, Mob HP 20% or below only
-        Type = 'Disc',
-        Group = 'strike',
-        Names = { 'Decisive Strike', 'Exploitive Strike' },
-        Options = {
-            dps = true,
-            usebelowpct = 20,
-            condition = function(ability)
-                return conditions.targetHPBelow(ability) and
-                    conditions.withinMeleeDistance(ability)
-            end,
-            emu = false
-        }
-    },
-    --table.insert(self.burnAbilities, common.getBestDisc({'Brightfield\'s Onslaught Discipline', 'Brutal Onslaught Discipline', 'Savage Onslaught Discipline'})) -- 15min cd, timer 6, 270% crit chance, 160% crit dmg, crippling blows, increase min dmg
-    { -- 4min cd, timer 2, increased offensive capabilities
-        Type = 'Disc',
-        Group = 'offensive',
-        Names = { 'Offensive Discipline' },
-        Options = { first = true }
-    },
-    { -- 15min cd, 3 2HS attacks, crit % and dmg buff for 1 min
-        Type = 'AA',
-        Name = 'War Sheol\'s Heroic Blade',
-        Options = { first = true }
-    },
-
-    -- Buffs
-    {
-        Type = 'Disc',
-        Group = 'endregen',
-        Names = { 'Breather' },
-        Options = {
-            recover = true,
-            combat = false,
-            endurance = true,
-            threshold = 20,
-            condition = function(ability)
-                return
-                    mq.TLO.Me.PctEndurance() <= config.get('RECOVERPCT') and
-                    (ability.combat or mq.TLO.Me.CombatState() ~= 'COMBAT')
-            end
-        }
-    },
-    {
-        Type = 'AA',
-        Name = 'Battle Leap',
-        Options = {
-            key = 'leap',
-            combatbuff = true,
-            opt = 'USEBATTLELEAP',
-            maxdistance = 30,
-            delay = 500,
-            combat = false,
-            condition = function(
-                ability)
-                return false
-            end
-        }
-    },
-    {
-        Type = 'Disc',
-        Group = 'aura',
-        Names = { 'Champion\'s Aura', 'Myrmidon\'s Aura' },
-        Options = { aurabuff = true, Checkfor = 'Champion\'s Aura' }
-    },
-    {
-        Type = 'Disc',
-        Group = 'fieldbuff',
-        Names = { 'Field Bulwark', 'Full Moon\'s Champion', 'Field Armorer' },
-        Options = { condition = conditions.missingBuff, combatbuff = true }
-    },
-    {
-        Type = 'AA',
-        Name = 'Imperator\'s Command',
-        Options = { combatbuff = true }
-    },
-    {
-        Type = 'AA',
-        Name = 'Infused by Rage',
-        Options = { selfbuff = true }
-    },
-    {
-        Type = 'Item',
-        Name = 'Huntsman\'s Ethereal Quiver',
-        Options = { summonMinimum = 101, condition = conditions.summonMinimum, selfbuff = true, emu = false }
-    },
-    {
-        Type = 'Disc',
-        Group = 'voice',
-        Names = { 'Commanding Voice' },
-        Options = { combatbuff = true, emu = false }
-    },
-}
+    }, ]] {
+    Type = 'Disc',
+    Group = 'composite',
+    Names = {'Ecliptic Shield', 'Composite Shield', 'Dissident Shield', 'Dichotomic Shield'},
+    Options = {
+        tanking = true,
+        emu = false
+    }
+}, {
+    Type = 'Disc',
+    Group = 'dmgabsorb',
+    Names = {'End of the Line', 'Finish the Fight'},
+    Options = {
+        tanking = true,
+        emu = false
+    }
+}, {
+    Type = 'Disc',
+    Group = 'phantom',
+    Names = {'Phantom Aggressor'},
+    Options = {
+        tanking = true,
+        opt = 'USEPHANTOM',
+        emu = false
+    }
+}, {
+    Type = 'Disc',
+    Group = 'precision',
+    Names = {'Confluent Precision'},
+    Options = {
+        tanking = true,
+        opt = 'USEPRECISION',
+        emu = false
+    }
+}, {
+    Type = 'AA',
+    Name = 'Blast of Anger',
+    Options = {
+        tanking = true,
+        maxdistance = 100,
+        condition = conditions.withinMaxDistance
+    }
+}, {
+    Type = 'AA',
+    Name = 'Blade Guardian',
+    Options = {
+        tanking = true,
+        emu = false
+    }
+}, {
+    Type = 'AA',
+    Name = 'Brace for Impact',
+    Options = {
+        tanking = true,
+        emu = false
+    }
+}, {
+    Type = 'AA',
+    Name = 'Call of Challenge',
+    Options = {
+        tanking = true,
+        opt = 'USESNARE'
+    }
+}, {
+    Type = 'AA',
+    Name = 'Grappling Strike',
+    Options = {
+        tanking = true,
+        opt = 'USEGRAPPLE'
+    }
+}, {
+    Type = 'AA',
+    Name = 'Warlord\'s Grasp',
+    Options = {
+        tanking = true,
+        opt = 'USEGRASP'
+    }
+}, -- ae tank
+{
+    Type = 'Disc',
+    Group = 'roar',
+    Names = {'Roar of Challenge'},
+    Options = {
+        aetank = true,
+        threshold = 2,
+        condition = conditions.aboveMobThreshold,
+        emu = false
+    }
+}, {
+    Type = 'Disc',
+    Group = 'expanse',
+    Names = {'Confluent Expanse'},
+    Options = {
+        aetank = true,
+        opt = 'USEEXPANSE',
+        threshold = 2,
+        condition = conditions.aboveMobThreshold,
+        emu = false
+    }
+}, {
+    Type = 'Disc',
+    Group = 'aewade',
+    Names = {'Wade into Battle'},
+    Options = {
+        aetank = true,
+        threshold = 4,
+        condition = conditions.aboveMobThreshold,
+        emu = false
+    }
+}, {
+    Type = 'AA',
+    Name = 'Extended Area Taunt',
+    Options = {
+        aetank = true,
+        threshold = 3,
+        condition = conditions.aboveMobThreshold
+    }
+}, {
+    Type = 'AA',
+    Name = 'Area Taunt',
+    Options = {
+        aetank = true,
+        threshold = 3,
+        condition = conditions.aboveMobThreshold
+    }
+}, -- 'Razor Tongue Discipline' -- proc on taunt
+-- tank burn
+{
+    Type = 'Disc',
+    Group = 'attention',
+    Names = {'Unconditional Attention', 'Unrelenting Attention', 'Unyielding Attention', 'Undivided Attention'},
+    Options = {
+        tankburn = true,
+        condition = conditions.withinMeleeDistance
+    }
+}, {
+    Type = 'Disc',
+    Group = 'defensive',
+    Names = {'Climactic Stand', 'Resolute Stand', 'Stonewall Discipline', 'Defensive Discipline'},
+    Options = {
+        opt = 'USEDEFENSIVE',
+        first = true,
+        overwritedisc = function()
+            return not state.emu and Warrior.defense and Warrior.defense.Name or nil
+        end
+    }
+}, {
+    Type = 'Disc',
+    Group = 'armorrunes',
+    Names = {'Armor of Rallosian Runes', 'Armor of Akhevan Runes'},
+    Options = {
+        tankburn = true,
+        overwritedisc = Warrior.defense and Warrior.defense.Name or nil,
+        emu = false
+    }
+}, {
+    Type = 'Disc',
+    Group = 'defenseburn',
+    Names = {'Levincrash Defense Discipline'},
+    Options = {
+        tankburn = true,
+        overwritedisc = Warrior.defense and Warrior.defense.Name or nil,
+        emu = false
+    }
+}, { -- big taunt
+    Type = 'AA',
+    Name = 'Ageless Enmity',
+    Options = {
+        tankburn = true,
+        aggro = true,
+        condition = conditions.aggroBelow
+    }
+}, {
+    Type = 'AA',
+    Name = 'Projection of Fury',
+    Options = {
+        tankburn = true,
+        opt = 'USEPROJECTION'
+    }
+}, { -- more big aggro
+    Type = 'AA',
+    Name = 'Warlord\'s Fury',
+    Options = {
+        tankburn = true
+    }
+}, { -- 25% spell dmg absorb
+    Type = 'AA',
+    Name = 'Mark of the Mage Hunter',
+    Options = {
+        tankburn = true
+    }
+}, { -- increase incoming heals
+    Type = 'AA',
+    Name = 'Resplendent Glory',
+    Options = {
+        tankburn = true
+    }
+}, { -- reduce incoming melee dmg
+    Type = 'AA',
+    Name = 'Warlord\'s Bravery',
+    Options = {
+        tankburn = true
+    }
+}, { -- big heal and temp HP
+    Type = 'AA',
+    Name = 'Warlord\'s Tenacity',
+    Options = {
+        tankburn = true
+    }
+}, {
+    Type = 'AA',
+    Name = 'Spire of the Warlord',
+    Options = {
+        tankburn = true,
+        emu = false
+    }
+}, {
+    Type = 'AA',
+    Name = 'Fundament: Third Spire of the Warlord',
+    Options = {
+        tankburn = true,
+        emu = true
+    }
+}, {
+    Type = 'Disc',
+    Group = 'resolve',
+    Names = {'Warrior\'s Resolve', 'Warrior\'s Aegis'},
+    Options = {
+        tankburn = true,
+        emu = false
+    }
+}, { -- 10m cd, proc every swing for 12s
+    Type = 'AA',
+    Name = 'Rage of Rallos Zek',
+    Options = {
+        tankburn = true
+    }
+}, {
+    Type = 'Disc',
+    Group = 'attraction',
+    Names = {'Forceful Attraction'},
+    Options = {
+        opt = 'USEATTRACTION',
+        emu = false
+    }
+}, {
+    Type = 'Disc',
+    Group = 'fortitude',
+    Names = {'Fortitude Discipline'},
+    Options = {
+        opt = 'USEFORTITUDE',
+        first = true,
+        overwritesdisc = Warrior.defense and Warrior.defense.name or nil
+    }
+}, {
+    Type = 'Disc',
+    Group = 'flash',
+    Names = {'Flash of Anger'},
+    Options = {
+        emu = false
+    }
+}, { -- 10min cd, 60k heal
+    Type = 'AA',
+    Name = 'Warlord\'s Resurgence',
+    Options = {
+        key = 'resurgence'
+    }
+}, -- DPS
+{
+    Type = 'Disc',
+    Group = 'vortex',
+    Names = {'Spiraling Blades', 'Vortex Blade', 'Cyclone Blade'},
+    Options = {
+        aedps = true,
+        threshold = 3,
+        condition = conditions.aboveMobThreshold
+    }
+}, {
+    Type = 'AA',
+    Name = 'Rampage',
+    Options = {
+        aedps = true,
+        threshold = 5,
+        condition = conditions.aboveMobThreshold
+    }
+}, {
+    Type = 'Skill',
+    Name = 'Bash',
+    Options = {
+        dps = true,
+        condition = function()
+            return mq.TLO.Me.Inventory('offhand').Type() == 'Shield' and conditions.withinMeleeDistance()
+        end
+    }
+}, {
+    Type = 'Skill',
+    Name = 'Kick',
+    Options = {
+        dps = true,
+        condition = function()
+            return mq.TLO.Me.Inventory('offhand').Type() ~= 'Shield' and conditions.withinMeleeDistance()
+        end
+    }
+}, {
+    Type = 'Disc',
+    Group = 'shieldbreak',
+    Names = {'Shield Splinter'},
+    Options = {
+        dps = true,
+        condition = conditions.withinMeleeDistance,
+        emu = false
+    }
+}, {
+    Type = 'Disc',
+    Group = 'throatjab',
+    Names = {'Throat Jab'},
+    Options = {
+        dps = true,
+        condition = conditions.withinMeleeDistance
+    }
+}, {
+    Type = 'Disc',
+    Group = 'knucklebreak',
+    Names = {'Knuckle Break'},
+    Options = {
+        dps = true,
+        condition = conditions.withinMeleeDistance,
+        emu = false
+    }
+}, {
+    Type = 'AA',
+    Name = 'Gut Punch',
+    Options = {
+        dps = true,
+        condition = conditions.withinMeleeDistance
+    }
+}, {
+    Type = 'AA',
+    Name = 'Knee Strike',
+    Options = {
+        dps = true,
+        condition = conditions.withinMeleeDistance
+    }
+}, { -- 35s cd, timer 9, 2H attack, Mob HP 20% or below only
+    Type = 'Disc',
+    Group = 'strike',
+    Names = {'Decisive Strike', 'Exploitive Strike'},
+    Options = {
+        dps = true,
+        usebelowpct = 20,
+        condition = function(ability)
+            return conditions.targetHPBelow(ability) and conditions.withinMeleeDistance(ability)
+        end,
+        emu = false
+    }
+},
+-- table.insert(self.burnAbilities, common.getBestDisc({'Brightfield\'s Onslaught Discipline', 'Brutal Onslaught Discipline', 'Savage Onslaught Discipline'})) -- 15min cd, timer 6, 270% crit chance, 160% crit dmg, crippling blows, increase min dmg
+                     { -- 4min cd, timer 2, increased offensive capabilities
+    Type = 'Disc',
+    Group = 'offensive',
+    Names = {'Offensive Discipline'},
+    Options = {
+        first = true
+    }
+}, { -- 15min cd, 3 2HS attacks, crit % and dmg buff for 1 min
+    Type = 'AA',
+    Name = 'War Sheol\'s Heroic Blade',
+    Options = {
+        first = true
+    }
+}, -- Buffs
+{
+    Type = 'Disc',
+    Group = 'endregen',
+    Names = {'Breather'},
+    Options = {
+        recover = true,
+        combat = false,
+        endurance = true,
+        threshold = 20,
+        condition = function(ability)
+            return mq.TLO.Me.PctEndurance() <= config.get('RECOVERPCT') and
+                       (ability.combat or mq.TLO.Me.CombatState() ~= 'COMBAT')
+        end
+    }
+}, {
+    Type = 'AA',
+    Name = 'Battle Leap',
+    Options = {
+        key = 'leap',
+        combatbuff = true,
+        opt = 'USEBATTLELEAP',
+        maxdistance = 30,
+        delay = 500,
+        combat = false,
+        condition = function(ability)
+            return false
+        end
+    }
+}, {
+    Type = 'Disc',
+    Group = 'aura',
+    Names = {'Champion\'s Aura', 'Myrmidon\'s Aura'},
+    Options = {
+        aurabuff = true,
+        Checkfor = 'Champion\'s Aura'
+    }
+}, {
+    Type = 'Disc',
+    Group = 'fieldbuff',
+    Names = {'Field Bulwark', 'Full Moon\'s Champion', 'Field Armorer'},
+    Options = {
+        condition = conditions.missingBuff,
+        combatbuff = true
+    }
+}, {
+    Type = 'AA',
+    Name = 'Imperator\'s Command',
+    Options = {
+        combatbuff = true
+    }
+}, {
+    Type = 'AA',
+    Name = 'Infused by Rage',
+    Options = {
+        selfbuff = true
+    }
+}, {
+    Type = 'Item',
+    Name = 'Huntsman\'s Ethereal Quiver',
+    Options = {
+        summonMinimum = 101,
+        condition = conditions.summonMinimum,
+        selfbuff = true,
+        emu = false
+    }
+}, {
+    Type = 'Disc',
+    Group = 'voice',
+    Names = {'Commanding Voice'},
+    Options = {
+        combatbuff = true,
+        emu = false
+    }
+}}
 
 function Warrior:ohShitClass()
     if mq.TLO.Me.PctHPs() < 35 and mq.TLO.Me.CombatState() == 'COMBAT' then
-        if self.resurgence then self.resurgence:use() end
+        if self.resurgence then
+            self.resurgence:use()
+        end
         if tank.isTank() then
             if self.flash and mq.TLO.Me.CombatAbilityReady(self.flash.Name)() then
                 self.flash:use()

@@ -402,7 +402,7 @@ Shaman.SpellLines = {
         Options = {
             Gem = function(
                 lvl)
-                return lvl <= 60 and 2 or nil
+                return lvl <= 70 and 2 or nil
             end,
             debuff = true,
             opt = 'USESLOW'
@@ -705,7 +705,7 @@ Shaman.Abilities = {
     {
         Type = 'AA',
         Name = 'Call of the Wild',
-        Options = { rez = true }
+        Options = { rez = true, classes = { CLR = true, PAL = true, SHM = true } }
     },
 
     {

@@ -97,7 +97,6 @@ function tank.findMobToTank()
     else
         state.tankMobID = 0
     end
-    logger.debug(logger.flags.routines.tank, 'Find mob to tank')
     if config.get('OFFTANK') then
         if state.actors then
             local offtankIDs = {}
@@ -179,19 +178,21 @@ local function tankMobInRange(tank_spawn)
     local mob_y = tank_spawn.Y()
     if not mob_x or not mob_y then return false end
     local camp_radius = config.get('CAMPRADIUS')
+    
     if mode.currentMode:isReturnToCampMode() and camp.Active then
-        local dist = helpers.distance(camp.X, camp.Y, mob_x, mob_y)
-        if dist < camp_radius ^ 2 then
+        local dist_sq = helpers.distance(camp.X, camp.Y, mob_x, mob_y)
+        if dist_sq < camp_radius ^ 2 then
             return true
         else
             local targethp = tank_spawn.PctHPs()
-            if targethp and targethp < 95 and dist < camp_radius + campBuffer then
+            if targethp and targethp < 95 and dist_sq < (camp_radius + campBuffer) ^ 2 then
                 return true
             end
             return false
         end
     else
-        if helpers.distance(mq.TLO.Me.X(), mq.TLO.Me.Y(), mob_x, mob_y) < camp_radius ^ 2 then
+        local dist_sq = helpers.distance(mq.TLO.Me.X(), mq.TLO.Me.Y(), mob_x, mob_y)
+        if dist_sq < camp_radius ^ 2 then
             return true
         else
             return false
@@ -251,8 +252,11 @@ function tank.tankMob()
         state.tankMobID = 0
         return false
     end
-    --movement.stop()
     common.dismountForCombat()
+    -- Ensure navigation is not paused when engaging
+    if mq.TLO.Navigation.Paused() then
+        mq.cmd('/squelch /nav pause')
+    end
     if mq.TLO.Navigation.Active() then mq.cmd('/squelch /nav stop') end
     mq.cmd('/multiline ; /stand ; /squelch /face fast')
     if not mq.TLO.Me.Combat() and not state.dontAttack then
@@ -290,6 +294,10 @@ end
 
 function tank.stickToMob()
     if mq.TLO.Me.Combat() and stickTimer:expired() and not mq.TLO.Stick.Active() and mode.currentMode:getName() ~= 'manual' then
+        -- Ensure navigation is not paused when we need to stick to mob
+        if mq.TLO.Navigation.Paused() then
+            mq.cmd('/squelch /nav pause')
+        end
         mq.cmd('/squelch /stick front loose moveback 10')
         stickTimer:reset()
     end

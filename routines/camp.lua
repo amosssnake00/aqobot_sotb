@@ -38,7 +38,7 @@ function camp.mobRadarB()
     local function campPredicate(spawn)
         if spawn.Type() ~= 'NPC' then return false end
         if distanceFromCamp then
-            local d = helpers.distance(x, spawn.X(), y, spawn.Y())
+            local d = helpers.distance(x, y, spawn.X(), spawn.Y())
             if d > config.get('CAMPRADIUS') ^ 2 then return false end
         else
             if spawn.Distance3D() > config.get('CAMPRADIUS') then return false end
@@ -47,7 +47,24 @@ function camp.mobRadarB()
         return true
     end
 
-    state.targets = mq.getFilteredSpawns(campPredicate)
+    -- Preserve existing mob data (especially mez timers) when refreshing targets
+    local oldTargets = state.targets or {}
+    local newTargets = mq.getFilteredSpawns(campPredicate)
+    
+    -- Merge old data with new spawn data, preserving timers and other mob-specific data
+    for id, spawn in pairs(newTargets) do
+        if oldTargets[id] then
+            -- Preserve existing mob data (timers, flags, etc.)
+            newTargets[id] = oldTargets[id]
+            -- Update name in case it changed (shouldn't happen but just in case)
+            newTargets[id].Name = spawn.CleanName()
+        else
+            -- New mob, create basic entry
+            newTargets[id] = { Name = spawn.CleanName() }
+        end
+    end
+    
+    state.targets = newTargets
     state.mobCount = #state.targets
     state.mobCountNoPets = #state.targets
 end
@@ -59,42 +76,82 @@ local xtar_count = 'xtarhater npc radius %d zradius 50 loc %d %d %d'
 local xtar_spawn = '%d, xtarhater npc radius %d zradius 50 loc %d %d %d'
 local xtar_nopet_count = 'xtarhater radius %d zradius 50 nopet loc %d %d %d'
 ---Determine the number of mobs within the camp radius.
----Sets common.mobCount to the total number of mobs on xtarget within the camp radius.
----Adds the mob ID of each mob found to the common.TARGETS table.
+---Uses optimized filtered spawn approach instead of individual spawn queries.
+---Sets state.mobCount and adds valid mobs to state.targets table.
 function camp.mobRadar()
     local x, y, z
+    local distanceFromCamp = false
+    
     if not camp.Active or mode.currentMode:getName() == 'huntertank' then
         x, y, z = mq.TLO.Me.X(), mq.TLO.Me.Y(), mq.TLO.Me.Z()
     else
         x, y, z = camp.X, camp.Y, camp.Z
+        distanceFromCamp = true
     end
-    logger.debug(logger.flags.routines.camp, aggressive_count:format(config.get('CAMPRADIUS') or 0, x, y, z))
-    local mobCount = mq.TLO.SpawnCount(aggressive_count:format(config.get('CAMPRADIUS') or 0, x, y, z))()
-    -- state.mobCountNoPets = mq.TLO.SpawnCount(aggressive_nopet_count:format(config.get('CAMPRADIUS') or 0, x, y, z))()
-    local mobCountNoPets = mobCount
-    if mobCount > 0 then
-        for i = 1, mobCount do
-            if i > 20 then break end
-            logger.debug(logger.flags.routines.camp, aggressive_spawn:format(i, config.get('CAMPRADIUS') or 0, x, y, z))
-            local mob = mq.TLO.NearestSpawn(aggressive_spawn:format(i, config.get('CAMPRADIUS') or 0, x, y, z))
-            local mob_id = mob.ID()
-            if mob_id and mob_id > 0 then
-                if not mob() or mob.Type() == 'Corpse' or not mob.Aggressive() then
-                    state.targets[mob_id] = nil
-                    mobCount = mobCount - 1
-                    mobCountNoPets = mobCountNoPets - 1
-                elseif mob.Type() == 'Pet' then
-                    state.targets[mob_id] = nil
-                    mobCountNoPets = mobCountNoPets - 1
-                elseif not state.targets[mob_id] then
-                    logger.debug(logger.flags.routines.camp, 'Adding mob_id %d', mob_id)
-                    state.targets[mob_id] = { Name = mob.CleanName() }
-                    -- state.targets[mob_id] = {meztimer=timer:new(30000)}
-                    -- state.targets[mob_id].meztimer:reset(0)
-                end
+    
+    -- Get xtarget IDs for filtering
+    local xtarIDs = {}
+    local me = mq.TLO.Me
+    for i = 1, me.XTargetSlots() do
+        local xtarID = me.XTarget(i).ID()
+        if xtarID and xtarID > 0 then
+            xtarIDs[xtarID] = true
+        end
+    end
+    
+    -- Optimized predicate function for spawn filtering
+    local function campPredicate(spawn)
+        if spawn.Type() ~= 'NPC' then return false end
+        if not spawn.Aggressive() then return false end
+        
+        -- Distance check
+        if distanceFromCamp then
+            local d = helpers.distance(x, y, spawn.X(), spawn.Y())
+            if d > (config.get('CAMPRADIUS') or 0) ^ 2 then return false end
+        else
+            if spawn.Distance3D() > (config.get('CAMPRADIUS') or 0) then return false end
+        end
+        
+        -- Only include mobs on xtarget for aggressive filtering
+        -- Exception: always include mobs that are being tanked or should be tanked
+        local mobID = spawn.ID()
+        if not xtarIDs[mobID] and mobID ~= state.tankMobID and mobID ~= state.pullMobID and mobID ~= state.assistMobID then
+            return false
+        end
+        return true
+    end
+    
+    -- Use efficient filtered spawn approach
+    local validSpawns = mq.getFilteredSpawns(campPredicate)
+    local mobCount = 0
+    local mobCountNoPets = 0
+    
+    -- Preserve existing mob data (especially mez timers) when refreshing targets
+    local oldTargets = {}
+    for k, v in pairs(state.targets) do oldTargets[k] = v end
+    
+    -- Clear existing targets and rebuild with preserved data
+    for k in pairs(state.targets) do state.targets[k] = nil end
+    
+    for _, spawn in ipairs(validSpawns) do
+        local mob_id = spawn.ID()
+        if mob_id and mob_id > 0 then
+            mobCount = mobCount + 1
+            if spawn.Type() ~= 'Pet' then
+                mobCountNoPets = mobCountNoPets + 1
+            end
+            
+            -- Preserve existing mob data if it exists, otherwise create new
+            if oldTargets[mob_id] then
+                state.targets[mob_id] = oldTargets[mob_id]
+                -- Update name in case it changed
+                state.targets[mob_id].Name = spawn.CleanName()
+            else
+                state.targets[mob_id] = { Name = spawn.CleanName() }
             end
         end
     end
+    
     state.mobCount = mobCount
     state.mobCountNoPets = mobCountNoPets
 end
@@ -110,16 +167,16 @@ function camp.cleanTargets()
 end
 
 function camp.returnToCamp(force)
+    local distToCamp = helpers.distance(mq.TLO.Me.X(), mq.TLO.Me.Y(), camp.X, camp.Y)
     if state.mobCount > 0 then
         -- allow some buffer to campradius when checking returntocamp with mobs in camp.. allow to keep fighting stuff near the edge.
         -- if toons are any further out maybe they were summoned out of camp or something.
-        if force or helpers.distance(mq.TLO.Me.X(), mq.TLO.Me.Y(), camp.X, camp.Y) > (config.get('CAMPRADIUS') + 25) ^ 2 then
+        if force or distToCamp > (config.get('CAMPRADIUS') + 25) ^ 2 then
             movement.navToLoc(camp.X, camp.Y, camp.Z)
         end
     else
         -- otherwise if camp is empty, move back in if more than halfway out from camp center.
-        --if force or helpers.distance(mq.TLO.Me.X(), mq.TLO.Me.Y(), camp.X, camp.Y) > (config.get('CAMPRADIUS')/2)^2 then
-        if force or helpers.distance(mq.TLO.Me.X(), mq.TLO.Me.Y(), camp.X, camp.Y) > config.get('CAMPRETURN') then
+        if force or distToCamp > config.get('CAMPRETURN') then
             movement.navToLoc(camp.X, camp.Y, camp.Z)
         end
     end

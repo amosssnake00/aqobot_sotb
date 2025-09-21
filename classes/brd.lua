@@ -32,7 +32,10 @@ function Bard:init()
     self:initSpellRotations()
     self:initAbilities()
     self:addCommonAbilities()
+    self.pullSpell = self.spells.slow
 end
+
+
 
 function Bard:initClassOptions()
     self:addOption('USEEPIC', 'Epic', 'always', self.EPIC_OPTS, 'Set how to use bard epic', 'combobox', nil, 'UseEpic',

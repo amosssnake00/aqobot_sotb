@@ -2,6 +2,7 @@ local mq = require('mq')
 local config = require('interface.configuration')
 local mode = require('mode')
 local state = require('state')
+local camp = require('routines.camp')
 
 local class
 local AQOType
@@ -36,6 +37,11 @@ function TLO.init(_class)
     end
 
     tlomembers.Actors = function(i) return 'table', state.actors[i] end
+    tlomembers.CampX = function() return 'float', camp.X end
+    tlomembers.CampY = function() return 'float', camp.Y end
+    tlomembers.CampZ = function() return 'float', camp.Z end
+    tlomembers.pullMobID = function() return 'string', state.pullMobID end
+    tlomembers.pullStatus = function() return 'string', state.pullStatus end
 
     AQOType = mq.DataType.new('AQOType', {
         Members = tlomembers

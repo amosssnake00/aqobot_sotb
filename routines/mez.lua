@@ -44,12 +44,18 @@ end
 ---@param mez_spell table @The name of the single target mez spell to cast.
 function mez.doSingle(mez_spell)
     if state.mobCount <= 1 or not mez_spell or not mq.TLO.Me.Gem(mez_spell.CastName)() then return end
+    logger.debug(logger.flags.routines.mez, 'MEZ_DEBUG: assistMobID=%s, mobCount=%s', state.assistMobID, state.mobCount)
     for id, mobdata in pairs(state.targets) do
-        logger.debug(logger.flags.routines.mez, '[%s] meztimer: %s, currentTime: %s, timerExpired: %s', id,
+        logger.debug(logger.flags.routines.mez, '[%s] meztimer: %s, currentTime: %s, timerExpired: %s, assistMobID: %s', id,
             mobdata.meztimer and mobdata.meztimer.start_time or 0, mq.gettime(),
-            mobdata.meztimer and mobdata.meztimer:expired() or true)
+            mobdata.meztimer and mobdata.meztimer:expired() or true, state.assistMobID)
         -- if id ~= state.assistMobID and (mobdata['meztimer'].start_time == 0 or mobdata['meztimer']:expired()) then
         if id ~= state.assistMobID and (not mobdata.meztimer or mobdata.meztimer:expired()) and not mobdata.dontmez then
+            if mobdata.meztimer then
+                logger.debug(logger.flags.routines.mez, 'MEZ_TIMER_DEBUG: mob %s has timer, expired=%s, remaining=%s', id, mobdata.meztimer:expired(), mobdata.meztimer:remaining())
+            else
+                logger.debug(logger.flags.routines.mez, 'MEZ_TIMER_DEBUG: mob %s has NO timer', id)
+            end
             local mob = mq.TLO.Spawn('id ' .. id)
             if mob() and not state.mezImmunes[mob.CleanName()] then
                 local spellData = mq.TLO.Spell(mez_spell.CastName)

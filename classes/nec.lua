@@ -881,16 +881,16 @@ Necromancer.SpellLines = {
             'Cavorting Bones',       -- [[NEC/1 - Mana: 15 - Cast: 5s - Recast 4s - Duration: 0s - Resist: n/a - Target: Self- Effects: Consumes: Bone Chips x 1 1: Summon Pet: PCPetNecS01L001Skel2Ice ]]
 
         },
-        Options = { 
-            precast = function() 
+        Options = {
+            precast = function()
                 if mq.TLO.FindItem('Sphere of Swirling Flame')() then
                     petfocusSwap = mq.TLO.Me.Inventory(11).ID() or 0
                     mq.cmd('/exchange "Sphere of Swirling Flame" 11')
                     mq.delay(200)
                 end
             end,
-            postcast = function() 
-                common.petClicky() 
+            postcast = function()
+                common.petClicky()
                 if petfocusSwap ~= 0 then
                     mq.cmdf('/exchange %s 11', petfocusSwap)
                     mq.delay(200)
@@ -1079,7 +1079,7 @@ Necromancer.Abilities = {
     { -- buff, 7:30 minute CD
         Type = 'AA',
         Name = 'Fundament: Third Spire of Necromancy',
-        Options = { emu = true, first = true, emu = true }
+        Options = { emu = true, first = true }
     },
     {
         Type = 'AA',

@@ -4,7 +4,7 @@ local logger = require('utils.logger')
 local timer = require('libaqo.timer')
 local state = require('state')
 
----@enum AbilityTypes
+-- AbilityTypes enum (defined in types.lua)
 local AbilityTypes = {
     Spell = 1,
     AA = 2,
@@ -14,7 +14,7 @@ local AbilityTypes = {
     None = 6,
 }
 
----@enum IsReady
+-- IsReady enum values
 local IsReady = {
     CAN_CAST = 'CAN_CAST',
     NOT_MEMMED = 'NOT_MEMMED',
@@ -27,83 +27,7 @@ local IsReady = {
     SHOULD_NOT_CAST = 'SHOULD_NOT_CAST',
 }
 
----@class Ability
---- General spell data
----@field ID number                 # The ID of this ability
----@field Name string               # The name of this ability (this.. is always just the same as CastName)
----@field CastName string           # The name of the spell/item/disc/aa/skill to use
----@field SpellName string          # The name of the spell which is cast by the spell/item/disc/aa/skill
----@field alias? string             # The alias for requesting the buff via actor or tells
----@field Group? string             # The name of the spell group this ability belongs to (spell or disc) - these are internal names picked by me, not like stacking group names from spell data
----@field Key? string               # Like Group, but just used for AAs to set self[Key] = theAbility as AAs aren't stored anywhere else otherwise except the arrays they are inserted into
----@field CastType AbilityTypes     # spell, aa, disc, item, skill
----@field TargetType? string        # The target type for the ability (from spell data)
----@field MyCastTime? number        # The cast time of the spell or clicky (from spell data)
----@field Duration? number          # The duration in seconds of the spell or clicky (from spell data)
----@field ReagentID? number         # Reagent ID required for summon ability to function -- this is lazily only tracking a single reagent. Won't work if a spell requires more. Do any require more?
----@field ReagentCount? number      # Number of ReagentID item required to cast the spell
----@field timer Timer               # Reuse timer for the ability -- TODO: Update to use new AbilityTimer TLO stuff too
---- Controls for when the ability should be used
----@field opt? string               # configuration option to check is enabled before using this ability
----@field condition? function       # function to evaluate to determine whether to use the ability
---- Old controls for when the ability should be used. Still mostly in use, but intended to be replaced by condition functions
----@field aggro? boolean            # flag to indicate if the ability is for getting aggro, like taunt
----@field threshold? number         # number of mobs to be on aggro before using an AE ability, or % mana/end to begin using recover abilities
---- Controls specific to using recover abilities
----@field combat? boolean           # flag to indicate whether to use recover ability in combat. e.g. don't canni when we should be healing
----@field ooc? boolean              # flag to indicate whether to use recover ability in ooc. e.g. don't canni if OOC
----@field minhp? number             # minimum HP % threshold to use recover ability. e.g. don't canni below 50% HP
----@field mana? boolean             # flag to indicate ability recovers mana
----@field endurance? boolean        # flag to indicate ability recovers endurance
---- Controls specific to using heal abilities
----@field pet? number               # percent HP to begin casting pet heal
----@field self? boolean             # indicates the heal ability is a self heal, like monk mend
----@field regular? boolean          # flag to indicate heal should be used as a regular heal
----@field panic? boolean            # flag to indicate heal should be used as a panic heal
----@field group? boolean            # flag to indicate heal should be used as a group heal
----@field pct? number               # group heal injured percent
---- Other controls
----@field classes? table            # list of classes which a buff should be cast on
----@field CheckFor? string          # other name to check for presence of a buff, primarily when the buff name doesn't match the spell name
----@field skipifbuff? string        # do not use this ability if the buff indicated by this string is already present -- how is this different from CheckFor?
----@field usebelowpct? number       # percent hp to begin using an ability, like executes
----@field maxdistance? number       # distance within which an ability should be used, like don't leap from a mile away
----@field tot? boolean              # flag to indicate if spell is target-of-target
----@field nodmz? boolean            # flag to indicate if this ability should be used in DMZ list zones
---- Controls specific to summoning items
----@field SummonID? string          # name of item summoned by this ability
----@field summonMinimum? number     # minimum amount of summoned item to keep
---- Actions related to use of the ability
----@field overwritedisc? string     # name of disc which is acceptable to overwrite
----@field stand? boolean            # flag to indicate if should stand after use, for FD dropping agro
----@field swap? boolean             # flag to indicate whether this spell should be swapped in when needed
----@field delay? number             # time in MS to delay after using an ability, primarily for swarm pets that take time to spawn after activation
----@field precast? function         # function to call prior to using an ability
----@field postcast? function        # function to call after to using an ability
----@field RemoveBuff? string        # name of buff / song to remove after cast
---- Ability List Indicators
----@field dps? boolean              # If true, the ability will be added to Class.DPSAbilities
----@field aedps? boolean            # If true, the ability will be added to Class.AEDPSAbilities
----@field tanking? boolean          # If true, the ability will be added to Class.tankAbilities
----@field aetank? boolean           # If true, the ability will be added to Class.AETankAbilities
----@field tankburn? boolean         # If true, the ability will be added to Class.tankBurnAbilities
----@field burn? boolean             # If true, the ability will be added to Class.burnAbilities
----@field first? boolean            # If true, the ability will be added to Class.burnAbilities with first=true
----@field second? boolean           # If true, the ability will be added to Class.burnAbilities with second=true
----@field third? boolean            # If true, the ability will be added to Class.burnAbilities with third=true
----@field heal? boolean             # If true, the ability will be added to Class.healAbilities
----@field cure? boolean             # If true, the ability will be added to Class.cures
----@field debuff? boolean           # If true, the ability will be added to Class.debuffs
----@field recover? boolean          # If true, the ability will be added to Class.recoverAbilities
----@field selfbuff? boolean         # If true, the ability will be added to Class.selfBuffs
----@field singlebuff? boolean       # If true, the ability will be added to Class.singleBuffs
----@field combatbuff? boolean       # If true, the ability will be added to Class.combatBuffs
----@field aurabuff? boolean         # If true, the ability will be added to Class.auras
----@field petbuff? boolean          # If true, the ability will be added to Class.petBuffs
-
---- Deprecated
----@field quick? boolean            # flag the ability as used for quick burns. Use first, second, third instead
----@field long? boolean             # flag the ability as used for long burns. Use first, second, third instead
+-- See types.lua for full Ability class definition with all fields
 local Ability = {
     ID = 0,
     Name = '',
@@ -244,13 +168,13 @@ function Ability.canUseSpell(spell, spellTable, skipReagentCheck, skipCastingChe
     if not skipCastingCheck then
         if state.class ~= 'BRD' then
             if mq.TLO.Me.Casting() or ((spellTable.MyCastTime or 0) > 0 and mq.TLO.Me.Moving()) then
-                logger.debug(logger.flags.ability.validation, 'Not in control or moving (id=%s, name=%s, type=%s)',
+                logger.debug(logger.flags.ability.validation, 'Not in control/casting or moving (id=%s, name=%s, type=%s)',
                     spell.ID(), spell.Name(), abilityType)
                 return IsReady.BUSY
             end
         else
             if mq.TLO.Me.Casting() and spellTable.MyCastTime >= 500 then
-                logger.debug(logger.flags.ability.validation, 'Not in control or moving (id=%s, name=%s, type=%s)',
+                logger.debug(logger.flags.ability.validation, 'BRD: Not in control/casting (id=%s, name=%s, type=%s)',
                     spell.ID(), spell.Name(), abilityType)
                 return IsReady.BUSY
             end

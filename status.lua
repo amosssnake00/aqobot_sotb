@@ -46,52 +46,110 @@ end
 local ignoredebuffs = { ['HC Jugular Gash'] = true, ['Resurrection Sickness'] = true, ['Revival Sickness'] = true,
     ['HC Roar of Challenge'] = true, ['Aura of Destruction'] = true, ['HC Knuckle Smash'] = true }
 local statusTimer = Timer:new(1000)
+
+-- Cache for buff/song data to avoid repeated processing
+local cachedBuffs = {}
+local cachedSongs = {}
+local lastBuffCheck = 0
+local lastSongCheck = 0
+
+local function getDebuffs()
+    local currentTime = mq.gettime()
+    if currentTime - lastBuffCheck < 500 then  -- Cache for 500ms
+        return cachedBuffs
+    end
+    
+    local buffs = {}
+    local me = mq.TLO.Me
+    local buffCount = me.BuffsPopulated() and 42 or 0
+    
+    for i = 1, buffCount do
+        local aBuff = me.Buff(i)
+        if aBuff() then
+            local spell = aBuff.Spell()
+            if spell then
+                local beneficial = spell.Beneficial and spell.Beneficial() or false
+                if not beneficial then
+                    local buffName = aBuff.Name()
+                    if not ignoredebuffs[buffName] then
+                        local buffData = { Name = buffName, Duration = aBuff.Duration.TotalSeconds() }
+                        local counterNum = aBuff.CounterNumber()
+                        if counterNum and counterNum > 0 then
+                            buffData.CounterNumber = counterNum
+                            buffData.CounterType = aBuff.CounterType()
+                        end
+                        table.insert(buffs, buffData)
+                    end
+                end
+            end
+        end
+    end
+    
+    cachedBuffs = buffs
+    lastBuffCheck = currentTime
+    return buffs
+end
+
+local function getDebuffSongs()
+    local currentTime = mq.gettime()
+    if currentTime - lastSongCheck < 500 then  -- Cache for 500ms
+        return cachedSongs
+    end
+    
+    local songs = {}
+    local me = mq.TLO.Me
+    
+    for i = 1, 20 do
+        local aSong = me.Song(i)
+        if aSong() then
+            local spell = aSong.Spell()
+            if spell then
+                local beneficial = spell.Beneficial and spell.Beneficial() or false
+                if not beneficial then
+                    local songData = { Name = aSong.Name(), Duration = aSong.Duration.TotalSeconds() }
+                    local counterNum = aSong.CounterNumber()
+                    if counterNum and counterNum > 0 then
+                        songData.CounterNumber = counterNum
+                        songData.CounterType = aSong.CounterType()
+                    end
+                    table.insert(songs, songData)
+                end
+            end
+        end
+    end
+    
+    cachedSongs = songs
+    lastSongCheck = currentTime
+    return songs
+end
+
 function status.send(class)
     if not statusTimer:expired() then return end
     statusTimer:reset()
     local header = { script = 'aqo', server = mq.TLO.EverQuest.Server() }
-    -- Send info on any debuffs
-    local buffs = {}
-    for i = 1, 42 do
-        local aBuff = mq.TLO.Me.Buff(i)
-        if aBuff() and aBuff.Spell() and not aBuff.Spell.Beneficial() and not ignoredebuffs[aBuff.Name()] then
-            local buffData = { Name = aBuff.Name(), Duration = aBuff.Duration.TotalSeconds() }
-            if aBuff.CounterNumber() and (aBuff.CounterNumber() or 0) > 0 then
-                buffData.CounterNumber = aBuff.CounterNumber()
-                buffData.CounterType = aBuff.CounterType()
-            end
-            table.insert(buffs, buffData)
-        end
-    end
+    
+    -- Get cached debuffs and songs
+    local buffs = getDebuffs()
+    local songs = getDebuffSongs()
+    
     if state.testCures then
         table.insert(buffs, { Name = 'Poison Debuff', Duration = 60, CounterNumber = 10, CounterType = 'Poison' })
-        -- table.insert(buffs, {Name='Corruption Debuff', Duration=60, CounterNumber=10, CounterType='Corruption'})
-        -- table.insert(buffs, {Name='Disease Debuff', Duration=60, CounterNumber=10, CounterType='Disease'})
-        -- table.insert(buffs, {Name='Curse Debuff', Duration=60, CounterNumber=10, CounterType='Curse'})
-        -- table.insert(buffs, {Name='Debuff', Duration=60})
     end
-    local songs = {}
-    for i = 1, 20 do
-        local aSong = mq.TLO.Me.Song(i)
-        if aSong() and aSong.Spell() and not aSong.Spell.Beneficial() then
-            local songData = { Name = aSong.Name(), Duration = aSong.Duration.TotalSeconds() }
-            if aSong.CounterNumber() and (aSong.CounterNumber() or 0) > 0 then
-                songData.CounterNumber = aSong.CounterNumber()
-                songData.CounterType = aSong.CounterType()
-            end
-            table.insert(songs, songData)
-        end
-    end
+    
     -- Send info on any missing or fading buffs
     local wantBuffs = class:wantBuffs()
     local availableBuffs = class:getRequestAliases()
     local gimme = {}
     local availableSupplies = {}
     local missingAggro = {}
+    
     if mode.currentMode:isTankMode() then
-        for i = 1, mq.TLO.Me.XTargetSlots() do
-            if (mq.TLO.Me.XTarget(i).PctAggro() or 100) < 100 then
-                table.insert(missingAggro, mq.TLO.Me.XTarget(i).ID())
+        local me = mq.TLO.Me
+        local xTargetSlots = me.XTargetSlots()
+        for i = 1, xTargetSlots do
+            local xTarget = me.XTarget(i)
+            if xTarget and (xTarget.PctAggro() or 100) < 100 then
+                table.insert(missingAggro, xTarget.ID())
             end
         end
     end

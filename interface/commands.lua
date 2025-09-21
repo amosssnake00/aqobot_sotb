@@ -13,7 +13,8 @@ local timer = require('libaqo.timer')
 local constants = require('constants')
 local mode = require('mode')
 local state = require('state')
-local spelldb = require('utils.spelldb') -- Add this line
+local spelldb = require('utils.spelldb')
+local assigngems = require('assigngems')
 
 local class
 local commands = {}
@@ -73,6 +74,8 @@ local function showHelp()
         output = output .. prefix .. command.command .. ' -- ' .. command.tip
     end
     output = output .. prefix .. "spelldb populate [max_spell_id] -- Initializes and populates the spell database from game data."
+    output = output .. prefix .. "assigngems [apply] -- Smart gem assignment for spells based on rotation priority. Add 'apply' to make changes."
+    output = output .. prefix .. "loadspells -- Memorize spells based on current gem assignments."
     -- printMDTable({'Command', 'Description'}, constants.commandHelp, {'command', 'tip'})
     output = output ..
     '\n- /nowcast [name] alias <targetID> -- Tells the named character or yourself to cast a spell on the specified target ID.'
@@ -219,6 +222,26 @@ function commands.commandHandler(...)
             end
         else
             logger.info("Usage: /aqo spelldb populate [max_spell_id]")
+        end
+    elseif opt == 'ASSIGNGEMS' then
+        local subCommand = args[2] and args[2]:lower()
+        if subCommand == 'apply' then
+            assigngems.autoAssignGems(class, false)
+        else
+            assigngems.autoAssignGems(class, true) -- dry run by default
+        end
+    elseif opt == 'LOADSPELLS' then
+        if class:get('BYOS') then
+            logger.info('BYOS mode is enabled - automatic spell loading is disabled.')
+            logger.info('Either disable BYOS mode or manually memorize your spells.')
+            logger.info('To disable BYOS: /aqo BYOS false')
+        else
+            -- Force spell loading by resetting timer
+            if class.checkSpellTimer then
+                class.checkSpellTimer:reset(0) -- Force timer to be expired
+            end
+            class:checkMemmedSpells()
+            logger.info('Forced spell memorization check')
         end
     elseif configName then
         config.getOrSetOption(opt, config.get(configName), new_value, configName)
@@ -484,9 +507,23 @@ function commands.commandHandler(...)
         if index then
             local pull = require('routines.pull')
             pull.removePolygonPoint(index)
-            logger.info('Removed polygon point at index \ag%d\ax', index)
+            logger.info(string.format('Removed polygon point at index \ag%d\ax', index))
         else
             logger.info('Usage: /%s removepolygonpoint <index>', state.class)
+        end
+    elseif opt == 'UPDATEPOLYGONPOINT' then
+        local index = tonumber(args[2])
+        local x = tonumber(args[3])
+        local y = tonumber(args[4])
+        if index and x and y then
+            local pull = require('routines.pull')
+            if pull.updatePolygonPoint(index, x, y) then
+                logger.info(string.format('Updated polygon point %d to \ag%.2f, %.2f\ax', index, x, y))
+            else
+                logger.info('Failed to update polygon point %d', index)
+            end
+        else
+            logger.info('Usage: /%s updatepolygonpoint <index> <x> <y>', state.class)
         end
     elseif opt == 'GETTINGSTARTED' then
         state.ShowGettingStarted = true

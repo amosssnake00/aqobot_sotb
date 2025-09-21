@@ -431,6 +431,7 @@ constants.deleteWhenDead = {
 constants.assists = { group = 1, raid1 = 1, raid2 = 1, raid3 = 1, actor = 1, manual = 1 }
 constants.groupWatchOptions = { healer = 1, self = 1, none = 1 }
 constants.pullWith = { melee = 1, ranged = 1, spell = 1, item = 1, custom = 1 }
+constants.pullEngagementCheck = { strict = 1, group = 1, raid = 1, dannet = 1, ignore = 1 }
 constants.pullStates = {
     NOT = 'NOT',
     SCAN = 'SCAN',

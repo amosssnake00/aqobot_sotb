@@ -2,6 +2,7 @@ local mq = require('mq')
 local config = require('interface.configuration')
 local constants = require('constants')
 local state = require('state')
+local logger = require('utils.logger')
 
 local class
 local conditions = {}
@@ -172,6 +173,61 @@ function conditions.mobsMissingAggro()
         end
         return xtar_aggro_count > 0
     end
+end
+
+-- Cure Ability conditions
+
+function conditions.radiantCureNeeded()
+    logger.debug(logger.flags.routines.cure, 'ENTER radiantCureNeeded check')
+    
+    -- Check self first
+    local selfDisease = (mq.TLO.Me.CountersDisease and mq.TLO.Me.CountersDisease()) or 0
+    local selfPoison = (mq.TLO.Me.CountersPoison and mq.TLO.Me.CountersPoison()) or 0
+    local selfCurse = (mq.TLO.Me.CountersCurse and mq.TLO.Me.CountersCurse()) or 0
+    
+    logger.debug(logger.flags.routines.cure, 'Self counters: Disease=%s Poison=%s Curse=%s', 
+        selfDisease, selfPoison, selfCurse)
+    
+    if selfDisease > 0 or selfPoison > 0 or selfCurse > 0 then
+        logger.debug(logger.flags.routines.cure, 'EXIT radiantCureNeeded: true (self needs cure)')
+        return true
+    end
+    
+    -- Check group members within 100 feet
+    local groupSize = mq.TLO.Group.GroupSize() or 0
+    logger.debug(logger.flags.routines.cure, 'Checking %s group members for cure needs', groupSize)
+    
+    for i = 1, groupSize - 1 do
+        local member = mq.TLO.Group.Member(i)
+        if member.Present() then
+            local memberName = member.CleanName() or ('Member' .. i)
+            local distance = member.Distance3D() or 300
+            
+            logger.debug(logger.flags.routines.cure, 'Checking %s: distance=%s', memberName, distance)
+            
+            if distance <= 100 then
+                local memberDisease = (member.CountersDisease and member.CountersDisease()) or 0
+                local memberPoison = (member.CountersPoison and member.CountersPoison()) or 0
+                local memberCurse = (member.CountersCurse and member.CountersCurse()) or 0
+                
+                logger.debug(logger.flags.routines.cure, '%s counters: Disease=%s Poison=%s Curse=%s', 
+                    memberName, memberDisease, memberPoison, memberCurse)
+                
+                -- Check for specific counters that Radiant Cure reduces by 9
+                if memberDisease > 0 or memberPoison > 0 or memberCurse > 0 then
+                    logger.debug(logger.flags.routines.cure, 'EXIT radiantCureNeeded: true (%s needs cure)', memberName)
+                    return true
+                end
+            else
+                logger.debug(logger.flags.routines.cure, '%s out of range (distance=%s > 100)', memberName, distance)
+            end
+        else
+            logger.debug(logger.flags.routines.cure, 'Member %s not present in zone', i)
+        end
+    end
+    
+    logger.debug(logger.flags.routines.cure, 'EXIT radiantCureNeeded: false (no one needs cure)')
+    return false
 end
 
 return conditions

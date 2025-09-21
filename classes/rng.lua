@@ -221,6 +221,16 @@ function Ranger:initSpellRotations()
 end
 
 Ranger.Abilities = {
+    --aggro, yay!
+    {
+    Type = 'Skill',
+    Name = 'Taunt',
+    Options = {
+        tanking = true,
+        aggro = true,
+        condition = conditions.lowAggroInMelee
+        }
+    },
     -- DPS
     { -- inc dmg from fire+ice nukes, 1min CD
         Type = 'AA',

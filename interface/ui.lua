@@ -28,6 +28,11 @@ local loadPolygonSetOpen, shouldDrawLoadPolygonSet = false, false
 local polygonSetName = ''
 local polygonSetNote = ''
 
+-- Polygon point editing state
+local editingPolygonPoints = {}
+local newPointX = 0
+local newPointY = 0
+
 -- UI constants
 local MINIMUM_WIDTH = 430
 local BUTTON_HEIGHT = 22
@@ -50,8 +55,48 @@ local ui = {}
 
 local aqoImg = mq.CreateTexture(mq.luaDir .. "/aqo/aqo.png")
 
+-- Pre-sorted console flags for ImGui performance
+local sortedConsoleFlags = nil
+local initialFlagStates = nil
+
+local function initializeSortedFlags()
+    if sortedConsoleFlags then return end
+    
+    -- Store initial flag states for reset functionality
+    initialFlagStates = {}
+    for category, subcategories in pairs(logger.flags) do
+        initialFlagStates[category] = {}
+        for subcategory, enabled in pairs(subcategories) do
+            initialFlagStates[category][subcategory] = enabled
+        end
+    end
+    
+    sortedConsoleFlags = {}
+    for category, subcategories in pairs(logger.flags) do
+        for subcategory, _ in pairs(subcategories) do
+            table.insert(sortedConsoleFlags, {
+                category = category,
+                subcategory = subcategory,
+                displayName = category .. ' - ' .. subcategory
+            })
+        end
+    end
+    
+    -- Sort flags alphabetically by display name
+    table.sort(sortedConsoleFlags, function(a, b) return a.displayName < b.displayName end)
+end
+
+local function resetConsoleFlagsToDefault()
+    for category, subcategories in pairs(initialFlagStates) do
+        for subcategory, enabled in pairs(subcategories) do
+            logger.flags[category][subcategory] = enabled
+        end
+    end
+end
+
 function ui.init(_class)
     class = _class
+    initializeSortedFlags()
     mq.imgui.init('AQO Bot 1.0', ui.main)
     minimize = config.get('STARTMINIMIZED')
 end
@@ -118,7 +163,8 @@ local assistTabConfigs = {
     'NUKEMANAMIN', 'DOTMANAMIN', 'MAINTANK', 'OFFTANK',
 }
 local function drawAssistTab()
-    local x, _ = ImGui.GetContentRegionAvail() - 10
+    local x, _ = ImGui.GetContentRegionAvail()
+    x = x - 10
     if ImGui.Button('Reset Camp', x / 2, BUTTON_HEIGHT) then
         camp.setCamp(true)
     end
@@ -248,25 +294,111 @@ local function drawPullTab()
     -- Polygon Points Management
     if config.get('POLYGONPULL_ENABLED') then
         -- ImGui.Separator()
-        ImGui.Text('Polygon Points:')
+        --[[ ImGui.Text('Polygon Points:')
+        
+        -- Show perimeter checkbox
+        local showPerimeter = config.get('POLYGON_SHOW_PERIMETER')
+        local newShowPerimeter = ImGui.Checkbox('Show Polygon Perimeter', showPerimeter)
+        if newShowPerimeter ~= showPerimeter then
+            config.set('POLYGON_SHOW_PERIMETER', newShowPerimeter)
+            -- Redraw markers to apply/remove perimeter
+            if pull.getPolygonPoints() and #pull.getPolygonPoints() > 0 then
+                mq.cmd('/squelch /maploc remove')
+                pull.drawAllPolygonMarkers()
+                pull.redrawCampMarkers()
+            end
+        end ]]
         
       
-        -- Display polygon points with delete buttons
+        -- Display polygon points with editable coordinates and delete buttons
         local polygonPoints = pull.getPolygonPoints()
         if polygonPoints and #polygonPoints > 0 then
+            -- Only rebuild editing cache if the number of points changed
+            if not editingPolygonPoints or #editingPolygonPoints ~= #polygonPoints then
+                editingPolygonPoints = {}
+                for i, point in ipairs(polygonPoints) do
+                    editingPolygonPoints[i] = {x = point[1], y = point[2]}
+                end
+            end
+            
             for i, point in ipairs(polygonPoints) do
                 ImGui.BeginGroup()
-                ImGui.Text(string.format('%d: %.1f, %.1f', i, point[1], point[2]))
-                ImGui.PushID('delete_' .. i)
+                
+                -- Ensure editing point exists
+                if not editingPolygonPoints[i] then
+                    editingPolygonPoints[i] = {x = point[1], y = point[2]}
+                end
+                
+                ImGui.Text(string.format('%d:', i))
                 ImGui.SameLine()
+                
+                -- Editable X coordinate
+                ImGui.PushID('x_' .. i)
+                ImGui.SetNextItemWidth(120)
+                local newX = ImGui.InputFloat('##x', editingPolygonPoints[i].x, 0.1, 1.0, '%.1f')
+                if newX ~= editingPolygonPoints[i].x then
+                    editingPolygonPoints[i].x = newX
+                    -- Update the point directly instead of remove/add to avoid index issues
+                    mq.cmdf('/%s updatepolygonpoint %d %.1f %.1f', state.class, i, newX, editingPolygonPoints[i].y)
+                end
+                ImGui.PopID()
+                
+                ImGui.SameLine()
+                ImGui.Text(',')
+                ImGui.SameLine()
+                
+                -- Editable Y coordinate
+                ImGui.PushID('y_' .. i)
+                ImGui.SetNextItemWidth(120)
+                local newY = ImGui.InputFloat('##y', editingPolygonPoints[i].y, 0.1, 1.0, '%.1f')
+                if newY ~= editingPolygonPoints[i].y then
+                    editingPolygonPoints[i].y = newY
+                    -- Update the point directly instead of remove/add to avoid index issues
+                    mq.cmdf('/%s updatepolygonpoint %d %.1f %.1f', state.class, i, editingPolygonPoints[i].x, newY)
+                end
+                ImGui.PopID()
+                
+                ImGui.SameLine()
+                ImGui.PushID('delete_' .. i)
                 if ImGui.Button('Delete', 60, BUTTON_HEIGHT - 2) then
+                    -- Handle deletion immediately and clear the editing cache for this point
                     mq.cmdf('/%s removepolygonpoint %d', state.class, i)
+                    -- Clear the entire editing cache to force rebuild on next frame
+                    editingPolygonPoints = {}
                 end
                 ImGui.PopID()
                 ImGui.EndGroup()
             end
+            
+            -- Display polygon Z coordinate
+            local polygonZ = pull.getPolygonZ()
+            if polygonZ then
+                ImGui.Separator()
+                ImGui.Text(string.format('Polygon Z: %.1f', polygonZ))
+            end
         else
             ImGui.Text('No polygon points defined')
+        end
+
+        -- Add blank point section
+        ImGui.Separator()
+        ImGui.Text('Add New Point:')
+        
+        -- X coordinate input
+        ImGui.Text('X:')
+        ImGui.SameLine()
+        ImGui.SetNextItemWidth(80)
+        newPointX = ImGui.InputFloat('##newX', newPointX, 0.1, 1.0, '%.1f')
+        
+        ImGui.SameLine()
+        ImGui.Text('Y:')
+        ImGui.SameLine()
+        ImGui.SetNextItemWidth(80)
+        newPointY = ImGui.InputFloat('##newY', newPointY, 0.1, 1.0, '%.1f')
+        
+        ImGui.SameLine()
+        if ImGui.Button('Add Point', 80, BUTTON_HEIGHT) then
+            mq.cmdf('/%s addpolygonpoint %.1f %.1f', state.class, newPointX, newPointY)
         end
 
         -- Save/Load polygon sets
@@ -300,11 +432,36 @@ end
 local function drawDebugComboBox()
     ImGui.PushItemWidth(300)
     if ImGui.BeginCombo('##debugoptions', 'Console Flags...') then
-        for category, subcategories in pairs(logger.flags) do
-            for subcategory, enabled in pairs(subcategories) do
-                logger.flags[category][subcategory] = ImGui.Checkbox(category .. ' - ' .. subcategory, enabled)
+        -- Add "all" flag to toggle all debug levels
+        local allFlagsEnabled = true
+        for _, flag in ipairs(sortedConsoleFlags) do
+            if not logger.flags[flag.category][flag.subcategory] then
+                allFlagsEnabled = false
+                break
             end
         end
+        
+        local newAllState = ImGui.Checkbox('all - toggle all flags', allFlagsEnabled)
+        if newAllState ~= allFlagsEnabled then
+            -- Toggle all flags to match the "all" state
+            for _, flag in ipairs(sortedConsoleFlags) do
+                logger.flags[flag.category][flag.subcategory] = newAllState
+            end
+        end
+        
+        -- Add reset to default button
+        if ImGui.Button('reset flags - restore to initial state') then
+            resetConsoleFlagsToDefault()
+        end
+        
+        ImGui.Separator()
+        
+        -- Draw pre-sorted flags
+        for _, flag in ipairs(sortedConsoleFlags) do
+            local currentState = logger.flags[flag.category][flag.subcategory]
+            logger.flags[flag.category][flag.subcategory] = ImGui.Checkbox(flag.displayName, currentState)
+        end
+        
         ImGui.EndCombo()
     end
     ImGui.PopItemWidth()

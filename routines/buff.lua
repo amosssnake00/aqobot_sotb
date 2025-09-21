@@ -154,8 +154,26 @@ local function buffSingle(base)
             if (canCast == abilities.IsReady.CAN_CAST and not buff.classes or buff.classes[memberClass]) and mq.TLO.Me.SpellReady(buff.Name)() and not member.Buff(buff.Name)() and not member.Dead() and memberDistance < 100 then
                 member.DoTarget()
                 mq.delay(1000, function() return mq.TLO.Target.BuffsPopulated() end)
-                if mq.TLO.Target.ID() == member.ID() and not mq.TLO.Target.Buff(buff.Name)() and mq.TLO.Spell(buff.Name).StacksTarget() then
-                    if abilities.use(buff, base, true) then return true end
+                if mq.TLO.Target.ID() == member.ID() and not mq.TLO.Target.Buff(buff.Name)() then
+                    -- Check if the selected buff will stack, if not try to find a better one from the same spell group
+                    local buffToUse = buff
+                    local shouldCast = true
+                    
+                    if buff.CastType == abilities.Types.Spell and not mq.TLO.Spell(buff.Name).StacksTarget() then
+                        if buff.SpellGroup then
+                            local stackingSpell = common.getBestStackingSpell(buff.SpellGroup, base, mq.TLO.Target.ID())
+                            if stackingSpell then
+                                logger.info('Using stacking alternative %s instead of %s for %s', stackingSpell.Name, buff.Name, member.CleanName())
+                                buffToUse = stackingSpell
+                            else
+                                shouldCast = false -- No stacking alternative found
+                            end
+                        else
+                            shouldCast = false -- Original doesn't stack and no spell group
+                        end
+                    end
+                    
+                    if shouldCast and abilities.use(buffToUse, base, true) then return true end
                 end
             end
         end
@@ -182,9 +200,27 @@ local function buffActors(base, combat)
                         if spawn() then
                             spawn.DoTarget()
                             mq.delay(1000, function() return mq.TLO.Target.BuffsPopulated() end)
-                            if mq.TLO.Target.ID() and spawn.ID() and mq.TLO.Target.Distance() and mq.TLO.Target.ID() == spawn.ID() and not mq.TLO.Target.Buff(availableBuffs[aBuff])() and mq.TLO.Target.Distance() < 60 then
-                                -- if abilities.use(theBuff, base, true, true) then return true end
-                                if abilities.use(theBuff, base, true, false) then return true end
+                            if mq.TLO.Target() and spawn() and mq.TLO.Target.ID() and spawn.ID() and mq.TLO.Target.Distance() and mq.TLO.Target.ID() == spawn.ID() and not mq.TLO.Target.Buff(availableBuffs[aBuff])() and mq.TLO.Target.Distance() < 60 then
+                                -- Check if the selected buff will stack, if not try to find a better one from the same spell group
+                                local buffToUse = theBuff
+                                local shouldCast = true
+                                
+                                if theBuff.CastType == abilities.Types.Spell and not mq.TLO.Spell(theBuff.Name).StacksTarget() then
+                                    if theBuff.SpellGroup then
+                                        local stackingSpell = common.getBestStackingSpell(theBuff.SpellGroup, base, mq.TLO.Target.ID())
+                                        if stackingSpell then
+                                            logger.info('Using stacking alternative %s instead of %s for %s', stackingSpell.Name, theBuff.Name, name)
+                                            buffToUse = stackingSpell
+                                        else
+                                            shouldCast = false -- No stacking alternative found
+                                        end
+                                    else
+                                        shouldCast = false -- Original doesn't stack and no spell group
+                                    end
+                                end
+                                
+                                -- if abilities.use(buffToUse, base, true, true) then return true end
+                                if shouldCast and abilities.use(buffToUse, base, true, false) then return true end
                             end
                         end
                     end

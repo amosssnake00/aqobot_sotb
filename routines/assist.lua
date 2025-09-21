@@ -111,6 +111,8 @@ function assist.forceAssist(assist_id)
 end
 
 local manualAssistTimer = timer:new(1500)
+local assistStabilizeTimer = timer:new(2000)
+local lastAssistMobID = 0
 ---Determine whether to begin assisting on a mob.
 ---Param: The MQ Spawn to be checked, otherwise the main assists target.
 ---@return boolean @Returns true if the spawn matches the assist criteria (within the camp radius and below autoassistat %), otherwise false.
@@ -161,13 +163,18 @@ function assist.getAssistSpawnIncludeManual()
     local assistMobID = 0
     if mode.currentMode:getName() == 'manual' then return assistMobID end
     local assistTarget = assist.getAssistSpawn()
+    logger.debug(logger.flags.routines.assist, "ASSIST_DEBUG: getAssistSpawn() returned %s (type: %s)", 
+        assistTarget == -1 and -1 or (assistTarget and assistTarget.ID() or "nil"), 
+        assistTarget == -1 and "manual" or (assistTarget and assistTarget.Type() or "nil"))
     -- manual assist mode hacks
     -- if mobs are on xtarget and 3sec timer is expired, try a manual assist to get target
     -- if the toon already has an npc on target (like something is hitting them), then that appears like the assist target too...
     if assistTarget == -1 then
         -- Don't manual /assist if already on an assist target and switch with MA is false
-        if state.assistMobID > 0 and mq.TLO.Target.ID() == state.assistMobID and not config.get('SWITCHWITHMA') then return
-            state.assistMobID end
+        if state.assistMobID > 0 and mq.TLO.Target.ID() == state.assistMobID and not config.get('SWITCHWITHMA') then 
+            logger.debug(logger.flags.routines.assist, "ASSIST_DEBUG: Returning existing assistMobID %s (not switching with MA)", state.assistMobID)
+            return state.assistMobID 
+        end
         if mq.TLO.Me.CombatState() == 'COMBAT' or mq.TLO.SpawnCount('npc xtarhater radius ' .. config.get('CAMPRADIUS'))() > 0 or mq.TLO.Spawn('npc radius ' .. config.get('CAMPRADIUS')).Aggressive() then
             if manualAssistTimer:expired() or not mq.TLO.Target() then
                 local assistNames = helpers.split(config.get('ASSISTNAMES'), ',')
@@ -182,11 +189,14 @@ function assist.getAssistSpawnIncludeManual()
             end
             if mq.TLO.Target.Type() == 'NPC' or (mq.TLO.Target.Type() == 'Pet' and mq.TLO.Target.Master.Type() == 'NPC') then
                 assistMobID = mq.TLO.Target.ID()
+                logger.debug(logger.flags.routines.assist, "ASSIST_DEBUG: Manual assist found target %s", assistMobID)
             end
         end
     else
         assistMobID = assistTarget.ID()
+        logger.debug(logger.flags.routines.assist, "ASSIST_DEBUG: Using MA target %s", assistMobID)
     end
+    logger.debug(logger.flags.routines.assist, "ASSIST_DEBUG: getAssistSpawnIncludeManual returning %s", assistMobID)
     return assistMobID
 end
 
@@ -197,6 +207,7 @@ function assist.checkMATargetSwitch(assistMobID)
     local masterType = mq.TLO.Target.Master.Type()
     local isNPC = targetType == 'NPC' or (targetType == 'Pet' and masterType == 'NPC')
     if isNPC and assistMobID == assist.getAssistID() then
+        logger.debug(logger.flags.routines.assist, "ASSIST_DEBUG: Clearing assistMobID - MA targeting themselves (assistMobID was %s)", state.assistMobID)
         mq.cmd('/multiline ; /squelch /mqtarget clear; /pet back; /attack off; /autofire off;')
         state.assistMobID = 0
         return false
@@ -206,6 +217,7 @@ function assist.checkMATargetSwitch(assistMobID)
         logger.debug(logger.flags.routines.assist, "state is combat")
         if mq.TLO.Target.ID() == assistMobID and (mq.TLO.Target.PctHPs() or 101) < config.get('AUTOASSISTAT') then
             -- already fighting the MAs target, make sure assistMobID is accurate
+            logger.debug(logger.flags.routines.assist, "ASSIST_DEBUG: Setting assistMobID to %s (already fighting MA target)", assistMobID)
             state.assistMobID = assistMobID
             return false
         elseif not config.get('SWITCHWITHMA') then
@@ -241,6 +253,7 @@ local assistAnnounced = nil
 ---@param assistMobID number @The Spawn ID of the target to assist on
 ---@param reset_timers function @An optional function to be called to reset combat timers specific to the class calling this function.
 function assist.setAndAnnounceNewAssistTarget(assistMobID, reset_timers)
+    logger.debug(logger.flags.routines.assist, "ASSIST_DEBUG: Setting assistMobID to %s (new assist target)", assistMobID)
     state.assistMobID = assistMobID
     if mq.TLO.Me.Sitting() then mq.cmd('/stand') end
     state.resists = {}
@@ -316,6 +329,29 @@ end
 function assist.doAssist(reset_timers, returnAfterAnnounce)
     local assistMobID = assist.getAssistSpawnIncludeManual()
     if assistMobID == 0 then return false end
+    
+    -- If using actor mode and we already have an actor-set assistMobID, only keep it if SWITCHWITHMA is disabled
+    -- or if the new assistMobID is the same (tank hasn't changed targets)
+    if config.get('ASSIST') == 'actor' and state.assistMobID > 0 then
+        local currentTargetSpawn = mq.TLO.Spawn('id ' .. state.assistMobID)
+        if currentTargetSpawn() and currentTargetSpawn.Type() ~= 'Corpse' and assist.shouldAssist(currentTargetSpawn) then
+            if assistMobID == state.assistMobID then
+                -- Tank hasn't changed targets, keep using the same one
+                logger.debug(logger.flags.routines.assist, "ASSIST_DEBUG: Tank target unchanged, keeping assistMobID %s", state.assistMobID)
+                assistMobID = state.assistMobID
+            elseif not config.get('SWITCHWITHMA') then
+                -- Tank changed targets but SWITCHWITHMA is disabled, keep current target
+                logger.debug(logger.flags.routines.assist, "ASSIST_DEBUG: Tank changed targets (%s->%s) but SWITCHWITHMA disabled, keeping %s", state.assistMobID, assistMobID, state.assistMobID)
+                assistMobID = state.assistMobID
+            else
+                -- Tank changed targets and SWITCHWITHMA is enabled, use new target
+                logger.debug(logger.flags.routines.assist, "ASSIST_DEBUG: Tank changed targets (%s->%s) and SWITCHWITHMA enabled, switching", state.assistMobID, assistMobID)
+            end
+        else
+            logger.debug(logger.flags.routines.assist, "ASSIST_DEBUG: Actor assistMobID %s is invalid, using new %s", state.assistMobID, assistMobID)
+        end
+    end
+    
     if assist.checkMATargetSwitch(assistMobID) then
         if assist.targetAssistSpawn(assistMobID) then
             assist.setAndAnnounceNewAssistTarget(assistMobID, reset_timers)

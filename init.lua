@@ -71,8 +71,9 @@ end
 ---Check if the current game state is not INGAME, and exit the script if it is.
 ---Otherwise, update state for the current loop so we don't have to go to the TLOs every time.
 local function updateLoopState()
-    if mq.TLO.MacroQuest.GameState() ~= 'INGAME' then
-        logger.info('Not in game, stopping aqo.')
+    local success, gameState = pcall(function() return mq.TLO.MacroQuest.GameState() end)
+    if not success or gameState ~= 'INGAME' then
+        logger.info('Not in game or TLO error, stopping aqo.')
         mq.exit()
     end
     state.actionTaken = false
@@ -81,24 +82,32 @@ end
 ---Reset assist/tank ID and turn off attack if we have no target or are targeting a corpse
 ---If targeting a corpse, also clear target unless its a healer
 local clearTargetTimer = timer:new(5000)
+local manastoneTimer = timer:new(500)
 local function checkTarget()
-    local targetType = mq.TLO.Target.Type()
-    local masterType = mq.TLO.Target.Master.Type()
+    local success, target = pcall(function() return mq.TLO.Target end)
+    if not success then return end
+    
+    local targetType = target.Type()
+    local masterType = target.Master.Type()
     local isPC = targetType == 'PC' or (targetType == 'Pet' and masterType == 'PC')
+    
     if not targetType or targetType == 'Corpse' then
         state.assistMobID = 0
         state.tankMobID = 0
-        if mq.TLO.Me.Combat() then
+        
+        local me = mq.TLO.Me
+        if me.Combat() then
             mq.cmd('/attack off')
-        elseif mq.TLO.Me.AutoFire() then
+        elseif me.AutoFire() then
             mq.cmd('/autofire off')
         end
+        
         if mq.TLO.Stick.Active() then
             mq.cmd('/squelch /stick off')
         end
+        
         if targetType == 'Corpse' then
             if clearTargetTimer.start_time == 0 then
-                -- clearing target in 3 seconds
                 clearTargetTimer:reset()
             elseif clearTargetTimer:expired() then
                 mq.cmd('/squelch /mqtarget clear')
@@ -107,7 +116,6 @@ local function checkTarget()
         elseif clearTargetTimer.start_time ~= 0 then
             clearTargetTimer:reset(0)
         end
-        -- elseif targetType == 'Pet' or targetType == 'PC' then
     elseif isPC then
         state.assistMobID = 0
         state.tankMobID = 0
@@ -132,34 +140,42 @@ end
 ---Remove harmful buffs such as lich if HP is getting low, regardless of paused state
 local torporLandedInCombat = false
 local function buffSafetyCheck()
-    if state.class == 'NEC' and mq.TLO.Me.PctHPs() < 40 then
+    local me = mq.TLO.Me
+    local myHPs = me.PctHPs()
+    local combatState = me.CombatState()
+    
+    if state.class == 'NEC' and myHPs < 40 then
         if class.spells.lich then
             mq.cmdf('/removebuff %s', class.spells.lich.Name)
             if class.spells.flesh then
                 mq.cmdf('/removebuff %s', class.spells.flesh.Name)
             end
         end
-        if not mq.TLO.Me.Feigning() and not mq.TLO.Me.Sitting() and mq.TLO.Me.CombatState() ~= 'COMBAT' then
+        if not me.Feigning() and not me.Sitting() and combatState ~= 'COMBAT' then
             mq.cmd('/sit')
         end
     end
-    if not torporLandedInCombat and mq.TLO.Me.Song('Transcendent Torpor')() and mq.TLO.Me.CombatState() == 'COMBAT' then
+    
+    local hasTorpor = me.Song('Transcendent Torpor')()
+    if not torporLandedInCombat and hasTorpor and combatState == 'COMBAT' then
         torporLandedInCombat = true
     end
-    if (torporLandedInCombat or mq.TLO.SpawnCount('xtarhater radius 25')() == 0) and mq.TLO.Me.CombatState() ~= 'COMBAT' and mq.TLO.Me.Song('Transcendent Torpor')() then
+    if (torporLandedInCombat or mq.TLO.SpawnCount('xtarhater radius 25')() == 0) and combatState ~= 'COMBAT' and hasTorpor then
         mq.cmdf('/removebuff "Transcendent Torpor"')
         torporLandedInCombat = false
     end
-    if state.class == 'MNK' and mq.TLO.Me.PctHPs() < config.get('HEALPCT') and mq.TLO.Me.AbilityReady('Mend')() then
+    
+    if state.class == 'MNK' and myHPs < config.get('HEALPCT') and me.AbilityReady('Mend')() then
         mq.cmd('/doability mend')
     end
-    -- emu doesnt split out invis info?
-    -- if not state.paused and state.class ~= 'ROG' and mq.TLO.Me.Invis() and not mq.TLO.Me.Invis(1)() and not mq.TLO.Me.Invis(2)() then
-    --     mq.cmd('/makemevis')
-    -- end
-    if not state.paused and state.mobCountNoPets > 0 and state.fadeTimer:expired() then mq.cmd('/makemevis') end
-    if mq.TLO.Me.Buff('Resurrection Sickness')() and mq.TLO.Me.Aura(1)() then
-        mq.cmdf('/removeaura %s', mq.TLO.Me.Aura(1)())
+    
+    if not state.paused and state.mobCountNoPets > 0 and state.fadeTimer:expired() then 
+        mq.cmd('/makemevis') 
+    end
+    
+    local resurrectionSickness = me.Buff('Resurrection Sickness')()
+    if resurrectionSickness and me.Aura(1)() then
+        mq.cmdf('/removeaura %s', me.Aura(1)())
     end
 end
 
@@ -183,15 +199,26 @@ local function main()
             mq.cmd('/timed 5 /lua run aqo')
             return
         end
+        
         local loopStart = mq.gettime()
         if state.debug and debugTimer:expired() then
             logger.debug(logger.flags.aqo.main, 'Start Main Loop')
             debugTimer:reset()
         end
 
-        mq.doevents()
-        updateLoopState()
-        buffSafetyCheck()
+        -- Wrap critical operations in error handling
+        local success, err = pcall(function()
+            mq.doevents()
+            updateLoopState()
+            state.handleZoneChange() -- Memory cleanup on zone changes
+            buffSafetyCheck()
+        end)
+        
+        if not success then
+            logger.info('Error in main loop: %s', err or 'unknown error')
+            mq.delay(1000) -- Delay before retry
+            goto continue_loop
+        end
         if not state.paused and common.inControl() then
             if not handleStates(class) then
                 if state.reacquireTargetID then
@@ -225,19 +252,16 @@ local function main()
                     delay = 16
                 end
             end
-            -- printf('%s %s %s %s', state.useManastone, state.manastoneCount, state.actionTaken, mq.TLO.Me.Casting())
-            if state.useManastone and state.manastoneCount < 10 and not state.actionTaken and not mq.TLO.Me.Casting() then
-                -- printf('should use manastone')
-                local manastoneTimer = timer:new(500)
-                while mq.TLO.Me.PctHPs() > 50 and mq.TLO.Me.PctMana() < 90 do
+            if state.useManastone and state.manastoneCount < 10 and not state.actionTaken then
+                local me = mq.TLO.Me
+                if not me.Casting() and me.PctHPs() > 50 and me.PctMana() < 90 then
                     mq.cmd('/useitem Manastone')
-                    mq.delay(1)
-                    if manastoneTimer:expired() then break end
-                end
-                state.manastoneCount = state.manastoneCount + 1
-                if state.manastoneCount == 10 then
-                    state.useManastone = false
-                    state.manastoneCount = 0
+                    manastoneTimer:reset()
+                    state.manastoneCount = state.manastoneCount + 1
+                    if state.manastoneCount >= 10 then
+                        state.useManastone = false
+                        state.manastoneCount = 0
+                    end
                 end
             end
         else
@@ -256,6 +280,8 @@ local function main()
             statusTimer:reset()
         end
         logger.debug(logger.flags.aqo.main, 'loop execution time: %s loop delay: %s', mq.gettime() - loopStart, delay)
+        
+        ::continue_loop::
         mq.delay(delay)
     end
 end

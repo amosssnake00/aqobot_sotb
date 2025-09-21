@@ -101,7 +101,7 @@ function spelldb.initialize_database()
     return true
 end
 
---- Populates the spell database by iterating through spells.
+--- Populates the spell database by iterating through spells in batches.
 function spelldb.populate_spell_database(max_spell_id)
     if not sqlite3 then
         print("ERROR: SQLite not available, cannot populate spell database.")
@@ -112,42 +112,39 @@ function spelldb.populate_spell_database(max_spell_id)
     if not db then return false end
 
     max_spell_id = max_spell_id or 50000 -- Default to checking up to spell ID 50000
-    
-    local attempts = 0
-    local transaction_successful = false
-    local total_spells_processed_across_retries = 0
-    local total_spells_added_across_retries = 0
-    local total_spells_errored_across_retries = 0
+    local batch_size = 2000 -- Process spells in batches of 2000
+    local total_spells_processed = 0
+    local total_spells_added = 0
+    local total_spells_errored = 0
 
-    while attempts < spelldb.MAX_POPULATE_RETRIES and not transaction_successful do
-        attempts = attempts + 1
-        local current_attempt_spells_processed = 0
-        local current_attempt_spells_added = 0
-        local current_attempt_spells_errored = 0
-        local spell_processing_error_occured_this_attempt = false
+    -- Pre-prepare the insert statement once
+    local columns = {}
+    local placeholders = {}
+    for col_name, _ in pairs(spelldb.COLUMNS) do
+        table.insert(columns, col_name)
+        table.insert(placeholders, ":" .. col_name)
+    end
+    local insert_sql_template = string.format(
+        "INSERT OR IGNORE INTO %s (%s) VALUES (%s);",
+        spelldb.TABLE_NAME,
+        table.concat(columns, ", "),
+        table.concat(placeholders, ", ")
+    )
 
-        -- Try to get a write lock earlier.
-        local begin_result = db:exec("BEGIN IMMEDIATE TRANSACTION;") 
-        if begin_result ~= sqlite3.OK then
-            local errcode = db:errcode()
-            if (errcode == sqlite3.BUSY or errcode == sqlite3.LOCKED) and attempts < spelldb.MAX_POPULATE_RETRIES then
-                local delay_ms = math.random(spelldb.MIN_RETRY_DELAY_MS, spelldb.MAX_RETRY_DELAY_MS)
-                print(string.format("Spell DB Population: BEGIN IMMEDIATE failed (attempt %d/%d) due to lock/busy. Retrying in %d ms. Error: %s",
-                                    attempts, spelldb.MAX_POPULATE_RETRIES, delay_ms, db:errmsg()))
-                if mq and mq.delay then mq.delay(delay_ms) else print("mq.delay not available for retry delay") end
-                goto continue_transaction_attempt -- Skips to the next iteration of the while loop
-            else
-                print(string.format("ERROR: Failed to begin transaction after %d attempts: %s (Code: %d)", attempts, db:errmsg(), errcode))
-                return false -- Non-retryable error or max retries hit for BEGIN
-            end
-        end
+    -- Process spells in batches
+    for batch_start = 1, max_spell_id, batch_size do
+        local batch_end = math.min(batch_start + batch_size - 1, max_spell_id)
+        local batch_spells_processed = 0
+        local batch_spells_added = 0
+        local batch_spells_errored = 0
         
-        print(string.format("Spell DB Population: Began transaction (attempt %d/%d). Processing spells up to ID %d...", attempts, spelldb.MAX_POPULATE_RETRIES, max_spell_id))
-
-        local insert_sql_template = nil
-        -- Note: spells_processed, spells_added, spells_errored are now per-attempt
-
-        for id = 1, max_spell_id do
+        print(string.format("Spell DB Population: Processing batch %d-%d...", batch_start, batch_end))
+        
+        -- Begin transaction for this batch
+        local begin_result = db:exec("BEGIN IMMEDIATE TRANSACTION;")
+        if begin_result == sqlite3.OK then
+            -- Process spells in this batch
+            for id = batch_start, batch_end do
             local spell_tlo = mq.TLO.Spell(id)
 
             if spell_tlo.IsValid() then
@@ -178,27 +175,10 @@ function spelldb.populate_spell_database(max_spell_id)
                         goto continue_spell_loop
                     end
 
-                    if not insert_sql_template then
-                        local columns = {}
-                        local placeholders = {}
-                        for col_name, _ in pairs(spelldb.COLUMNS) do
-                            table.insert(columns, col_name)
-                            table.insert(placeholders, ":" .. col_name)
-                        end
-                        insert_sql_template = string.format(
-                            "INSERT OR IGNORE INTO %s (%s) VALUES (%s);",
-                            spelldb.TABLE_NAME,
-                            table.concat(columns, ", "),
-                            table.concat(placeholders, ", ")
-                        )
-                    end
-
                     local stmt, err = db:prepare(insert_sql_template)
                     if not stmt then
                         print(string.format("ERROR: Failed to prepare insert statement for spell ID %d: %s", id, err or db:errmsg()))
-                        current_attempt_spells_errored = current_attempt_spells_errored + 1
-                        -- This is a non-DB lock error, probably indicates a bigger issue with the SQL or DB state.
-                        -- Could set spell_processing_error_occured_this_attempt = true here if we want to abort the transaction.
+                        batch_spells_errored = batch_spells_errored + 1
                         goto continue_spell_loop
                     end
 
@@ -209,91 +189,62 @@ function spelldb.populate_spell_database(max_spell_id)
 
                     local all_params_bound = true
                     for col_name_placeholder, value_to_bind in pairs(bind_params) do
-                        -- col_name_placeholder is like ":spell_id", value_to_bind is the actual data
                         local bind_ok, err_msg_bind = stmt:bind(col_name_placeholder, value_to_bind)
                         if not bind_ok then
                             print(string.format("ERROR: Failed to bind parameter %s for spell ID %d (%s): %s",
                                                 col_name_placeholder, spell_data.spell_id, spell_data.name or "N/A", err_msg_bind or stmt:errmsg()))
-                            current_attempt_spells_errored = current_attempt_spells_errored + 1
+                            batch_spells_errored = batch_spells_errored + 1
                             all_params_bound = false
-                            break -- Stop binding for this spell if one fails
+                            break
                         end
                     end
 
                     if not all_params_bound then
                         stmt:finalize()
-                        goto continue_spell_loop -- Skip to the next spell ID
+                        goto continue_spell_loop
                     end
 
                     local exec_result, exec_err = stmt:step()
                     if exec_result ~= sqlite3.DONE then
                         local current_errmsg = db:errmsg()
-                        local errcode_step = db:errcode() -- Get error code for step
-                        if (errcode_step == sqlite3.BUSY or errcode_step == sqlite3.LOCKED) then
-                             print(string.format("WARNING: INSERT for spell ID %d (%s) failed due to BUSY/LOCKED: %s. This transaction will likely be retried.", id, spell_data.name or "N/A", exec_err or current_errmsg))
-                             -- This might be a case to set spell_processing_error_occured_this_attempt = true and break,
-                             -- forcing a transaction retry. For now, we just log and count as error for this spell.
-                             current_attempt_spells_errored = current_attempt_spells_errored + 1
-                             -- spell_processing_error_occured_this_attempt = true -- Optional: force transaction retry
-                             -- stmt:finalize()
-                             -- break -- from spell loop
-                        elseif current_errmsg and current_errmsg ~= "not an error" and current_errmsg:lower():find("constraint failed") == nil then
-                            print(string.format("ERROR: Failed to insert spell ID %d (%s): %s (Result: %s)", id, spell_data.name or "N/A", exec_err or current_errmsg, exec_result))
-                            current_attempt_spells_errored = current_attempt_spells_errored + 1
+                        if current_errmsg and current_errmsg ~= "not an error" and current_errmsg:lower():find("constraint failed") == nil then
+                            print(string.format("ERROR: Failed to insert spell ID %d (%s): %s", id, spell_data.name or "N/A", exec_err or current_errmsg))
+                            batch_spells_errored = batch_spells_errored + 1
                         end
                     else
                         if db:changes() > 0 then
-                            current_attempt_spells_added = current_attempt_spells_added + 1
+                            batch_spells_added = batch_spells_added + 1
                         end
                     end
                     stmt:finalize()
-                    current_attempt_spells_processed = current_attempt_spells_processed + 1
+                    batch_spells_processed = batch_spells_processed + 1
                 end
-            end
-            ::continue_spell_loop::
-        end -- end for id loop
+                end
+                ::continue_spell_loop::
+            end -- end for id loop
 
-        if spell_processing_error_occured_this_attempt then
-            db:exec("ROLLBACK;")
-            print(string.format("Spell DB Population: Transaction (attempt %d/%d) rolled back due to spell processing errors.", attempts, spelldb.MAX_POPULATE_RETRIES))
-            if attempts < spelldb.MAX_POPULATE_RETRIES then
-                local delay_ms = math.random(spelldb.MIN_RETRY_DELAY_MS, spelldb.MAX_RETRY_DELAY_MS)
-                print(string.format("Retrying in %d ms.", delay_ms))
-                if mq and mq.delay then mq.delay(delay_ms) else print("mq.delay not available for retry delay") end
+            -- Commit this batch
+            local commit_result = db:exec("COMMIT;")
+            if commit_result == sqlite3.OK then
+                total_spells_processed = total_spells_processed + batch_spells_processed
+                total_spells_added = total_spells_added + batch_spells_added
+                total_spells_errored = total_spells_errored + batch_spells_errored
+                print(string.format("Batch %d-%d committed: Processed: %d, Added: %d, Errored: %d", 
+                                   batch_start, batch_end, batch_spells_processed, batch_spells_added, batch_spells_errored))
+            else
+                print(string.format("ERROR: Failed to commit batch %d-%d: %s", batch_start, batch_end, db:errmsg()))
+                db:exec("ROLLBACK;")
             end
-            goto continue_transaction_attempt
+        else
+            print(string.format("ERROR: Failed to begin transaction for batch %d-%d: %s", batch_start, batch_end, db:errmsg()))
         end
         
-        local commit_result = db:exec("COMMIT;")
-        if commit_result == sqlite3.OK then
-            transaction_successful = true
-            total_spells_processed_across_retries = total_spells_processed_across_retries + current_attempt_spells_processed
-            total_spells_added_across_retries = total_spells_added_across_retries + current_attempt_spells_added
-            total_spells_errored_across_retries = total_spells_errored_across_retries + current_attempt_spells_errored
-            print(string.format("Spell DB Population: Transaction committed successfully on attempt %d.", attempts))
-            print(string.format("Attempt %d summary: Processed: %d, Added: %d, Errored: %d", attempts, current_attempt_spells_processed, current_attempt_spells_added, current_attempt_spells_errored))
-        else
-            local errcode = db:errcode()
-            db:exec("ROLLBACK;") -- Rollback on any commit failure
-            if (errcode == sqlite3.BUSY or errcode == sqlite3.LOCKED) and attempts < spelldb.MAX_POPULATE_RETRIES then
-                local delay_ms = math.random(spelldb.MIN_RETRY_DELAY_MS, spelldb.MAX_RETRY_DELAY_MS)
-                print(string.format("Spell DB Population: COMMIT failed (attempt %d/%d) due to lock/busy. Retrying in %d ms. Error: %s",
-                                    attempts, spelldb.MAX_POPULATE_RETRIES, delay_ms, db:errmsg()))
-                if mq and mq.delay then mq.delay(delay_ms) else print("mq.delay not available for retry delay") end
-            else
-                print(string.format("ERROR: Failed to commit transaction after %d attempts: %s (Code: %d)", attempts, db:errmsg(), errcode))
-                return false 
-            end
-        end
-        ::continue_transaction_attempt::
-    end -- while attempts
+        -- Add a small delay between batches to prevent overwhelming the system
+        if mq and mq.delay then mq.delay(50) end
+    end -- end for batch loop
 
-    if not transaction_successful then
-        print("ERROR: Spell DB Population failed after max retries.")
-        return false
-    end
-
-    print(string.format("Spell database population complete. Total Processed: %d, Total Added/Updated: %d, Total Errored over final successful attempt: %d", total_spells_processed_across_retries, total_spells_added_across_retries, total_spells_errored_across_retries))
+    print(string.format("Spell database population complete. Total Processed: %d, Total Added/Updated: %d, Total Errored: %d", 
+                       total_spells_processed, total_spells_added, total_spells_errored))
     return true
 end
 

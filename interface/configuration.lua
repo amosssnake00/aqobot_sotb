@@ -315,6 +315,15 @@ local config = {
         tlo = 'PullWith',
         tlotype = 'string',
     },
+    PULLENGAGEMENTCHECK = {
+        value = 'strict',
+        tip = 'How to check if a mob is already engaged. Strict = skip any engaged mob, Group/Raid/Dannet = allow if engaged by group/raid/dannet members, Ignore = pull regardless of engagement',
+        label = 'Engagement Check',
+        type = 'combobox',
+        options = constants.pullEngagementCheck,
+        tlo = 'PullEngagementCheck',
+        tlotype = 'string',
+    },
     PULLRADIUS = {
         value = 100,
         tip = 'The radius within which you will pull mobs when in a puller role',
@@ -393,6 +402,14 @@ local config = {
         label = 'Polygon Pull',
         type = 'checkbox',
         tlo = 'PolygonPullEnabled',
+        tlotype = 'bool',
+    },
+    POLYGON_SHOW_PERIMETER = {
+        value = false,
+        tip = 'Show perimeter markers around the polygon pull area for better visibility',
+        label = 'Show Polygon Perimeter',
+        type = 'checkbox',
+        tlo = 'PolygonShowPerimeter',
         tlotype = 'bool',
     },
     GROUPWATCHWHO = {
@@ -681,7 +698,7 @@ local configByCategory = {
     Assist = { 'MODE', 'ASSIST', 'AUTOASSISTAT', 'ASSISTNAMES', 'SWITCHWITHMA', 'STICKCOMMAND', 'RESISTSTOPCOUNT', 'NUKEMANAMIN', 'DOTMANAMIN' },
     Camp = { 'CAMPRADIUS', 'CAMPRETURN', 'CHASETARGET', 'CHASEDISTANCE', 'CHASESTOPDISTANCE', 'CHASEPAUSED' },
     Burn = { 'BURNALWAYS', 'BURNALLNAMED', 'BURNCOUNT', 'BURNPCT', 'USEGLYPH', 'USEINTENSITY' },
-    Pull = { 'PULLRADIUS', 'PULLPATH', 'PULLLOW', 'PULLHIGH', 'PULLMINLEVEL', 'PULLMAXLEVEL', 'PULLARC', 'GROUPWATCHWHO', 'GROUPSTAYCLOSE', 'WAITFORCORPSES','PULLWITH', 'PULLLEVELPRIORITY', 'MOBSEVAL', 'POLYGONPULL_ENABLED' },
+    Pull = { 'PULLRADIUS', 'PULLPATH', 'PULLLOW', 'PULLHIGH', 'PULLMINLEVEL', 'PULLMAXLEVEL', 'PULLARC', 'GROUPWATCHWHO', 'GROUPSTAYCLOSE', 'WAITFORCORPSES','PULLWITH', 'PULLENGAGEMENTCHECK', 'PULLLEVELPRIORITY', 'MOBSEVAL', 'POLYGONPULL_ENABLED', 'POLYGON_SHOW_PERIMETER' },
     Heal = { 'HEALPCT', 'PANICHEALPCT', 'HOTHEALPCT', 'GROUPHEALPCT', 'GROUPHEALMIN', 'XTARGETHEAL', 'REZGROUP', 'REZRAID', 'REZINCOMBAT', 'PRIORITYTARGET', 'INTERRUPTFULLHP', 'INTERRUPTFORHEALS', 'ANNOUNCEHEALS', 'ANNOUNCEDEATHS' },
     Tank = { 'MAINTANK', 'OFFTANK' },
     Rest = { 'MEDCOMBAT', 'RECOVERPCT', 'MEDHPSTART', 'MEDHPSTOP', 'MEDMANASTART', 'MEDMANASTOP', 'MEDENDSTART', 'MEDENDSTOP', 'MANASTONESTART', 'MANASTONESTARTHP', 'MANASTONESTOPHP', 'MANASTONETIME', 'USEMOUNT', 'AUTODISMOUNT' },
@@ -823,11 +840,12 @@ function config.getPolygonSets()
     return polygonSets
 end
 
-function config.addPolygonSet(setName, zone, note, points)
+function config.addPolygonSet(setName, zone, note, points, z)
     polygonSets[setName] = {
         zone = zone,
         note = note or '',
         points = points,
+        z = z,
         timestamp = os.time(),
         count = #points
     }

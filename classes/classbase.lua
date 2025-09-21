@@ -18,6 +18,7 @@ local movement  = require('utils.movement')
 local timer     = require('libaqo.timer')
 
 local abilities = require('ability')
+local conditions = require('routines.conditions')
 local common    = require('common')
 local constants = require('constants')
 local mode      = require('mode')
@@ -26,66 +27,7 @@ local state     = require('state')
 ---Each EQ class' implementation extends from and overrides this base class.
 ---Base provides the main class routine loop and common implementations to iterate over ability lists
 ---and to call into each configured class routine.
----@class base
----@field classOrder                table   #Ordered list of routines to run such as tank,assist,pull
----@field options                   table   #Collection of class specific configuration options
----Spells
----@field defaultSpellset?          string  #The name of the default spell set for the class, typically 'standard' except for bards
----@field SpellLines?               table   #Collection of all spells to be searched for at startup and any hardcoded options for each
----@field compositeNames?           table   #Base names of each composite spell since progressive spells work funny
----@field spells                    table   #Collection of all known spells that may be used by the class
----@field spellRotations?           table   #Ordered spell rotations used in the cast routine, specifically for DPS spells
----@field BYOSRotation?             table   #Ordered DPS spell rotation used in BYOS mode based on currently mem'd spells
----@field customRotation?           table   #Ordered user defined DPS spell rotation when in BYOS mode
----@field allDPSSpellGroups         table   #Spell group names of all DPS spells allowed for selection in custom spell rotation
----Ability lists
----@field useCommonListProcessor?   boolean #
----@field Abilities?                table   # All AA, Disc, Skill, Item definitions which will be searched for on startup and loaded into below lists
----@field DPSAbilities              table   #Abilities used in mash in any modes
----@field tankAbilities             table   #Abilities used in mash in tank modes
----@field burnAbilities             table   #Abilities used in burn in any modes
----@field rangedBurnAbilities       table   #Abilities used in burn when ranged (just ranger atm)
----@field tankBurnAbilities         table   #Abilities used in burn in tank modes
----@field healAbilities             table   #Abilities used in heal routine
----@field AEDPSAbilities            table   #Abilities used in ae in any mode
----@field AETankAbilities           table   #Abilities used in ae in tank modes
----@field defensiveAbilities        table   #Abilities used in aggro in non-tank modes
----@field fadeAbilities             table   #Abilities used in aggro in non-tank modes
----@field aggroReducers             table   #Abilities used in aggro in non-tank modes
----@field recoverAbilities          table   #Abilities used in recover
----@field combatBuffs               table   #Abilities used to buff during combat
----@field auras                     table   #Class aura abilities
----@field selfBuffs                 table   #Abilities used to buff yourself
----@field singleBuffs               table   #Abilities used to buff individuals by class
----@field petBuffs                  table   #Abilities used for pet buffing
----@field cures                     table   #Abilities used in the cure routine
----@field debuffs                   table   #Abilities used in the debuff routine
----@field debuffOrder               table   #Priority ordered list of debuff types
----@field rezAbility?               Ability #
----@field epic?                     string  # name of epic
----@field mount                     table   #User added items used as mount
----Request handling / Buff Begging
----@field requests                  table   #Stores pending requests received from other characters
----@field requestAliases            table   #Aliases which can be used for requesting buffs
----@field availableBuffs            table   #Buffs offered through buff begging system
----@field desiredBuffs              table   #Buffs desired through buff begging system
----Clicky management
----@field clickies                  table   #Combined list of user added clickies of all types
----@field castClickies              table   #User added items used in the cast routine
----@field pullClickies              table   #User added items used to pull mobs
----Class functions
----@field beforeEngage?             function #Function to execute before engaging target (rogue stuff)
----@field resetClassTimers?         function #Function to execute to reset class specific timers
----@field doneSinging?              function #Function to check whether currently singing a song or if the cast time has already completed (bard stuff)
----@field mashClass?                function #Function to perform class specific mash logic
----@field aeClass?                  function #Function to perform class specific AE logic
----@field burnClass?                function #Function to perform class specific burn logic
----@field ohShitClass?              function #Function to perform class specific ohshit logic
----@field aggroClass?               function #Function to perform class specific aggro logic
----@field recoverClass?             function #Function to perform class specific recover logic
----@field checkSpellSet?            function #Function to load class spell sets
----@field swapSpells?               function #Function to perform class specific checks for spell swapping in combat (necro stuff)
----@field handleRampage?            function #Function to handle being rampage tank in a class specific manner
+-- See types.lua for additional type definitions
 local base      = {
     -- All possible class routine methods
     options = {},
@@ -166,6 +108,7 @@ function base:addCommonOptions()
         self:addOption('SPELLSET', 'Spell Set', self.defaultSpellset or 'standard', self.spellRotations,
             'The spell set to be used', 'combobox', nil, 'SpellSet', 'string')
         self:addOption('BYOS', 'BYOS', true, nil, 'Bring your own spells', 'checkbox', nil, 'BYOS', 'bool')
+        self:addOption('FILLSPELLGEMS', 'Fill Spell Gems', false, nil, 'Automatically assign important spells to empty gem slots based on rotation priority', 'checkbox', nil, 'FillSpellGems', 'bool')
         self:addOption('FORCEROTATE', 'Rotate Spells', false, nil,
             'Force iterating through the spell rotation even if earlier spells are ready', 'checkbox', nil, 'ForceRotate',
             'bool')
@@ -205,7 +148,7 @@ end
 
 function base:addCommonAbilities()
     self.tranquil = self:addAA('Tranquil Blessings')
-    self.radiant = self:addAA('Radiant Cure', { all = true, ignoreCounters = true, alias = 'RC', cure = true, group = true })
+    self.radiant = self:addAA('Radiant Cure', { all = true, ignoreCounters = true, alias = 'RC', cure = true, group = true, condition = conditions.radiantCureNeeded })
     if self.radiant then self:addAbilityToLists(self.radiant) end
     -- table.insert(self.cures, self.radiant)
     self.silent = self:addAA('Silent Casting', { first = true, preburn = true })
@@ -453,11 +396,13 @@ function base:addClicky(clicky)
             -- clicky with buff alias not added to any normal ability table
             logger.info('Added \ay%s\ax clicky: \ag%s\ax', clicky.clickyType, clicky.name)
             local item = common.getItem(clicky.name, clicky)
-            self[item.alias] = item
-            self.requestAliases[item.alias] = item
-            self.availableBuffs[item.alias] = true
-            -- printf('%s - %s', self.requestAliases[item.alias].Name, self.availableBuffs[item.alias])
-            return
+            if item then 
+                self[item.alias] = item
+                self.requestAliases[item.alias] = item
+                self.availableBuffs[item.alias] = true
+                -- printf('%s - %s', self.requestAliases[item.alias].Name, self.availableBuffs[item.alias])
+                return
+            end
         end
         local t = self:getTableForClicky(clicky.clickyType)
         if t then
@@ -663,9 +608,15 @@ function base:tank()
             assist.sendPet()
             return
         end
-        if not tank.approachMob() then return end
-        if not tank.acquireTarget() then return end
-        if not tank.tankMob() then return end
+        if not tank.approachMob() then 
+            return 
+        end
+        if not tank.acquireTarget() then 
+            return 
+        end
+        if not tank.tankMob() then 
+            return 
+        end
         tank.stickToMob()
         assist.sendPet()
     end
@@ -1167,7 +1118,8 @@ function base:managepet()
     if mq.TLO.SpawnCount(string.format('xtarhater radius %d zradius 50', config.get('CAMPRADIUS')))() > 0 then return end
     if petSpell.Mana > mq.TLO.Me.CurrentMana() then return end
     if petSpell.ReagentID and mq.TLO.FindItemCount(petSpell.ReagentID)() < petSpell.ReagentCount then return end
-    abilities.swapAndCast(petSpell, state.swapGem, self, function() mq.cmd('/pet ghold on') end)
+    mq.cmd('/pet ghold on')
+    abilities.swapAndCast(petSpell, state.swapGem, self)
 end
 
 function base:hold()
@@ -1371,6 +1323,12 @@ end
 
 base.checkSpellTimer = timer:new(30000)
 function base:checkMemmedSpells()
+    -- Auto-fill spell gems if enabled
+    if self:isEnabled('FILLSPELLGEMS') and not self:isEnabled('BYOS') then
+        local assigngems = require('assigngems')
+        assigngems.autoAssignGems(self, false, true) -- Apply assignments quietly
+    end
+    
     if not mq.TLO.Me.Class.CanCast() or not self.spells or not common.clearToBuff() or mq.TLO.Me.Moving() or self:isEnabled('BYOS') or state.memSpell or state.restore_gem then return end
     local spellSet = self:get('SPELLSET')
     if state.spellSetLoaded ~= spellSet or self.checkSpellTimer:expired() then
@@ -1400,7 +1358,20 @@ end
 function base:mainLoop()
 
     if not state.pullStatus or state.pullStatus == constants.pullStates.PULLED then
-        if state.pullStatus == constants.pullStates.PULLED then pull.clearPullVars('classloop') end
+        if state.pullStatus == constants.pullStates.PULLED then 
+            -- Hand off the pulled mob to the tank system
+            if state.pullMobID > 0 then
+                local pull_spawn = mq.TLO.Spawn(state.pullMobID)
+                if pull_spawn() and pull_spawn.Type() == 'NPC' then
+                    if mode.currentMode:isTankMode() then
+                        state.tankMobID = state.pullMobID
+                    else
+                        state.assistMobID = state.pullMobID
+                    end
+                end
+            end
+            pull.clearPullVars('classloop') 
+        end
         if state.rebuff then buffing.buff(self) end
         if state.rampTank and (state.class == 'BRD' or not mq.TLO.Me.Casting()) then
             if state.mobCount > 0 and not state.rampAnnounced then
@@ -1420,7 +1391,9 @@ function base:mainLoop()
             self:tank()
             -- tank check may determine pull return interrupted / ended early for some reason, and put us back
             -- into pull return to try to get back to camp
-            if state.pullStatus then return end
+            if state.pullStatus then 
+                return 
+            end
         elseif mode.currentMode:isManualMode() and config.get('MAINTANK') then
             local targetID = mq.TLO.Target.ID()
             if state.tankMobID > 0 and targetID ~= state.tankMobID then
@@ -1448,6 +1421,7 @@ function base:mainLoop()
     end
     if not state.actionTaken and not state.medding and mode.currentMode:isPullMode() and not self:hold() then
         pull.pullMob()
+    else
     end
 end
 

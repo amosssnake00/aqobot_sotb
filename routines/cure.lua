@@ -91,7 +91,7 @@ function cure:doCures(base)
                         if cureAbility.TargetType == 'Single' then
                             mq.cmdf('/squelch /mqt pc =%s', name)
                         end
-                        if cureAbility:use() then
+                        if abilities.use(cureAbility, base) then
                             --state.queuedAction = function() if originalTarget and originalTarget > 0 then mq.cmdf('/mqt id %s', originalTarget) end end
                             return true
                         end
